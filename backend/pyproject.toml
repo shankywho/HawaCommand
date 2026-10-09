@@ -1,0 +1,51 @@
+[project]
+name = "hawa-backend"
+version = "0.1.0"
+description = "HawaCommand Backend: API, streaming ingest, PostGIS models, and dispatch saga"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pydantic>=2.8.0",
+    "pydantic-settings>=2.4.0",
+    "sqlalchemy>=2.0.30",
+    "asyncpg>=0.29.0",
+    "redis>=5.0.0",
+    "orjson>=3.10.0",
+    "httpx>=0.27.0",
+    "pyjwt>=2.8.0",
+    "greenlet>=3.0.0",
+    "hawa-contracts",
+]
+
+[project.optional-dependencies]
+aws = [
+    "boto3>=1.34.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "aiosqlite>=0.20.0",
+    "moto[dynamodb,sns,kinesis]>=5.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+]
+
+[project.scripts]
+hawa = "hawa_backend.cli:main"
+
+[tool.uv.sources]
+hawa-contracts = { path = "contracts", editable = true }
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --import-mode=importlib"
+testpaths = [
+    "tests",
+    "contracts/tests",
+]
+pythonpath = [
+    "src",
+    "contracts",
+]

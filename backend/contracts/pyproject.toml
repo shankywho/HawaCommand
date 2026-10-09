@@ -1,0 +1,13 @@
+[project]
+name = "hawa-contracts"
+version = "0.1.0"
+description = "HawaCommand binding contracts, enums, packet models, and event envelopes"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.8.0",
+    "orjson>=3.10.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
