@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Silkscreen&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="./hawa.js"></script>
+<script src="./hawa-gl.js"></script>
+<style>body{margin:0;background:#FAF9F6;color:#0B1215;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden auto;font-variant-numeric:tabular-nums}*{box-sizing:border-box}button{font-family:inherit}a{color:#0F766E}a:hover{color:#0B1215}::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#E6E3DC;border-radius:4px}::-webkit-scrollbar-track{background:transparent}@keyframes sk{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}@keyframes pin{0%{opacity:0;transform:translateY(4px)}100%{opacity:1;transform:none}}@keyframes blink{0%{opacity:1}100%{opacity:.2}}</style>
+</helmet>
+<div style="position:fixed;inset:0;min-width:820px;display:grid;grid-template-columns:{{ railW }} minmax(0,1fr);grid-template-rows:52px minmax(0,1fr);background:#FAF9F6;filter:{{ rootFilter }}">
+
+  <header style="grid-row:1;grid-column:1 / span 2;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid #E6E3DC;background:#FFFFFF;min-width:0">
+    <span style="display:flex;align-items:center;gap:10px;flex:none"><span style="display:grid;grid-template-columns:repeat(2,6px);gap:2px"><i style="width:6px;height:6px;background:#0B1215"></i><i style="width:6px;height:6px;background:#0F766E"></i><i style="width:6px;height:6px;background:#0F766E"></i><i style="width:6px;height:6px;background:#0B1215"></i></span><span style="font:600 15px Geist;letter-spacing:-.01em;white-space:nowrap">HawaCommand</span></span>
+    <button style="flex:none;white-space:nowrap;height:32px;padding:0 10px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 13.5px Geist;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="background:#F4F2ED"><hc-icon name="map-pin" size="14"></hc-icon>East Delhi<sc-if value="{{ roomy }}" hint-placeholder-val="{{ true }}"><span style="color:#4A555B;font-weight:400">+ 13 wards</span></sc-if><hc-icon name="chevrons-up-down" size="13"></hc-icon></button>
+    <div style="flex:1"></div>
+    <span title="AQI 412 · Severe · GRAP {{ grapLabel }}" style="flex:none;cursor:help;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;background:#7F1D3A;color:#FFFFFF;font:10.5px 'Silkscreen',monospace;clip-path:polygon(2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px),0 2px,2px 2px)"><i style="width:5px;height:5px;background:currentColor;animation:blink 1.6s steps(2) infinite"></i>EAST DELHI · AQI 412 SEVERE</span>
+    <button onClick="{{ openPalette }}" style="flex:0 1 220px;min-width:120px;white-space:nowrap;height:32px;padding:0 8px 0 10px;border-radius:6px;border:1px solid #E6E3DC;background:#FAF9F6;color:#4A555B;font:13.5px Geist;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="background:#F4F2ED"><span style="flex:none;display:flex"><hc-icon name="search" size="14"></hc-icon></span><span style="flex:1;min-width:0;text-align:left">Search</span><span style="flex:none;font:12px Geist;border:1px solid #E6E3DC;border-radius:4px;padding:0 5px;background:#FFFFFF">⌘K</span></button>
+    <span title="Twin updated 13:45 · 1,842 cells · 15-minute cycle · Simulated fleet in firmware packet format, live CPCB feeds" style="flex:none;cursor:help;font:500 13px 'Geist Mono';white-space:nowrap">Tue 14:00</span>
+  </header>
+
+  <nav style="grid-row:2;grid-column:1;border-right:1px solid #E6E3DC;background:#FFFFFF;display:flex;flex-direction:column;gap:2px;padding:10px 8px;min-width:0;overflow:hidden">
+    <sc-for list="{{ rail }}" as="r" hint-placeholder-count="7">
+      <button onClick="{{ r.go }}" title="{{ r.label }}" aria-label="{{ r.label }}" style="position:relative;height:38px;padding:0 10px;border-radius:8px;border:none;background:{{ r.bg }};color:{{ r.fg }};display:flex;align-items:center;gap:12px;cursor:pointer;font:500 14px Geist;white-space:nowrap;text-align:left" style-hover="background:#F4F2ED;color:#0B1215"><span style="flex:none;display:flex"><hc-icon name="{{ r.icon }}" size="18"></hc-icon></span><sc-if value="{{ railOpen }}" hint-placeholder-val="{{ true }}"><span style="flex:1">{{ r.label }}</span></sc-if><sc-if value="{{ r.badge }}"><span style="position:absolute;top:5px;left:22px;min-width:15px;height:15px;padding:0 4px;border-radius:8px;background:#0B1215;color:#FFFFFF;font:600 10px Geist;display:grid;place-items:center">{{ r.badge }}</span></sc-if></button>
+    </sc-for>
+    <div style="flex:1"></div>
+    <button onClick="{{ toggleSettings }}" title="Settings" style="height:38px;padding:0 10px;border-radius:8px;border:none;background:{{ settingsBg }};color:#4A555B;display:flex;align-items:center;gap:12px;cursor:pointer;font:500 14px Geist;white-space:nowrap" style-hover="background:#F4F2ED;color:#0B1215"><span style="flex:none;display:flex"><hc-icon name="settings" size="18"></hc-icon></span><sc-if value="{{ railOpen }}" hint-placeholder-val="{{ true }}"><span>Settings</span></sc-if></button>
+    <button onClick="{{ toggleRail }}" title="{{ railToggleLabel }}" style="height:38px;padding:0 10px;border-radius:8px;border:none;background:transparent;color:#4A555B;display:flex;align-items:center;gap:12px;cursor:pointer;font:500 14px Geist;white-space:nowrap" style-hover="background:#F4F2ED;color:#0B1215"><span style="flex:none;display:flex"><hc-icon name="{{ railToggleIcon }}" size="18"></hc-icon></span><sc-if value="{{ railOpen }}" hint-placeholder-val="{{ true }}"><span>Collapse</span></sc-if></button>
+  </nav>
+
+  <main style="grid-row:2;grid-column:2;min-width:0;min-height:0;display:flex;flex-direction:column">
+    <div style="flex:none;padding:14px 24px;border-bottom:1px solid #E6E3DC;background:#FAF9F6">
+      <sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}"><h1 style="margin:0;font:600 19px/1.3 Geist;letter-spacing:-.015em;text-wrap:balance">Mundka, Bawana and Wazirpur need action before Thu 08:00.</h1></sc-if>
+      <sc-if value="{{ isB }}"><h1 style="margin:0;font:600 19px/1.3 Geist;letter-spacing:-.015em;text-wrap:balance">Shahdara and East Delhi will carry the most exposure on Thursday morning.</h1></sc-if>
+      <sc-if value="{{ isC }}"><h1 style="margin:0;font:600 19px/1.3 Geist;letter-spacing:-.015em;text-wrap:balance">Plan #214 for East Delhi is waiting for your approval.</h1></sc-if>
+      <sc-if value="{{ isD }}"><h1 style="margin:0;font:600 19px/1.3 Geist;letter-spacing:-.015em;text-wrap:balance">Same fleet, different targets: usual routes against Plan #214.</h1></sc-if>
+      <sc-if value="{{ isE }}"><h1 style="margin:0;font:600 19px/1.3 Geist;letter-spacing:-.015em;text-wrap:balance">34 of 38 interventions this week had a verified effect.</h1></sc-if>
+      <sc-if value="{{ isF }}"><h1 style="margin:0;font:600 19px/1.3 Geist;letter-spacing:-.015em;text-wrap:balance">7 of 8 assets are reporting; ASG-11 has been silent for 38 minutes.</h1></sc-if>
+      <sc-if value="{{ isG }}"><h1 style="margin:0;font:600 19px/1.3 Geist;letter-spacing:-.015em;text-wrap:balance">Three schools near Anand Vihar were warned 13 hours before the spike.</h1></sc-if>
+    </div>
+
+    <div style="flex:1;min-height:0;display:flex">
+      <div style="position:relative;flex:1;min-width:0;min-height:0;display:flex;flex-direction:column">
+
+        <sc-if value="{{ showMap }}" hint-placeholder-val="{{ true }}">
+          <div data-screen-label="{{ title }}" style="position:relative;flex:1;min-height:0">
+            <hawa-gl theme="light" threshold="{{ thr }}" maxlabels="3" attrib-bottom="74" hour="{{ hour }}" layers="{{ layers }}" assets="{{ assets }}" selected="{{ sel }}" center="{{ mapCenter }}" zoom="{{ mapZoom }}" labels="{{ mapLabels }}" style="position:absolute;inset:0"></hawa-gl>
+
+            <sc-if value="{{ isLiveish }}">
+              <div style="position:absolute;left:12px;top:12px;max-width:calc(100% - 200px);display:flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:8px;background:#FFFFFF;border:1px solid #E6E3DC">
+                <sc-for list="{{ layerToggles }}" as="l" hint-placeholder-count="5">
+                  <button onClick="{{ l.toggle }}" style="white-space:nowrap;height:28px;padding:0 10px;border-radius:6px;border:none;background:{{ l.bg }};color:{{ l.fg }};font:500 13px Geist;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="color:#0B1215"><hc-icon name="{{ l.icon }}" size="14"></hc-icon>{{ l.label }}</button>
+                </sc-for>
+              </div>
+              <span style="position:absolute;right:12px;top:12px;white-space:nowrap;display:flex;align-items:center;gap:7px;height:34px;padding:0 11px;border-radius:8px;background:#FFFFFF;border:1px solid #E6E3DC;font:13px Geist;color:#0B1215"><hc-icon name="navigation" size="13"></hc-icon>Wind NW · 2.1 m/s</span>
+            </sc-if>
+
+            <sc-if value="{{ isB }}">
+              <div title="P50 PM2.5 352 µg/m³ · P90 418 µg/m³ · probability 0.72 · issued Tue 17:00" style="position:absolute;left:12px;right:12px;top:12px;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 14px;border-radius:8px;background:#FFFFFF;border:1px solid #E6E3DC;box-shadow:0 4px 16px rgba(11,18,21,.06);animation:pin .2s ease-out;flex-wrap:wrap">
+                <span style="display:flex;color:#C02A2A"><hc-icon name="triangle-alert" size="17"></hc-icon></span>
+                <span style="flex:1;min-width:260px;font:500 14.5px Geist">Stage II likely Thursday 08:00 · act by Wednesday evening</span>
+                <button style="white-space:nowrap;height:30px;padding:0 12px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 13px Geist;cursor:pointer" style-hover="background:#F4F2ED">Stage II checklist</button>
+              </div>
+            </sc-if>
+
+            <div style="position:absolute;left:14px;bottom:78px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font:500 12.5px Geist;color:#0B1215;text-shadow:0 0 3px #FFFFFF,0 0 3px #FFFFFF,0 0 4px #FFFFFF;pointer-events:none">
+              <span style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:2px;background:#C02A2A"></i><i style="width:9px;height:9px;border-radius:2px;background:#7F1D3A;margin-left:-4px"></i>PM2.5 above {{ thr }} µg/m³ (Severe)</span>
+              <span style="display:flex;align-items:center;gap:6px"><i style="width:14px;border-top:2px dashed #0F766E"></i>Route</span>
+              <span style="display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border:1px solid #0B1215;border-radius:2px;background:#FFFFFF"></i>School</span>
+            </div>
+
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:8px 16px 8px;background:rgba(255,255,255,.96);border-top:1px solid #E6E3DC">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+                <span style="font:500 13.5px Geist;white-space:nowrap">{{ hourLabel }}</span>
+                <span style="font:13px Geist;color:#4A555B;white-space:nowrap">{{ hourKind }}</span>
+                <div style="flex:1"></div>
+                <button onClick="{{ goNow }}" style="white-space:nowrap;height:24px;padding:0 9px;border-radius:5px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:12.5px Geist;cursor:pointer" style-hover="background:#F4F2ED">Now</button>
+                <button onClick="{{ goThu }}" style="white-space:nowrap;height:24px;padding:0 9px;border-radius:5px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:12.5px Geist;cursor:pointer" style-hover="background:#F4F2ED">Thu 08:00</button>
+              </div>
+              <div style="position:relative;height:30px">
+                <sc-for list="{{ ticks }}" as="t" hint-placeholder-count="17"><i style="position:absolute;left:{{ t.left }};top:4px;width:1px;height:{{ t.h }};background:#CFCAC0"></i></sc-for>
+                <div style="position:absolute;left:0;width:25%;top:10px;height:2px;background:#CFCAC0"></div>
+                <div style="position:absolute;left:25%;right:0;top:10px;height:2px;background:repeating-linear-gradient(90deg,#CFCAC0 0 4px,transparent 4px 8px)"></div>
+                <div style="position:absolute;left:25%;top:2px;width:2px;height:18px;margin-left:-1px;background:#0B1215"></div>
+                <div style="position:absolute;left:{{ handleLeft }};top:3px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#0F766E;border:3px solid #FFFFFF;box-shadow:0 0 0 1px #0F766E;transition:left .15s ease-out;pointer-events:none"></div>
+                <sc-for list="{{ dayLabels }}" as="d" hint-placeholder-count="5"><span style="position:absolute;left:{{ d.left }};top:17px;transform:translateX(-50%);font:12px Geist;color:{{ d.color }};white-space:nowrap">{{ d.label }}</span></sc-for>
+                <input type="range" min="-24" max="72" step="1" value="{{ hour }}" onChange="{{ onHour }}" aria-label="Time scrubber, past 24 hours to 72 hour forecast" style="position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;margin:0">
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isF }}">
+          <div style="height:40%;border-top:1px solid #E6E3DC;overflow:auto;background:#FFFFFF">
+            <div style="display:grid;min-width:780px;grid-template-columns:64px 128px minmax(0,1fr) 96px 132px 72px;column-gap:12px;padding:10px 16px;font:500 13px Geist;color:#4A555B;border-bottom:1px solid #E6E3DC;position:sticky;top:0;background:#FFFFFF"><span>Asset</span><span>Type</span><span>Current task</span><span>Status</span><span>HawaTag</span><span style="text-align:right">Last ping</span></div>
+            <sc-for list="{{ fleet }}" as="f" hint-placeholder-count="8">
+              <div onClick="{{ f.pick }}" style="display:grid;min-width:780px;grid-template-columns:64px 128px minmax(0,1fr) 96px 132px 72px;column-gap:12px;padding:10px 16px;font:14px Geist;border-bottom:1px solid #F0EDE6;align-items:center;cursor:pointer;background:{{ f.bg }};box-shadow:{{ f.edge }}" style-hover="background:#F4F2ED">
+                <span style="font:500 13px 'Geist Mono'">{{ f.id }}</span><span style="color:#4A555B;white-space:nowrap">{{ f.type }}</span><span title="{{ f.task }}" style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.task }}</span>
+                <span style="display:flex;align-items:center;gap:7px"><i style="width:7px;height:7px;border-radius:50%;background:{{ f.dot }}"></i>{{ f.status }}</span>
+                <span style="font:13px Geist;color:#4A555B">{{ f.tag }}</span>
+                <span style="text-align:right;font:13px 'Geist Mono';color:#4A555B">{{ f.ping }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isC }}">
+          <div data-screen-label="Plan review" style="flex:1;min-height:0;overflow:auto">
+            <sc-if value="{{ planReady }}">
+              <div style="max-width:860px;margin:0 auto;padding:22px 24px 48px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+                  <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;border:1px solid #E6E3DC;background:#FFFFFF;font:500 13px Geist"><hc-icon name="git-pull-request-draft" size="13"></hc-icon>{{ planStatus }}</span>
+                  <span style="flex:1;min-width:220px;font:14px Geist;color:#4A555B">Thu 06:00–10:00 · drafted by the Planner agent at 18:30</span>
+                  <div style="display:flex;gap:6px">
+                    <button style="white-space:nowrap;height:32px;padding:0 11px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 13.5px Geist;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:#F4F2ED"><hc-icon name="pencil" size="14"></hc-icon>Edit</button>
+                    <button onClick="{{ goD }}" style="white-space:nowrap;height:32px;padding:0 11px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 13.5px Geist;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:#F4F2ED"><hc-icon name="columns-2" size="14"></hc-icon>Compare</button>
+                    <button onClick="{{ toggleDetails }}" style="white-space:nowrap;height:32px;padding:0 11px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 13.5px Geist;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:#F4F2ED"><hc-icon name="panel-right" size="14"></hc-icon>Details</button>
+                  </div>
+                </div>
+
+                <div style="border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;padding:22px 24px;margin-bottom:18px;display:flex;flex-direction:column;gap:8px">
+                  <div style="font:600 30px/1.2 Geist;letter-spacing:-.025em;text-wrap:balance"><hc-count to="31" prefix="+" suffix="%" dur="900"></hc-count> more people protected with the same fleet</div>
+                  <div style="font:14.5px/1.5 Geist;color:#4A555B;text-wrap:pretty">12,016 fewer people-hours of exposure than the usual routes, using 5 of 9 existing assets · <span title="Model confidence 0.78 · likely range 8,900–14,700" style="color:#0B1215;border-bottom:1px dotted #4A555B;cursor:help">High confidence</span></div>
+                </div>
+
+                <div style="display:flex;gap:12px;margin-bottom:18px">
+                  <span style="flex:none;width:32px;height:32px;border-radius:8px;background:#F4F2ED;border:1px solid #E6E3DC;display:grid;place-items:center;font:600 11px Geist">PL</span>
+                  <div style="flex:1;min-width:0;border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;overflow:hidden">
+                    <div style="padding:9px 14px;border-bottom:1px solid #E6E3DC;font:14px Geist;color:#4A555B"><b style="color:#0B1215;font-weight:500">Planner agent</b> · <span title="Confidence 0.78" style="cursor:help;border-bottom:1px dotted #4A555B">High confidence</span></div>
+                    <p style="margin:0;padding:12px 14px 8px;font:15px/1.6 Geist;text-wrap:pretty">Thursday 08:00 is forecast to hit Stage II, and East Delhi ranks #2 for people exposed. This plan moves T-12 and ASG-07 onto the Anand Vihar dust cell before the peak, with the same assets and shifts.</p>
+                    <sc-if value="{{ reasoningOpen }}"><p style="margin:0;padding:0 14px 8px;font:14.5px/1.6 Geist;color:#4A555B;text-wrap:pretty">A sweeper pre-pass clears the upwind kerbs first, since kerb silt is the suspected source. The three schools in the path get a WhatsApp alert 13 hours ahead. Ghazipur was first given to T-12; the Auditor flagged that water does not help smoke, so it moves to inspection team I-3.</p></sc-if>
+                    <button onClick="{{ toggleReasoning }}" style="margin:0 14px 12px;padding:0;border:none;background:transparent;color:#0B1215;font:500 13.5px Geist;cursor:pointer;display:flex;align-items:center;gap:4px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#CFCAC0" style-hover="text-decoration-color:#0B1215"><hc-icon name="{{ reasoningIcon }}" size="14"></hc-icon>{{ reasoningLabel }}</button>
+                  </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ diff }}" as="g" hint-placeholder-count="5">
+                    <div style="border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;overflow:hidden">
+                      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FAF9F6;border-bottom:1px solid #E6E3DC">
+                        <hc-icon name="{{ g.icon }}" size="15"></hc-icon>
+                        <span style="font:600 14px Geist">{{ g.asset }}</span><span style="font:14px Geist;color:#4A555B">{{ g.kind }}</span>
+                        <div style="flex:1"></div>
+                        <span style="font:500 13px Geist">+{{ g.add }}</span><span style="font:13px Geist;color:#4A555B">−{{ g.del }}</span>
+                      </div>
+                      <sc-for list="{{ g.lines }}" as="l">
+                        <div style="display:grid;grid-template-columns:30px 82px minmax(0,1fr);border-bottom:1px solid #F0EDE6;background:{{ l.bg }};box-shadow:{{ l.edge }}">
+                          <span style="font:600 15px Geist;color:{{ l.color }};padding:11px 0 0 13px">{{ l.sign }}</span>
+                          <span style="font:13px 'Geist Mono';color:#4A555B;padding-top:13px;white-space:nowrap">{{ l.time }}</span>
+                          <div style="padding:10px 14px 11px 0;display:flex;flex-direction:column;gap:5px;min-width:0">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                              <span style="font:500 15px Geist;color:{{ l.color }};text-decoration:{{ l.deco }};text-decoration-thickness:1px;text-decoration-color:#4A555B">{{ l.place }}</span>
+                              <sc-if value="{{ l.cause }}"><span title="{{ l.confNum }}" style="white-space:nowrap;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:5px;background:#F4F2ED;font:12.5px Geist;color:#0B1215;cursor:help"><hc-icon name="{{ l.causeIcon }}" size="12"></hc-icon>{{ l.cause }} · {{ l.conf }}</span></sc-if>
+                              <sc-if value="{{ l.flagged }}"><span style="white-space:nowrap;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:5px;border:1px solid #0B1215;font:500 12.5px Geist"><hc-icon name="message-square-warning" size="12"></hc-icon>{{ l.flagText }}</span></sc-if>
+                            </div>
+                            <span style="font:14px/1.5 Geist;color:#4A555B;text-wrap:pretty">{{ l.reason }}</span>
+                          </div>
+                        </div>
+                        <sc-if value="{{ l.showComment }}">
+                          <div style="padding:12px 14px 14px 44px;background:#FAF9F6;border-bottom:1px solid #F0EDE6">
+                            <div style="border:1px solid #E6E3DC;border-radius:8px;background:#FFFFFF;overflow:hidden">
+                              <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #E6E3DC;font:14px Geist;color:#4A555B;flex-wrap:wrap"><span style="width:22px;height:22px;border-radius:6px;background:#0B1215;color:#FFFFFF;display:grid;place-items:center;font:600 10px Geist">AU</span><b style="color:#0B1215;font-weight:500">Auditor agent</b>requested changes<div style="flex:1"></div><span title="Confidence 0.91" style="font:13px Geist;cursor:help">High confidence</span></div>
+                              <p style="margin:0;padding:12px;font:15px/1.55 Geist">T-12 is assigned to a burning hotspot near Ghazipur. Water won't help smoke. Reassign to inspection team I-3.</p>
+                              <div style="margin:0 12px 12px;border:1px solid #E6E3DC;border-radius:6px;overflow:hidden;font:14px Geist">
+                                <div style="padding:7px 10px;background:#FAF9F6;color:#4A555B;font:13px Geist;border-bottom:1px solid #E6E3DC">Suggested change</div>
+                                <div style="padding:7px 10px;color:#4A555B;text-decoration:line-through;text-decoration-color:#4A555B">− 06:55 · T-12 · Ghazipur landfill edge · spray</div>
+                                <div style="padding:7px 10px;box-shadow:inset 2px 0 0 #0B1215">+ 06:45 · I-3 · Ghazipur landfill edge · inspect source</div>
+                              </div>
+                              <div style="display:flex;gap:8px;padding:0 12px 12px;flex-wrap:wrap">
+                                <sc-if value="{{ suggestionOpen }}"><button onClick="{{ applySuggestion }}" style="white-space:nowrap;height:30px;padding:0 11px;border-radius:6px;border:1px solid #0B1215;background:#FFFFFF;color:#0B1215;font:500 13.5px Geist;cursor:pointer" style-hover="background:#F4F2ED">Apply suggestion</button></sc-if>
+                                <sc-if value="{{ suggestionApplied }}"><span style="white-space:nowrap;height:30px;padding:0 4px;color:#0B1215;font:500 13.5px Geist;display:flex;align-items:center;gap:6px"><hc-icon name="check" size="14"></hc-icon>Applied · Planner re-solved the routes</span></sc-if>
+                                <button style="white-space:nowrap;height:30px;padding:0 11px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 13.5px Geist;cursor:pointer" style-hover="background:#F4F2ED">Reply</button>
+                              </div>
+                            </div>
+                          </div>
+                        </sc-if>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="margin-top:18px;border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;overflow:hidden">
+                  <sc-for list="{{ checks }}" as="c" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #F0EDE6;font:14.5px Geist;flex-wrap:wrap"><span style="display:flex;color:{{ c.color }}"><hc-icon name="{{ c.icon }}" size="16"></hc-icon></span><span style="flex:1;font-weight:{{ c.weight }}">{{ c.label }}</span><span style="font:14px Geist;color:#4A555B">{{ c.detail }}</span></div>
+                  </sc-for>
+                  <div style="display:flex;align-items:center;gap:12px;padding:14px;background:#FAF9F6;flex-wrap:wrap">
+                    <div style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:2px"><span style="font:600 15px Geist">{{ mergeTitle }}</span><span style="font:13.5px Geist;color:#4A555B">Nothing dispatches without your approval. Routes go to drivers at 05:30.</span></div>
+                    <button style="white-space:nowrap;height:36px;padding:0 14px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 14px Geist;cursor:pointer" style-hover="background:#F4F2ED">Request changes</button>
+                    <button onClick="{{ approve }}" style="white-space:nowrap;height:36px;padding:0 14px;border-radius:6px;border:1px solid #0F766E;background:#0F766E;color:#FFFFFF;font:600 14px Geist;display:flex;align-items:center;gap:6px;cursor:pointer;opacity:{{ approveOpacity }}" style-hover="background:#0B5E58"><hc-icon name="send" size="14"></hc-icon>Approve &amp; dispatch</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ planLoading }}">
+              <div style="max-width:860px;margin:0 auto;padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+                <i style="height:26px;width:40%;border-radius:6px;background:#EEEBE4;animation:sk 1.4s ease-in-out infinite"></i>
+                <div style="height:104px;border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF"></div>
+                <div style="display:flex;align-items:center;gap:10px;font:14px Geist;color:#4A555B"><hc-icon name="loader" size="15"></hc-icon>Solving routes for 9 assets across 41 candidate cells, then Auditor review</div>
+                <div style="border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;padding:14px;display:flex;flex-direction:column;gap:10px"><i style="height:12px;width:80%;border-radius:4px;background:#EEEBE4;animation:sk 1.4s ease-in-out infinite"></i><i style="height:12px;width:66%;border-radius:4px;background:#EEEBE4;animation:sk 1.4s ease-in-out infinite .15s"></i><i style="height:12px;width:72%;border-radius:4px;background:#EEEBE4;animation:sk 1.4s ease-in-out infinite .3s"></i></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ planEmpty }}">
+              <div style="height:100%;display:flex;align-items:center;justify-content:center;padding:24px">
+                <div style="width:480px;max-width:100%;border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;padding:40px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px">
+                  <span style="width:40px;height:40px;border-radius:8px;border:1px solid #E6E3DC;display:grid;place-items:center;color:#4A555B"><hc-icon name="git-pull-request" size="18"></hc-icon></span>
+                  <div style="font:600 17px Geist">No draft plans for East Delhi</div>
+                  <div style="font:14.5px/1.5 Geist;color:#4A555B;max-width:360px;text-wrap:pretty">The next plan is drafted at 18:30, after the 17:00 forecast. You can draft one now from the latest data.</div>
+                  <div style="display:flex;gap:8px;margin-top:8px"><button style="white-space:nowrap;height:34px;padding:0 13px;border-radius:6px;border:1px solid #0F766E;background:#0F766E;color:#FFFFFF;font:600 14px Geist;cursor:pointer">Draft plan now</button><button style="white-space:nowrap;height:34px;padding:0 13px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 14px Geist;cursor:pointer">View past plans</button></div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isD }}">
+          <div data-screen-label="What-If" style="flex:1;min-height:0;display:flex;flex-direction:column">
+            <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 168px minmax(0,1fr)">
+              <div style="position:relative;border-right:1px solid #E6E3DC"><hawa-gl theme="light" mode="usual" attrib="none" threshold="{{ thr }}" maxlabels="3" hour="42" extrude="" pitch="50" bearing="-20" hscale="6" layers="hex,stations,trucks,schools,buildings" assets="T-12,ASG-07,SW-03,I-3" labels="major" center="77.305,28.635" zoom="11.8" style="position:absolute;inset:0"></hawa-gl><span style="position:absolute;left:12px;top:12px;white-space:nowrap;height:30px;padding:0 11px;border-radius:8px;background:#FFFFFF;border:1px solid #E6E3DC;font:500 13.5px Geist;display:flex;align-items:center">Usual routes</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;text-align:center;background:#FFFFFF">
+                <span style="font:600 44px/1 Geist;letter-spacing:-.035em">−31%</span>
+                <span style="font:14px/1.4 Geist;color:#4A555B;text-wrap:balance">less exposure, same fleet</span>
+              </div>
+              <div style="position:relative;border-left:1px solid #E6E3DC"><hawa-gl theme="light" mode="plan" threshold="{{ thr }}" maxlabels="3" hour="42" extrude="" pitch="50" bearing="-20" hscale="6" layers="hex,stations,trucks,schools,buildings" assets="T-12,ASG-07,SW-03,I-3" labels="major" center="77.305,28.635" zoom="11.8" style="position:absolute;inset:0"></hawa-gl><span style="position:absolute;left:12px;top:12px;white-space:nowrap;height:30px;padding:0 11px;border-radius:8px;background:#FFFFFF;border:1px solid #0F766E;font:500 13.5px Geist;display:flex;align-items:center">Plan #214</span></div>
+            </div>
+            <div style="height:240px;border-top:1px solid #E6E3DC;overflow:auto;background:#FFFFFF">
+              <div style="display:grid;min-width:720px;grid-template-columns:64px minmax(0,1fr) minmax(0,1fr) 84px 124px 88px;column-gap:12px;padding:10px 16px;font:500 13px Geist;color:#4A555B;border-bottom:1px solid #E6E3DC;position:sticky;top:0;background:#FFFFFF"><span>Asset</span><span>Usual route</span><span>Plan route</span><span style="text-align:right">km</span><span style="text-align:right">People-hours reached</span><span style="text-align:right">Exposure change</span></div>
+              <sc-for list="{{ routes }}" as="r" hint-placeholder-count="5">
+                <div style="display:grid;min-width:720px;grid-template-columns:64px minmax(0,1fr) minmax(0,1fr) 84px 124px 88px;column-gap:12px;padding:10px 16px;font:14px Geist;border-bottom:1px solid #F0EDE6;align-items:center">
+                  <span style="font:500 13px 'Geist Mono'">{{ r.id }}</span><span style="color:#4A555B">{{ r.usual }}</span><span>{{ r.plan }}</span><span style="text-align:right;font:13px 'Geist Mono';color:#4A555B">{{ r.km }}</span><span style="text-align:right;font:13px 'Geist Mono';color:#4A555B">{{ r.reach }}</span><span style="text-align:right;font:500 13px 'Geist Mono'">{{ r.delta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isE }}">
+          <div data-screen-label="Impact" style="flex:1;min-height:0;overflow:auto;padding:20px 24px 40px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,700px),1fr));gap:16px;align-items:start">
+              <div style="border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;overflow:auto">
+                <div style="display:grid;min-width:640px;grid-template-columns:40px 52px minmax(0,1fr) 48px 84px 96px 44px;column-gap:10px;padding:10px 14px;font:500 13px Geist;color:#4A555B;border-bottom:1px solid #E6E3DC;align-items:end"><span>ID</span><span>Asset</span><span>Cell</span><span style="text-align:right">Effect</span><span>95% CI</span><span style="position:relative;height:16px;font:12px Geist"><span style="position:absolute;left:0;top:0">−40%</span><span style="position:absolute;left:80%;top:0;transform:translateX(-50%);color:#0B1215;font-weight:500">0</span></span><span style="text-align:right">Duration</span></div>
+                <sc-for list="{{ interventions }}" as="v" hint-placeholder-count="6">
+                  <div onClick="{{ v.pick }}" style="display:grid;min-width:640px;grid-template-columns:40px 52px minmax(0,1fr) 48px 84px 96px 44px;column-gap:10px;padding:11px 14px;font:14px Geist;border-bottom:1px solid #F0EDE6;align-items:center;cursor:pointer;background:{{ v.bg }};box-shadow:{{ v.edge }}" style-hover="background:#F4F2ED">
+                    <span style="font:13px 'Geist Mono';color:#4A555B">{{ v.id }}</span><span style="font:500 13px 'Geist Mono'">{{ v.asset }}</span>
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="text-wrap:pretty">{{ v.cell }}</span><sc-if value="{{ v.verified }}"><span title="Verified" aria-label="Verified" style="display:flex;color:#0B1215"><hc-icon name="badge-check" size="15"></hc-icon></span></sc-if></span><span style="font:13px Geist;color:#4A555B">{{ v.sub }}</span></span>
+                    <span style="text-align:right;font:500 13px 'Geist Mono'">{{ v.effect }}</span><span style="font:13px 'Geist Mono';color:#4A555B;white-space:nowrap">{{ v.ci }}</span>
+                    <span style="position:relative;height:8px;background:#F0EDE6;border-radius:4px"><i style="position:absolute;left:{{ v.ciL }};width:{{ v.ciW }};top:0;bottom:0;background:#CFCAC0;border-radius:4px"></i><i style="position:absolute;left:80%;top:-3px;width:1px;height:14px;background:#4A555B"></i><i style="position:absolute;left:{{ v.pt }};top:-3px;width:2px;height:14px;margin-left:-1px;background:#0B1215"></i></span>
+                    <span style="text-align:right;font:13px 'Geist Mono';color:#4A555B">{{ v.dur }}</span>
+                  </div>
+                </sc-for>
+                <div style="padding:9px 14px;font:13px Geist;color:#4A555B">Bars show the 95% confidence interval on a −40% to +10% scale. Simulated interventions with injected effects.</div>
+              </div>
+              <div style="border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;overflow:hidden;display:flex;flex-direction:column">
+                <div style="padding:12px 16px;border-bottom:1px solid #E6E3DC;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font:600 15px Geist">{{ iv.title }}</span><span style="white-space:nowrap;display:inline-flex;align-items:center;gap:5px;font:500 13px Geist"><hc-icon name="{{ iv.icon }}" size="14"></hc-icon>{{ iv.status }}</span></div>
+                <div style="padding:14px 16px 6px"><div style="display:flex;gap:16px;flex-wrap:wrap;font:13px Geist;color:#4A555B;margin-bottom:8px"><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:2px;background:#0B1215"></i>Observed</span><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;border-top:2px dashed #4A555B"></i>Synthetic control</span><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:8px;background:rgba(11,18,21,.08)"></i>95% band</span></div><hc-chart type="impact" theme="light" height="200"></hc-chart></div>
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 190px;border-top:1px solid #E6E3DC;flex:1;min-height:230px">
+                  <div style="position:relative;min-height:230px"><hawa-gl theme="light" mode="donor" layers="hex" center="77.316,28.647" zoom="12.8" interactive="false" style="position:absolute;inset:0"></hawa-gl><span style="position:absolute;left:10px;top:10px;font:12.5px Geist;background:#FFFFFF;border:1px solid #E6E3DC;padding:3px 8px;border-radius:6px">Donor cells and their weights</span></div>
+                  <div style="border-left:1px solid #E6E3DC;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+                    <sc-for list="{{ iv.facts }}" as="f"><div style="display:flex;flex-direction:column;gap:1px"><span style="font:13px Geist;color:#4A555B">{{ f.k }}</span><span style="font:500 14px Geist">{{ f.v }}</span></div></sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;overflow:auto">
+              <div style="padding:12px 16px;border-bottom:1px solid #E6E3DC;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 15px Geist">Effectiveness library</span><span style="font:13.5px Geist;color:#4A555B">Typical effect of each action by cause and weather. Updates the planner nightly.</span></div>
+              <div style="display:grid;min-width:640px;grid-template-columns:110px 120px minmax(0,1fr) 120px 72px 40px;column-gap:12px;padding:10px 16px;font:500 13px Geist;color:#4A555B;border-bottom:1px solid #E6E3DC"><span>Action</span><span>Cause</span><span>Weather</span><span>Typical effect</span><span style="text-align:right">Duration</span><span style="text-align:right">n</span></div>
+              <sc-for list="{{ library }}" as="b" hint-placeholder-count="6">
+                <div style="display:grid;min-width:640px;grid-template-columns:110px 120px minmax(0,1fr) 120px 72px 40px;column-gap:12px;padding:10px 16px;font:14px Geist;border-bottom:1px solid #F0EDE6;align-items:center">
+                  <span>{{ b.action }}</span><span style="display:flex;align-items:center;gap:6px"><hc-icon name="{{ b.icon }}" size="13"></hc-icon>{{ b.cause }}</span><span style="color:#4A555B">{{ b.weather }}</span><span style="font:500 13px 'Geist Mono'">{{ b.effect }} <span style="color:#4A555B;font-weight:400">{{ b.ci }}</span></span><span style="text-align:right;font:13px 'Geist Mono';color:#4A555B">{{ b.dur }}</span><span style="text-align:right;font:13px 'Geist Mono';color:#4A555B">{{ b.n }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isG }}">
+          <div data-screen-label="Alerts" style="flex:1;min-height:0;overflow:auto;padding:20px 24px 40px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:2px;padding:3px;border-radius:8px;border:1px solid #E6E3DC;background:#FFFFFF;align-self:flex-start;flex-wrap:wrap"><span style="padding:5px 11px;border-radius:6px;background:#F4F2ED;font:500 13.5px Geist">All 146</span><span style="padding:5px 11px;font:13.5px Geist;color:#4A555B">Schools 38</span><span style="padding:5px 11px;font:13.5px Geist;color:#4A555B">Citizens 96</span><span style="padding:5px 11px;font:13.5px Geist;color:#4A555B">Citizen Eyes 12</span></div>
+            <div style="border:1px solid #E6E3DC;border-radius:10px;background:#FFFFFF;overflow:auto">
+              <div style="display:grid;min-width:620px;grid-template-columns:76px minmax(0,1fr) 128px 88px 52px;column-gap:12px;padding:10px 16px;font:500 13px Geist;color:#4A555B;border-bottom:1px solid #E6E3DC"><span>Sent</span><span>Recipient and message</span><span>Channel</span><span>Delivered</span><span style="text-align:right">Lead time</span></div>
+              <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="7">
+                <div onClick="{{ a.pick }}" style="display:grid;min-width:620px;grid-template-columns:76px minmax(0,1fr) 128px 88px 52px;column-gap:12px;padding:11px 16px;font:14px Geist;border-bottom:1px solid #F0EDE6;align-items:center;cursor:pointer;background:{{ a.bg }};box-shadow:{{ a.edge }}" style-hover="background:#F4F2ED">
+                  <span style="font:13px 'Geist Mono';color:#4A555B">{{ a.time }}</span>
+                  <span style="display:flex;gap:9px;min-width:0;align-items:flex-start"><span title="{{ a.aud }}" style="flex:none;display:flex;margin-top:2px;color:#4A555B"><hc-icon name="{{ a.icon }}" size="15"></hc-icon></span><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-weight:500;text-wrap:pretty">{{ a.target }}</span><span style="font:13.5px Geist;color:#4A555B;text-wrap:pretty">{{ a.msg }}</span></span></span>
+                  <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>{{ a.ch }}</span><span title="Language" style="font:500 11.5px Geist;padding:1px 6px;border-radius:4px;background:#F4F2ED;color:#0B1215">{{ a.lang }}</span></span>
+                  <span style="font:13px 'Geist Mono';color:#4A555B">{{ a.del }}</span><span style="text-align:right;font:13px 'Geist Mono';color:#4A555B">{{ a.lead }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <aside style="position:relative;width:{{ asideW }};max-width:{{ asideW }};flex:none;min-width:0;border-left:1px solid #E6E3DC;background:#FFFFFF;overflow:auto;display:flex;flex-direction:column">
+
+        <sc-if value="{{ isLiveList }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:16px 18px 12px;border-bottom:1px solid #E6E3DC;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="font:600 16px Geist">Hotspots</span><span style="font:13px Geist;color:#4A555B">PM2.5 µg/m³ · {{ hourShort }}</span></div>
+          <sc-for list="{{ hotList }}" as="h" hint-placeholder-count="9">
+            <div onClick="{{ h.pick }}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid #F0EDE6;cursor:pointer" style-hover="background:#F4F2ED">
+              <span style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="font:500 14.5px Geist">{{ h.name }}</span><span style="font:13.5px Geist;color:#4A555B;display:flex;align-items:center;gap:6px"><span title="{{ h.cause }}" style="display:flex"><hc-icon name="{{ h.icon }}" size="14"></hc-icon></span>{{ h.verb }}</span></span>
+              <span style="display:flex;align-items:center;gap:7px;font:500 14px 'Geist Mono';white-space:nowrap"><sc-if value="{{ h.watch }}"><span style="font:500 12px Geist;color:#4A555B;border:1px solid #E6E3DC;border-radius:4px;padding:1px 6px">Watch</span></sc-if><i style="width:9px;height:9px;border-radius:2px;background:{{ h.color }}"></i>{{ h.pm }}</span>
+            </div>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ isLiveDrawer }}">
+          <div style="padding:14px 18px 16px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column;gap:10px">
+            <button onClick="{{ closeDrawer }}" style="align-self:flex-start;white-space:nowrap;height:26px;padding:0 6px 0 2px;border:none;background:transparent;color:#4A555B;font:13.5px Geist;display:flex;align-items:center;gap:4px;cursor:pointer" style-hover="color:#0B1215"><hc-icon name="chevron-left" size="15"></hc-icon>All hotspots</button>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font:600 20px/1.25 Geist;letter-spacing:-.02em;text-wrap:pretty">{{ hs.place }}</span><span style="font:13.5px Geist;color:#4A555B">{{ hs.ward }}</span></div>
+            <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font:600 40px/1 Geist;letter-spacing:-.03em">{{ hs.pmNow }}</span><span style="font:14px Geist;color:#4A555B">µg/m³ PM2.5</span></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:6px;background:{{ hs.chipBg }};font:500 13px Geist"><i style="width:9px;height:9px;border-radius:2px;background:{{ hs.chipColor }}"></i>{{ hs.band }}</span>
+              <span title="Cause confidence {{ hs.causeConfNum }}" style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:6px;background:#F4F2ED;font:13px Geist;cursor:help"><hc-icon name="{{ hs.causeIcon }}" size="13"></hc-icon>{{ hs.cause }} · {{ hs.causeConf }} confidence</span>
+            </div>
+          </div>
+          <div style="padding:6px 18px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:8px 0;font:14px Geist"><span style="color:#4A555B">Exposure, next 4 h</span><span style="font-weight:500">{{ hs.exposure }} people-hours</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:8px 0;font:14px Geist;border-top:1px solid #F0EDE6"><span style="color:#4A555B">Rank in Delhi</span><span style="font-weight:500">#{{ hs.rank }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:8px 0;font:14px Geist;border-top:1px solid #F0EDE6"><span style="color:#4A555B">Estimate confidence</span><span title="{{ hs.confNum }}" style="font-weight:500;cursor:help">{{ hs.conf }}</span></div>
+          </div>
+          <div style="padding:14px 18px;border-bottom:1px solid #E6E3DC;display:flex;gap:10px;align-items:flex-start">
+            <span style="width:10px;height:10px;margin-top:5px;transform:rotate(45deg);border:1.5px solid #0B1215;flex:none"></span>
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font:13.5px Geist;color:#4A555B">Likely source upwind</span><span style="font:500 14.5px Geist">{{ hs.suspect }}</span><span style="font:13.5px Geist;color:#4A555B">1.9 km north-west · about 40 min away on this wind</span></div>
+          </div>
+          <div style="padding:14px 18px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column;gap:8px">
+            <span style="font:13.5px Geist;color:#4A555B">Schools nearby · assembly at 08:00</span>
+            <sc-for list="{{ hs.schools }}" as="s" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:10px;font:14px Geist"><span style="width:16px;height:16px;border:1px solid #0B1215;border-radius:3px;display:grid;place-items:center;font:600 8px Geist">S</span><span style="flex:1">{{ s.name }}</span><span style="color:#4A555B;white-space:nowrap">{{ s.d }}</span></div></sc-for>
+          </div>
+          <div style="padding:14px 18px;border-bottom:1px solid #E6E3DC">
+            <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font:13.5px Geist;color:#4A555B;margin-bottom:8px"><span>72-hour forecast</span><span>Peak Thu 08:00</span></div>
+            <hc-chart type="mini" theme="light" value="{{ hs.pm }}" hour="{{ hourPos }}" height="120"></hc-chart>
+          </div>
+          <div style="padding:14px 18px;display:flex;flex-wrap:wrap;gap:8px">
+            <button style="flex:1 1 auto;white-space:nowrap;padding:0 12px;height:36px;border-radius:6px;border:1px solid #0F766E;background:#0F766E;color:#FFFFFF;font:600 14px Geist;cursor:pointer" style-hover="background:#0B5E58">{{ hs.primary }}</button>
+            <button onClick="{{ goC }}" style="flex:1 1 auto;white-space:nowrap;padding:0 12px;height:36px;border-radius:6px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 14px Geist;cursor:pointer" style-hover="background:#F4F2ED">Add to Plan #214</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isB }}">
+          <div style="padding:16px 18px 12px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column;gap:3px"><span style="font:600 16px Geist">Wards by people exposed</span><span title="Exposure = excess PM2.5 × people × vulnerability × time" style="font:13.5px Geist;color:#4A555B;cursor:help">Thursday 06:00–10:00, in people-hours</span></div>
+          <div style="display:grid;grid-template-columns:minmax(140px,1fr) 84px 52px;column-gap:8px;padding:9px 18px;font:500 13px Geist;color:#4A555B;border-bottom:1px solid #E6E3DC"><span>Ward</span><span style="text-align:right">People exposed</span><span style="text-align:right">Peak</span></div>
+          <sc-for list="{{ wards }}" as="w" hint-placeholder-count="8">
+            <div title="{{ w.confNum }}" style="display:grid;grid-template-columns:minmax(140px,1fr) 84px 52px;column-gap:8px;padding:10px 18px;font:14px Geist;border-bottom:1px solid #F0EDE6;align-items:center;background:{{ w.bg }};box-shadow:{{ w.edge }}">
+              <span style="font-weight:{{ w.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.name }}</span>
+              <span style="text-align:right;font:13px 'Geist Mono'">{{ w.ph }}</span>
+              <span style="text-align:right;font:13px 'Geist Mono';display:flex;justify-content:flex-end;align-items:center;gap:6px"><i style="width:8px;height:8px;border-radius:2px;background:{{ w.color }}"></i>{{ w.peak }}</span>
+            </div>
+          </sc-for>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+            <span style="font:13.5px Geist;color:#4A555B">East Delhi PM2.5, likely range</span>
+            <hc-chart type="mini" theme="light" value="310" hour="42" height="120"></hc-chart>
+            <button onClick="{{ goC }}" style="margin-top:6px;white-space:nowrap;height:36px;border-radius:6px;border:1px solid #0F766E;background:#0F766E;color:#FFFFFF;font:600 14px Geist;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px" style-hover="background:#0B5E58"><hc-icon name="git-pull-request" size="14"></hc-icon>Review Plan #214</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isC }}">
+          <div style="position:relative;flex:1;min-height:420px"><hawa-gl theme="light" mode="plan" threshold="{{ thr }}" hour="42" layers="hex,stations,trucks,schools,suspect" assets="T-12,ASG-07,SW-03,I-3" labels="sel" selected="anand" center="77.312,28.640" zoom="12.6" style="position:absolute;inset:0"></hawa-gl><span style="position:absolute;left:10px;top:10px;font:500 13px Geist;background:#FFFFFF;border:1px solid #E6E3DC;padding:4px 9px;border-radius:6px">Plan routes on Thursday's forecast</span></div>
+          <sc-if value="{{ detailsOpen }}">
+            <div style="position:absolute;inset:0;z-index:5;background:#FFFFFF;display:flex;flex-direction:column;animation:pin .18s ease-out;overflow:auto">
+              <div style="display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #E6E3DC"><span style="flex:1;font:600 16px Geist">Details</span><button onClick="{{ toggleDetails }}" aria-label="Close details" style="width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:#0B1215;display:grid;place-items:center;cursor:pointer" style-hover="background:#F4F2ED"><hc-icon name="x" size="16"></hc-icon></button></div>
+              <div style="padding:14px 18px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column;gap:10px">
+                <span style="font:13.5px Geist;color:#4A555B">Reviewers</span>
+                <div style="display:flex;align-items:center;gap:10px;font:14px Geist"><span style="width:22px;height:22px;border-radius:6px;background:#0B1215;color:#FFFFFF;display:grid;place-items:center;font:600 10px Geist">AU</span><span style="flex:1">Auditor agent</span><span style="display:flex;align-items:center;gap:5px"><hc-icon name="{{ auditorIcon }}" size="14"></hc-icon>{{ auditorState }}</span></div>
+                <div style="display:flex;align-items:center;gap:10px;font:14px Geist"><span style="width:22px;height:22px;border-radius:50%;background:#F4F2ED;display:grid;place-items:center;font:600 10px Geist">WO</span><span style="flex:1">Ward officer (you)</span><span style="color:#4A555B">{{ officerState }}</span></div>
+              </div>
+              <div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px;font:14px Geist">
+                <span style="font:13.5px Geist;color:#4A555B">Agents on this plan</span>
+                <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span>Forecaster</span><span style="color:#4A555B">17:00 forecast run</span></div>
+                <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span>Planner</span><span style="color:#4A555B">Route optimiser, 1.8 s</span></div>
+                <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span>Auditor</span><span style="color:#4A555B">1 comment</span></div>
+                <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span>Communicator</span><span style="color:#4A555B">2 alerts drafted</span></div>
+                <p style="margin:6px 0 0;font:13.5px/1.5 Geist;color:#4A555B;text-wrap:pretty">Agents explain and critique. The optimiser enforces shift, capacity and cause–tool rules; agents cannot bypass them.</p>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ isD }}">
+          <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;font:14px Geist">
+            <span style="font:600 16px Geist">Assumptions</span>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span style="color:#4A555B">People-hours</span><span>38,760 → 26,744</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span style="color:#4A555B">Likely saving</span><span>8,900–14,700</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span style="color:#4A555B">Fleet</span><span>5 of 9 assets, unchanged</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span style="color:#4A555B">Window</span><span>Thu 06:00–10:00</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span style="color:#4A555B">Forecast</span><span>Median, issued 17:00</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span style="color:#4A555B">Effects from</span><span>Library, weather-matched</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap"><span style="color:#4A555B">Extra distance</span><span>+6.4 km</span></div>
+            <p style="margin:4px 0 0;padding:10px 12px;border-radius:6px;background:#FAF9F6;border:1px solid #E6E3DC;font:13.5px/1.5 Geist;color:#4A555B;text-wrap:pretty">Simulated. After dispatch, measured effects replace this estimate.</p>
+            <button onClick="{{ goC }}" style="white-space:nowrap;height:36px;border-radius:6px;border:1px solid #0F766E;background:#0F766E;color:#FFFFFF;font:600 14px Geist;cursor:pointer" style-hover="background:#0B5E58">Back to review</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isE }}">
+          <div style="padding:16px 18px 12px;border-bottom:1px solid #E6E3DC"><span style="font:600 16px Geist">What the fleet did this week</span></div>
+          <div style="padding:6px 18px;border-bottom:1px solid #E6E3DC">
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:8px 0;font:14px Geist"><span style="color:#4A555B">Verified actions</span><span style="font-weight:500">89% <span style="font-weight:400;color:#4A555B">of 90% target</span></span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:8px 0;font:14px Geist;border-top:1px solid #F0EDE6"><span style="color:#4A555B">No measurable effect</span><span style="font-weight:500">7 <span style="font-weight:400;color:#4A555B">· 5 wrong tool for cause</span></span></div>
+          </div>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+            <span style="font:13.5px Geist;color:#4A555B">Recommended changes</span>
+            <div style="padding:12px;border-radius:8px;border:1px solid #E6E3DC;display:flex;flex-direction:column;gap:6px"><span style="font:500 14.5px Geist">Move T-07 off the ITO corridor</span><span style="font:14px/1.5 Geist;color:#4A555B;text-wrap:pretty">Traffic-dominated cell; sprinklers show no clear effect there. Use diversion advice and smoky-vehicle checks instead.</span><span title="Confidence 0.71" style="font:13px Geist;color:#4A555B;cursor:help">Medium confidence</span></div>
+            <div style="padding:12px;border-radius:8px;border:1px solid #E6E3DC;display:flex;flex-direction:column;gap:6px"><span style="font:500 14.5px Geist">Spray before 07:00 on calm mornings</span><span style="font:14px/1.5 Geist;color:#4A555B;text-wrap:pretty">Effects are larger and last longer when wind is under 3 m/s.</span><span title="Confidence 0.66" style="font:13px Geist;color:#4A555B;cursor:help">Medium confidence</span></div>
+            <button style="margin-top:4px;white-space:nowrap;height:36px;border-radius:6px;border:1px solid #0F766E;background:#0F766E;color:#FFFFFF;font:600 14px Geist;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px" style-hover="background:#0B5E58"><hc-icon name="file-text" size="14"></hc-icon>Weekly evidence report</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isF }}">
+          <div style="padding:16px 18px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font:13.5px Geist;color:#4A555B">{{ asset.type }}</span><div style="flex:1"></div><span title="Simulated in the exact firmware packet format" style="white-space:nowrap;height:22px;padding:0 8px;border-radius:999px;border:1px dashed #4A555B;color:#4A555B;font:12px Geist;display:inline-flex;align-items:center;cursor:help">Simulated</span></div>
+            <div style="font:600 22px Geist;letter-spacing:-.02em">{{ asset.id }}</div>
+            <div style="font:14.5px Geist">{{ asset.task }}</div>
+          </div>
+          <div style="padding:14px 18px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px"><span title="HTG-0212 · firmware 1.4.2" style="font:500 14px Geist;cursor:help">HawaTag</span><div style="flex:1"></div><span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:5px;background:{{ asset.pumpBg }};color:{{ asset.pumpFg }};font:600 12.5px Geist"><i style="width:6px;height:6px;border-radius:50%;background:currentColor"></i>{{ asset.pump }}</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E6E3DC;border:1px solid #E6E3DC;border-radius:8px;overflow:hidden">
+              <div style="background:#FFFFFF;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="font:13px Geist;color:#4A555B">Flow</span><span style="font:600 18px Geist">{{ asset.flow }}<span style="font:400 12.5px Geist;color:#4A555B"> L/min</span></span></div>
+              <div style="background:#FFFFFF;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="font:13px Geist;color:#4A555B">This run</span><span style="font:600 18px Geist">{{ asset.litres }}<span style="font:400 12.5px Geist;color:#4A555B"> / 1,850 L</span></span></div>
+              <div style="background:#FFFFFF;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="font:13px Geist;color:#4A555B">PM10 before</span><span style="font:600 18px Geist">418<span style="font:400 12.5px Geist;color:#4A555B"> µg/m³</span></span></div>
+              <div style="background:#FFFFFF;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="font:13px Geist;color:#4A555B">PM10 now</span><span style="font:600 18px Geist">349<span style="font:400 12.5px Geist;color:#4A555B"> µg/m³</span></span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px"><span style="font:13px Geist;color:#4A555B">Spraying today</span><div style="position:relative;height:22px;background:#FAF9F6;border:1px solid #E6E3DC;border-radius:4px;overflow:hidden"><i style="position:absolute;left:12%;width:9%;top:4px;bottom:4px;background:#0B1215;border-radius:2px"></i><i style="position:absolute;left:31%;width:14%;top:4px;bottom:4px;background:#0B1215;border-radius:2px"></i><i style="position:absolute;left:52%;width:6%;top:4px;bottom:4px;background:#4A555B;border-radius:2px"></i></div><div style="display:flex;justify-content:space-between;font:12px Geist;color:#4A555B"><span>05:30</span><span>07:30</span><span>09:30</span><span>11:30</span></div></div>
+          </div>
+          <div style="padding:10px 18px;display:flex;flex-direction:column;font:14px Geist">
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:7px 0"><span style="color:#4A555B">Tamper seal</span><span>Intact</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:7px 0;border-top:1px solid #F0EDE6"><span style="color:#4A555B">4G signal</span><span title="−81 dBm" style="cursor:help">Good</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:7px 0;border-top:1px solid #F0EDE6"><span style="color:#4A555B">Trust score</span><span title="0.94" style="cursor:help">High</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:7px 0;border-top:1px solid #F0EDE6"><span style="color:#4A555B">Last packet</span><span title="Sequence 88214" style="cursor:help">6 s ago</span></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isG }}">
+          <div style="padding:16px 18px 12px;border-bottom:1px solid #E6E3DC;display:flex;flex-direction:column;gap:3px"><span style="font:13.5px Geist;color:#4A555B">WhatsApp preview</span><span style="font:600 16px/1.3 Geist;text-wrap:pretty">{{ alertSel.target }}</span><span style="font:13.5px Geist;color:#4A555B">Drafted by the Communicator agent · <span title="Confidence 0.81" style="cursor:help;border-bottom:1px dotted #4A555B">High confidence</span></span></div>
+          <div style="padding:16px;background:#EFEAE2;flex:1;display:flex;flex-direction:column;gap:10px">
+            <div style="align-self:center;font:12.5px Geist;color:#0B1215;background:#FFFFFF;padding:3px 9px;border-radius:6px">Wed 11 Nov · 19:00</div>
+            <div style="align-self:flex-start;max-width:92%;background:#FFFFFF;border-radius:2px 10px 10px 10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 1px rgba(11,18,21,.08)">
+              <span style="font:600 13px Geist;color:#0B1215">HawaCommand · Delhi air alerts</span>
+              <span style="font:15px/1.6 'Noto Sans Devanagari',Geist,sans-serif">आपके स्कूल के पास कल सुबह 8 बजे PM2.5 लगभग 380 µg/m³ तक पहुँचेगा। प्रार्थना सभा अंदर करें। बाहर के लिए सबसे सुरक्षित समय: दोपहर 12:30–2:00।</span>
+              <span style="font:12px Geist;color:#4A555B;align-self:flex-end">19:00</span>
+            </div>
+            <div style="align-self:flex-start;max-width:92%;background:#FFFFFF;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 1px rgba(11,18,21,.08)">
+              <span style="font:15px/1.55 Geist">PM2.5 near your school will reach ~380 µg/m³ at 8 AM. Hold assembly indoors. Safest outdoor window: 12:30–2:00 PM.</span>
+              <span style="font:13.5px Geist;color:#4A555B">Main pollutant: PM2.5 (smoke + dust). Keep windows shut in the morning.</span>
+              <span style="font:12px Geist;color:#4A555B;align-self:flex-end">19:00</span>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="height:30px;padding:0 11px;border-radius:15px;background:#FFFFFF;color:#0B1215;font:13.5px Geist;display:flex;align-items:center">Assembly moved indoors</span><span style="height:30px;padding:0 11px;border-radius:15px;background:#FFFFFF;color:#0B1215;font:13.5px Geist;display:flex;align-items:center">हिंदी में ही भेजें</span></div>
+            <div style="align-self:flex-end;max-width:80%;background:#D9FDD3;border-radius:10px 2px 10px 10px;padding:8px 12px;font:15px Geist">Assembly moved indoors ✓<div style="font:12px Geist;color:#4A555B;text-align:right;margin-top:2px">19:24</div></div>
+          </div>
+          <div style="padding:10px 18px;border-top:1px solid #E6E3DC;display:flex;flex-direction:column;font:14px Geist">
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:7px 0"><span style="color:#4A555B">Lead time before spike</span><span>13 h</span></div>
+            <div style="display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding:7px 0;border-top:1px solid #F0EDE6"><span style="color:#4A555B">Indoor vs outdoor, 08:00</span><span>Awaiting indoor sensor</span></div>
+          </div>
+        </sc-if>
+      </aside>
+    </div>
+  </main>
+
+  <sc-if value="{{ settingsOpen }}">
+    <div style="position:fixed;left:12px;bottom:96px;z-index:60;width:260px;padding:8px;border-radius:10px;background:#FFFFFF;border:1px solid #E6E3DC;box-shadow:0 12px 32px rgba(11,18,21,.14);animation:pin .15s ease-out;display:flex;flex-direction:column;gap:2px">
+      <button onClick="{{ toggleDark }}" style="display:flex;align-items:center;gap:10px;height:38px;padding:0 10px;border:none;border-radius:6px;background:transparent;color:#0B1215;font:500 14px Geist;cursor:pointer;text-align:left" style-hover="background:#F4F2ED"><hc-icon name="moon" size="16"></hc-icon><span style="flex:1">Dark mode</span><span style="width:32px;height:18px;border-radius:9px;background:{{ darkTrack }};position:relative;transition:background .15s"><i style="position:absolute;top:2px;left:{{ darkKnob }};width:14px;height:14px;border-radius:50%;background:#FFFFFF;transition:left .15s ease-out"></i></span></button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ palette }}">
+    <div onClick="{{ closePalette }}" style="position:fixed;inset:0;background:rgba(11,18,21,.28);z-index:50;display:flex;justify-content:center;padding-top:14vh">
+      <div onClick="{{ stop }}" style="width:620px;max-width:calc(100% - 32px);height:fit-content;border:1px solid #E6E3DC;border-radius:12px;background:#FFFFFF;box-shadow:0 24px 64px rgba(11,18,21,.2);overflow:hidden;animation:pin .18s ease-out">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #E6E3DC;color:#4A555B"><hc-icon name="search" size="16"></hc-icon><input value="{{ query }}" onChange="{{ onQuery }}" onKeyDown="{{ onPaletteKey }}" autofocus="" placeholder="Type a command or search…" style="flex:1;background:transparent;border:none;outline:none;color:#0B1215;font:15.5px Geist"><span style="font:12px Geist;border:1px solid #E6E3DC;border-radius:4px;padding:1px 6px">esc</span></div>
+        <div style="padding:6px;max-height:380px;overflow:auto">
+          <sc-for list="{{ commands }}" as="c" hint-placeholder-count="6">
+            <div onClick="{{ c.run }}" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:6px;background:{{ c.bg }};font:14.5px Geist;cursor:pointer" style-hover="background:#F4F2ED">
+              <span style="display:flex;color:#4A555B"><hc-icon name="{{ c.icon }}" size="16"></hc-icon></span><span style="flex:1">{{ c.label }}</span><span style="font:13px Geist;color:#4A555B">{{ c.hint }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noCommands }}"><div style="padding:18px 10px;font:14px Geist;color:#4A555B">No commands match. Try “plan”, “forecast” or a ward name.</div></sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;right:{{ toastRight }};bottom:16px;z-index:40;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:#FFFFFF;border:1px solid #E6E3DC;box-shadow:0 12px 32px rgba(11,18,21,.14);width:320px;animation:pin .2s ease-out"><span style="display:flex;color:#0F766E;margin-top:1px"><hc-icon name="circle-check" size="17"></hc-icon></span><div style="flex:1"><div style="font:600 14px Geist">Plan #214 approved</div><div style="font:13.5px/1.45 Geist;color:#4A555B;margin-top:2px">8 tasks queued. Routes reach drivers at 05:30; 2 alerts scheduled.</div></div><span onClick="{{ closeToast }}" style="display:flex;color:#4A555B;cursor:pointer"><hc-icon name="x" size="15"></hc-icon></span></div>
+  </sc-if>
+</div>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0F766E"/><rect x="34" y="34" width="14" height="14" fill="#FAF9F6"/><rect x="52" y="34" width="14" height="14" fill="#0B1215"/><rect x="34" y="52" width="14" height="14" fill="#0B1215"/><rect x="52" y="52" width="14" height="14" fill="#FAF9F6"/></svg></template>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;,&quot;E&quot;,&quot;F&quot;,&quot;G&quot;,&quot;H&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'&quot;,&quot;section&quot;:&quot;Console&quot;},&quot;planState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;],&quot;default&quot;:&quot;ready&quot;,&quot;tsType&quot;:&quot;'ready'|'loading'|'empty'&quot;,&quot;section&quot;:&quot;Console&quot;},&quot;threshold&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:250,&quot;max&quot;:420,&quot;step&quot;:10,&quot;unit&quot;:&quot;µg/m³&quot;,&quot;default&quot;:250,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Map&quot;}}">
+class Component extends DCLogic {
+  state = { screen: null, hour: 0, sel: 'ghazipur', drawer: false, reasoning: false, applied: false, approved: false, toast: false, palette: false, query: '', qi: 0, layersOn: { heat: true, hotspots: true, trails: true, trucks: true, schools: true }, asset: 'T-12', iv: '0412', alert: 0, railOpen: null, vw: innerWidth, settings: false, dark: false, details: false };
+  scr() { return this.state.screen || this.props.screen || 'A'; }
+  go(s) { const patch = { screen: s, palette: false, details: false }; if (s === 'B') patch.hour = 42; if (s === 'A' || s === 'F') patch.hour = 0; this.setState(patch); }
+  componentDidMount() {
+    this.onHs = e => this.setState({ sel: e.detail.id, drawer: true, screen: this.scr() === 'B' ? 'B' : 'A' });
+    this.onKey = e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); this.setState(s => ({ palette: !s.palette, query: '', qi: 0 })); } if (e.key === 'Escape') this.setState({ palette: false, settings: false }); };
+    document.addEventListener('hc-hotspot', this.onHs); document.addEventListener('keydown', this.onKey);
+    this.onResize = () => { const w = document.documentElement.clientWidth || innerWidth; if (w !== this.state.vw) this.setState({ vw: w }); }; addEventListener('resize', this.onResize); this.ro = new ResizeObserver(() => this.onResize()); this.ro.observe(document.documentElement); requestAnimationFrame(() => this.onResize());
+    if (this.scr() === 'B') this.setState({ hour: 42 });
+    if (this.scr() === 'H') this.setState({ screen: 'A', palette: true });
+  }
+  componentDidUpdate(pp) { if (pp.screen !== this.props.screen && this.props.screen) { this.go(this.props.screen === 'H' ? 'A' : this.props.screen); if (this.props.screen === 'H') this.setState({ palette: true }); } }
+  componentWillUnmount() { document.removeEventListener('hc-hotspot', this.onHs); document.removeEventListener('keydown', this.onKey); removeEventListener('resize', this.onResize); this.ro && this.ro.disconnect(); }
+  renderVals() {
+    const railEff = this.state.railOpen ?? (this.state.vw >= 1320);
+    const scr = this.scr(), st = this.state, planState = this.props.planState || 'ready', thr = String(this.props.threshold ?? 250);
+    const AQI = ['#1E8A4C', '#5E8F1B', '#B8920A', '#D0690E', '#C02A2A', '#7F1D3A'], BN = ['Good', 'Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe'];
+    const band = v => v <= 30 ? 0 : v <= 60 ? 1 : v <= 90 ? 2 : v <= 120 ? 3 : v <= 250 ? 4 : 5;
+    const rgba = (h, a) => { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+    const ep = h => 1 + 0.14 * (Math.cos(2 * Math.PI * (h - 18) / 24) - Math.cos(2 * Math.PI * (-18) / 24)) + 0.2 * Math.exp(-Math.pow((h - 42) / 12, 2));
+    const fmt = n => Math.round(n).toLocaleString('en-IN');
+    const cw = v => v >= .75 ? 'High' : v >= .6 ? 'Medium' : 'Low';
+    const SEL_BG = 'rgba(15,118,110,.06)', SEL_EDGE = 'inset 2px 0 0 #0F766E';
+    const causeIcon = { Dust: 'wind', Traffic: 'car', Burning: 'flame', 'Regional smoke': 'cloud-fog' };
+    const verb = { Dust: 'Send sprinkler', Traffic: 'Divert traffic', Burning: 'Send inspector', 'Regional smoke': 'Alert schools' };
+    const HS = {
+      ghazipur: ['Ghazipur', 'East Delhi', 388, 'Burning', 0.74, 0.79, 'Landfill edge, open burning', 18420, 1, 'I-3,T-12'],
+      anand: ['Anand Vihar', 'East Delhi', 212, 'Dust', 0.82, 0.84, 'Unpaved shoulder, ISBT road', 15960, 3, 'T-12,ASG-07,SW-03'],
+      shahdara: ['Shahdara', 'Shahdara', 341, 'Traffic', 0.69, 0.72, 'GT Road corridor, idling HGVs', 16880, 2, 'SW-03'],
+      ito: ['ITO', 'Central', 296, 'Traffic', 0.77, 0.75, 'Vikas Marg junction', 11240, 6, 'T-07'],
+      wazirpur: ['Wazirpur', 'North West', 402, 'Burning', 0.63, 0.68, 'Industrial area, waste pile', 12910, 5, ''],
+      bawana: ['Bawana', 'North West', 421, 'Regional smoke', 0.69, 0.74, 'Industrial belt, farm-fire smoke inflow', 9640, 10, ''],
+      mundka: ['Mundka', 'West', 437, 'Regional smoke', 0.71, 0.77, 'North-west inflow, farm fires upwind', 14020, 4, ''],
+      jahangirpuri: ['Jahangirpuri', 'North West', 364, 'Dust', 0.66, 0.7, 'Construction site, C-block', 10330, 7, ''],
+      okhla: ['Okhla', 'South East', 318, 'Dust', 0.72, 0.74, 'Phase II road works', 8760, 8, 'T-19'],
+      punjabi: ['Punjabi Bagh', 'West', 279, 'Traffic', 0.70, 0.71, 'Ring Road flyover queue', 7920, 9, '']
+    };
+    const h0 = HS[st.sel] || HS.ghazipur, pmNow = Math.round(h0[2] * ep(st.hour)), bi = band(pmNow);
+    const stn = window.HawaGL && window.HawaGL.ST.find(s => s.id === st.sel);
+    const hs = { place: (stn || {}).full || h0[0], ward: h0[1], pm: h0[2], pmNow, cause: h0[3], causeIcon: causeIcon[h0[3]], causeConf: cw(h0[5]), causeConfNum: h0[5].toFixed(2), conf: cw(h0[4]), confNum: 'Confidence ' + h0[4].toFixed(2), suspect: h0[6], exposure: fmt(h0[7] * ep(st.hour)), rank: h0[8], band: BN[bi], chipColor: AQI[bi], chipBg: rgba(AQI[bi], .1), primary: verb[h0[3]],
+      schools: [{ name: 'Govt. Sarvodaya Vidyalaya', d: '0.6 km' }, { name: 'MCD Primary School', d: '1.1 km' }, { name: 'Sr. Secondary School', d: '1.8 km' }] };
+    const titles = { A: 'Map', B: 'Forecast', C: 'Plans', D: 'What-If', E: 'Impact', F: 'Fleet', G: 'Alerts' };
+    const railDef = [['A', 'map', 'Map'], ['B', 'trending-up', 'Forecast'], ['C', 'git-pull-request', 'Plans', 1], ['D', 'columns-2', 'What-If'], ['E', 'badge-check', 'Impact'], ['F', 'truck', 'Fleet'], ['G', 'bell', 'Alerts']];
+    const rail = railDef.map(([k, icon, label, badge]) => ({ icon, label, badge: badge && !st.approved ? String(badge) : '', go: () => this.go(k), bg: scr === k ? 'rgba(15,118,110,.09)' : 'transparent', fg: scr === k ? '#0F766E' : '#4A555B' }));
+    const lo = st.layersOn;
+    const layerToggles = [['heat', 'hexagon', 'Heat'], ['hotspots', 'radio', 'Stations'], ['trails', 'bus', 'Bus trails'], ['trucks', 'truck', 'Fleet'], ['schools', 'school', 'Schools']].map(([k, icon, label]) => ({ icon, label, bg: lo[k] ? '#F4F2ED' : 'transparent', fg: lo[k] ? '#0B1215' : '#4A555B', toggle: () => this.setState(s => ({ layersOn: Object.assign({}, s.layersOn, { [k]: !s.layersOn[k] }) })) }));
+    const GLN = { heat: ['hex'], hotspots: ['stations', 'causes'], trails: ['buses'], trucks: ['trucks'], schools: ['schools'] };
+    let layers = [].concat(...Object.keys(lo).filter(k => lo[k]).map(k => GLN[k]));
+    let assets = '';
+    if (scr === 'A') { assets = st.drawer ? h0[9] : ''; if (!assets) layers = layers.filter(l => l !== 'trucks'); }
+    if (scr === 'B') assets = 'T-12,ASG-07,SW-03,I-3';
+    if (scr === 'F') { layers = ['hex', 'trucks', 'buses', 'stations']; assets = st.asset; }
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const hl = h => { const a = 38 + h; return days[Math.floor(a / 24)] + ' ' + String(((a % 24) + 24) % 24).padStart(2, '0') + ':00'; };
+    const hour = st.hour, pct = h => ((h + 24) / 96 * 100).toFixed(2) + '%';
+    const ticks = []; for (let h = -24; h <= 72; h += 6) ticks.push({ left: pct(h), h: h % 24 === 10 ? '10px' : '5px' });
+    const dayLabels = [[-14, 'Mon'], [0, 'Now'], [10, 'Wed'], [34, 'Thu'], [58, 'Fri']].map(([h, l]) => ({ left: pct(h), label: l, color: h === 0 ? '#0B1215' : '#4A555B' }));
+    const diffRaw = [
+      { asset: 'T-12', kind: 'Sprinkler truck · Patparganj depot', icon: 'truck', lines: [
+        ['del', '06:00', 'Mayur Vihar Ph-1 arterial', null, '', 'Usual route. No hotspot forecast on this segment.'],
+        ['del', '06:40', 'NH-24 service road', null, '', 'Usual route. Lower forecast than the Anand Vihar cell.'],
+        ['add', '06:10', 'Anand Vihar ISBT road', 'Dust', '0.82', 'Dust signature, two schools within 400 m at 08:00. Sprinklers on dust in calm air cut PM about 15%.'],
+        ['add', '06:55', 'Ghazipur landfill edge', 'Burning', '0.74', 'Highest-exposure cell within reach (18,420 people-hours).', 'auditor'],
+        ['add', '07:30', 'Anand Vihar ISBT road, second pass', 'Dust', '0.82', 'The effect fades after about 90 minutes; a second pass holds through the 08:00 peak.']] },
+      { asset: 'ASG-07', kind: 'Anti-smog gun', icon: 'spray-can', lines: [
+        ['del', '06:30', 'Karkardooma court complex', null, '', 'Fixed post. Low exposure at this hour.'],
+        ['add', '06:45', 'Anand Vihar ISBT gate', 'Dust', '0.82', 'Bus queue at peak. The gun only reaches about 200 m, so it sits at the gate itself.']] },
+      { asset: 'SW-03', kind: 'Mechanised sweeper', icon: 'brush', lines: [
+        ['add', '05:45', 'Vivek Vihar kerbs → Anand Vihar', 'Dust', '0.77', 'Kerb silt is the likely upwind source for the ISBT cell. Sweep before spraying.']] },
+      { asset: 'I-3', kind: 'Inspection team', icon: 'users', lines: [
+        ['add', '06:45', 'Ghazipur landfill edge · inspect source', 'Burning', '0.74', 'Night-time spike plus a verified citizen photo 300 m away.', 'suggested']] },
+      { asset: 'Communicator', kind: 'Alerts', icon: 'message-circle', lines: [
+        ['add', 'Wed 19:00', 'WhatsApp · 3 schools near Anand Vihar · Hindi + English', null, '', 'Hold assembly indoors. Safest outdoor window 12:30–2:00 PM.'],
+        ['add', 'Thu 06:00', 'SMS · Shahdara ward · traffic advisory', null, '', 'Avoid GT Road on foot 07:00–10:00.']] }
+    ];
+    const applied = st.applied;
+    const diff = diffRaw.map(g => {
+      let lines = g.lines.filter(l => !(l[6] === 'suggested' && !applied));
+      lines = lines.map(l => {
+        let t = l[0]; const isAud = l[6] === 'auditor'; if (isAud && applied) t = 'del';
+        const add = t === 'add';
+        return { sign: add ? '+' : '−', time: l[1], place: l[2], cause: l[3], causeIcon: causeIcon[l[3]] || 'circle', conf: l[4] ? cw(+l[4]) + ' confidence' : '', confNum: l[4] ? 'Confidence ' + l[4] : '', reason: isAud && applied ? 'Removed after Auditor review: water does not help smoke.' : l[5],
+          bg: add ? '#FFFFFF' : '#FAF9F6', edge: add ? 'inset 2px 0 0 #0B1215' : 'none', color: add ? '#0B1215' : '#4A555B', deco: add ? 'none' : 'line-through',
+          flagged: (isAud && !applied) || l[6] === 'suggested', flagText: isAud ? '1 review comment' : 'From Auditor suggestion', showComment: isAud };
+      });
+      const add = lines.filter(l => l.sign === '+').length;
+      return { asset: g.asset, kind: g.kind, icon: g.icon, lines, add, del: lines.length - add };
+    });
+    const checks = [
+      ['Shift windows respected', '5 of 5 assets', true], ['Water capacity', '9,100 of 14,000 L', true],
+      ['Right tool for each cause', applied ? 'All tasks' : 'T-12 sent to smoke', applied], ['Before the forecast peak', 'All tasks before 08:00', true], ['School alerts at least 12 h ahead', '13 h', true]
+    ].map(([label, detail, ok]) => ({ label, detail, icon: ok ? 'circle-check' : 'circle-alert', color: ok ? '#0B1215' : '#C02A2A', weight: ok ? '400' : '600' }));
+    const wards = [['Shahdara', 41200, 452, .71], ['East Delhi', 38760, 431, .74], ['North West', 33950, 418, .66], ['West', 29410, 446, .69], ['Central', 21880, 389, .77], ['South East', 18300, 366, .72], ['South West', 8640, 318, .75], ['New Delhi', 9720, 301, .80]].sort((a, b) => b[1] - a[1]).map(w => ({ name: w[0], ph: fmt(w[1]), peak: w[2], color: AQI[band(w[2])], confNum: cw(w[3]) + ' confidence (' + w[3].toFixed(2) + ')', bg: w[0] === 'East Delhi' ? SEL_BG : 'transparent', edge: w[0] === 'East Delhi' ? SEL_EDGE : 'none', weight: w[0] === 'East Delhi' ? '500' : '400' }));
+    const fleetRaw = [['T-12', 'Sprinkler', 'Anand Vihar ISBT road · pass 1', 'Spraying', 'Pump on · 38 L/min', '6 s'], ['T-07', 'Sprinkler', 'ITO · Vikas Marg', 'En route', 'Pump off', '4 s'], ['T-19', 'Sprinkler', 'Okhla Phase II', 'Spraying', 'Pump on · 41 L/min', '9 s'], ['ASG-07', 'Anti-smog gun', 'Anand Vihar ISBT gate', 'Spraying', 'Fan on · 22 L/min', '3 s'], ['SW-03', 'Sweeper', 'Vivek Vihar kerbs', 'Done', 'Brush off', '12 s'], ['I-3', 'Inspection team', 'Ghazipur landfill edge', 'On site', '—', '1 min'], ['T-04', 'Sprinkler', 'Patparganj depot', 'Refilling', 'Pump off', '22 s'], ['ASG-11', 'Anti-smog gun', 'No task', 'Offline', 'No packet for 38 min', '38 min']];
+    const dot = { Spraying: '#0B1215', 'En route': '#4A555B', Done: '#CFCAC0', 'On site': '#4A555B', Refilling: '#CFCAC0', Offline: '#C02A2A' };
+    const fleet = fleetRaw.map(f => ({ id: f[0], type: f[1], task: f[2], status: f[3], tag: f[4], ping: f[5], dot: dot[f[3]], bg: st.asset === f[0] ? SEL_BG : 'transparent', edge: st.asset === f[0] ? SEL_EDGE : 'none', pick: () => this.setState({ asset: f[0] }) }));
+    const af = fleetRaw.find(f => f[0] === st.asset) || fleetRaw[0], on = / on/.test(af[4]);
+    const asset = { id: af[0], type: af[1], task: af[2], pump: on ? 'Pump on' : 'Pump off', pumpBg: on ? '#0B1215' : '#F4F2ED', pumpFg: on ? '#FFFFFF' : '#0B1215', flow: on ? (af[4].match(/(\d+) L/) || [0, 0])[1] : '0', litres: on ? '1,210' : '0' };
+    const ivRaw = [['0412', 'T-12', 'Anand Vihar ISBT road', 'Sprinkler', 'Dust', -18, -24, -11, '90 min', 'Verified'], ['0409', 'SW-03', 'Vivek Vihar kerbs', 'Sweeper', 'Dust', -9, -15, -3, '60 min', 'Verified'], ['0405', 'ASG-07', 'Anand Vihar ISBT gate', 'Smog gun', 'Dust', -6, -13, 1, '40 min', 'Inconclusive'], ['0401', 'T-07', 'ITO · Vikas Marg', 'Sprinkler', 'Traffic', -2, -8, 4, '20 min', 'No effect'], ['0398', 'I-3', 'Ghazipur landfill edge', 'Inspection', 'Burning', -27, -35, -18, '180 min', 'Verified'], ['0393', 'T-19', 'Okhla Phase II', 'Sprinkler', 'Dust', -14, -20, -7, '75 min', 'Verified']];
+    const sc = x => ((x + 40) / 50 * 100);
+    const interventions = ivRaw.map(v => ({ id: v[0], asset: v[1], cell: v[2], verified: v[9] === 'Verified', sub: v[3] + ' · ' + v[4] + (v[9] === 'Verified' ? '' : ' · ' + v[9]), effect: (v[5] > 0 ? '+' : '−') + Math.abs(v[5]) + '%', ci: v[6] + ' to ' + (v[7] > 0 ? '+' : '') + v[7], dur: v[8], ciL: sc(v[6]).toFixed(1) + '%', ciW: (sc(v[7]) - sc(v[6])).toFixed(1) + '%', pt: sc(v[5]).toFixed(1) + '%', bg: st.iv === v[0] ? SEL_BG : 'transparent', edge: st.iv === v[0] ? SEL_EDGE : 'none', pick: () => this.setState({ iv: v[0] }) }));
+    const ivs = ivRaw.find(v => v[0] === st.iv) || ivRaw[0];
+    const iv = { title: `#${ivs[0]} · ${ivs[1]} · ${ivs[2]}`, status: ivs[9], icon: ivs[9] === 'Verified' ? 'badge-check' : 'circle-dashed', facts: [{ k: 'Effect', v: (ivs[5] > 0 ? '+' : '−') + Math.abs(ivs[5]) + '% PM10' }, { k: '95% confidence interval', v: `${ivs[6]}% to ${ivs[7] > 0 ? '+' : ''}${ivs[7]}%` }, { k: 'Duration', v: ivs[8] }, { k: 'Method', v: 'Synthetic control' }, { k: 'Donor cells', v: '5, similar land use' }] };
+    const library = [['Sprinkler', 'Dust', 'Calm, dry air', '−15%', '[−21, −9]', '80 min', 48], ['Sprinkler', 'Dust', 'Wind over 3 m/s', '−6%', '[−11, −1]', '35 min', 31], ['Sprinkler', 'Traffic', 'Any', '−2%', '[−7, +3]', '—', 22], ['Sweeper', 'Dust', 'Calm, before spraying', '−9%', '[−14, −4]', '60 min', 19], ['Smog gun', 'Dust', 'Calm, within 200 m', '−5%', '[−10, 0]', '40 min', 27], ['Inspection', 'Burning', 'Night, photo matched', '−24%', '[−32, −15]', '3 h', 12], ['Any truck', 'Regional smoke', 'North-west wind, farm fires', '~0%', '[−4, +3]', '—', 15]].map(b => ({ action: b[0], cause: b[1], icon: causeIcon[b[1]] || 'circle', weather: b[2], effect: b[3], ci: b[4], dur: b[5], n: b[6] }));
+    const alertsRaw = [['Wed 19:00', 'School', 'school', 'Govt. Sarvodaya Vidyalaya, Anand Vihar', 'PM2.5 ~380 µg/m³ at 8 AM. Hold assembly indoors.', 'WhatsApp', 'HI+EN', '3 of 3 read', '13 h'], ['Wed 19:00', 'School', 'school', 'MCD Primary School, Ghazipur', 'PM2.5 ~380 µg/m³ at 8 AM. Hold assembly indoors.', 'WhatsApp', 'HI+EN', '3 of 3', '13 h'], ['Wed 19:02', 'School', 'school', 'Sr. Secondary School, Mayur Vihar Ph-3', 'Safest outdoor window 12:30–2:00 PM.', 'WhatsApp', 'HI', '2 of 3', '13 h'], ['Thu 06:00', 'Citizens', 'users', 'Shahdara ward · 4,210 subscribers', 'Traffic fumes high on GT Road. Avoid on foot 07:00–10:00.', 'SMS', 'HI', '4,106', '1 h'], ['Tue 06:44', 'Citizen Eyes', 'camera', 'Report #C-118 · open burning, Ghazipur', 'Verified. Inspection team on the way.', 'WhatsApp', 'HI', 'Read', '—'], ['Tue 07:12', 'Citizen Eyes', 'camera', 'Report #C-118 · open burning, Ghazipur', 'Resolved at 07:10. Thank you.', 'WhatsApp', 'HI', 'Read', '—'], ['Mon 18:30', 'Workers', 'hard-hat', 'Okhla delivery riders · partner fleet', 'Smoke tonight. Wear an N95 on outer routes.', 'WhatsApp', 'EN', '612', '14 h']];
+    const alerts = alertsRaw.map((a, i) => ({ time: a[0], aud: a[1], icon: a[2], target: a[3], msg: a[4], ch: a[5], lang: a[6], del: a[7], lead: a[8], bg: st.alert === i ? SEL_BG : 'transparent', edge: st.alert === i ? SEL_EDGE : 'none', pick: () => this.setState({ alert: i }) }));
+    const alertSel = { target: alertsRaw[st.alert][3] };
+    const routes = [['T-12', 'Mayur Vihar Ph-1 → NH-24', 'Anand Vihar ISBT, twice', '14.2 → 16.8', '2,140 → 9,870', '−3,410'], ['ASG-07', 'Karkardooma (fixed)', 'Anand Vihar ISBT gate', '0 → 3.1', '610 → 4,220', '−1,280'], ['SW-03', 'Patparganj loop', 'Vivek Vihar kerbs', '11.0 → 9.6', '880 → 3,050', '−960'], ['I-3', 'Ward patrol', 'Ghazipur landfill source', '18.5 → 12.3', '— → 18,420', '−5,260'], ['Alerts', '—', '3 schools, 1 ward', '—', '1,940 children', '−1,106']].map(r => ({ id: r[0], usual: r[1], plan: r[2], km: r[3], reach: r[4], delta: r[5] }));
+    const cmdAll = [
+      { icon: 'school', label: 'Show hotspots near schools', hint: '7 results', run: () => this.setState({ screen: 'A', palette: false, layersOn: { heat: true, hotspots: true, trails: false, trucks: false, schools: true } }) },
+      { icon: 'git-pull-request-create', label: 'Draft plan for Shahdara', hint: 'About 20 s', run: () => this.go('C') },
+      { icon: 'git-pull-request', label: 'Open Plan #214', hint: 'East Delhi · Draft', run: () => this.go('C') },
+      { icon: 'trending-up', label: 'Jump to Thursday 08:00 forecast', hint: 'Forecast', run: () => this.go('B') },
+      { icon: 'columns-2', label: 'Compare Plan #214 with usual routes', hint: 'What-If', run: () => this.go('D') },
+      { icon: 'badge-check', label: 'Which sprinkler runs worked this week?', hint: 'Impact', run: () => this.go('E') },
+      { icon: 'truck', label: 'Where is T-12?', hint: 'Fleet', run: () => { this.go('F'); this.setState({ asset: 'T-12' }); } }
+    ];
+    const q = st.query.trim().toLowerCase();
+    const cmds = cmdAll.filter(c => !q || c.label.toLowerCase().includes(q) || c.hint.toLowerCase().includes(q));
+    const qi = Math.min(st.qi, Math.max(0, cmds.length - 1));
+    const commands = cmds.map((c, i) => Object.assign({}, c, { bg: i === qi ? '#F4F2ED' : 'transparent' }));
+    const hotList = Object.keys(HS).map(id => { const h = HS[id], v = Math.round(h[2] * ep(st.hour)); return { id, name: h[0], cause: h[3], icon: causeIcon[h[3]], verb: verb[h[3]], pm: v, watch: v < +thr, color: v < +thr ? '#B7B2A8' : AQI[band(v)], pick: () => this.setState({ sel: id, drawer: true }) }; }).sort((a, b) => b.pm - a.pm);
+    return {
+      title: titles[scr], rail, hs, thr, layers: layers.join(','), assets, layerToggles, sel: scr === 'A' && st.drawer ? st.sel : '', hotList, closeDrawer: () => this.setState({ drawer: false }),
+      railW: railEff ? '168px' : '56px', railOpen: railEff, railToggleIcon: railEff ? 'panel-left-close' : 'panel-left-open', railToggleLabel: railEff ? 'Collapse' : 'Expand', toggleRail: () => this.setState({ railOpen: !railEff }),
+      asideW: st.vw < 1180 ? '320px' : '360px', toastRight: st.vw < 1180 ? '336px' : '376px', roomy: st.vw >= 1100,
+      settingsOpen: st.settings, settingsBg: st.settings ? '#F4F2ED' : 'transparent', toggleSettings: () => this.setState(s => ({ settings: !s.settings })), toggleDark: () => this.setState(s => ({ dark: !s.dark })), darkTrack: st.dark ? '#0F766E' : '#CFCAC0', darkKnob: st.dark ? '16px' : '2px', rootFilter: st.dark ? 'invert(0.92) hue-rotate(180deg)' : 'none',
+      detailsOpen: st.details, toggleDetails: () => this.setState(s => ({ details: !s.details })),
+      reasoningOpen: st.reasoning, reasoningLabel: st.reasoning ? 'Hide reasoning' : 'Show reasoning', reasoningIcon: st.reasoning ? 'chevron-up' : 'chevron-down', toggleReasoning: () => this.setState(s => ({ reasoning: !s.reasoning })), hour, hourPos: String(Math.max(0, hour)),
+      mapZoom: scr === 'F' ? '12' : '10.35', mapCenter: scr === 'F' ? '77.30,28.63' : '77.17,28.645', mapLabels: scr === 'B' ? 'full' : scr === 'A' && !st.drawer ? 'major' : 'sel', grapLabel: hour >= 30 ? 'Stage II likely Thu · Stage III possible' : 'Stage II likely Thu',
+      showMap: ['A', 'B', 'F'].includes(scr), isLiveish: scr === 'A' || scr === 'F', isA: scr === 'A', isB: scr === 'B', isC: scr === 'C', isD: scr === 'D', isE: scr === 'E', isF: scr === 'F', isG: scr === 'G', isLiveDrawer: scr === 'A' && st.drawer, isLiveList: scr === 'A' && !st.drawer,
+      hourLabel: hour === 0 ? 'Now · Tue 14:00' : hl(hour) + ' · ' + (hour > 0 ? '+' : '−') + Math.abs(hour) + ' h', hourShort: hour === 0 ? 'now' : hl(hour), hourKind: hour > 0 ? 'Forecast; confidence falls with distance' : hour < 0 ? 'Observed replay' : 'Live',
+      handleLeft: pct(hour), ticks, dayLabels,
+      onHour: e => this.setState({ hour: +e.target.value }), goNow: () => this.setState({ hour: 0 }), goThu: () => this.setState({ hour: 42 }),
+      planReady: planState === 'ready', planLoading: planState === 'loading', planEmpty: planState === 'empty',
+      planStatus: st.approved ? 'Approved · dispatching 05:30' : 'Draft', diff, checks,
+      suggestionOpen: !applied, suggestionApplied: applied, applySuggestion: () => this.setState({ applied: true }),
+      mergeTitle: st.approved ? 'Approved. Routes and alerts are scheduled.' : applied ? 'All checks passed. Ready for your approval.' : '1 check needs attention before dispatch.',
+      approveOpacity: applied ? '1' : '.55', approve: () => this.setState({ approved: true, toast: true, applied: true }),
+      auditorIcon: applied ? 'circle-check' : 'message-square-warning', auditorState: applied ? 'Resolved' : 'Changes requested', officerState: st.approved ? 'Approved 18:42' : 'Awaiting you',
+      wards, fleet, asset, interventions, iv, library, alerts, alertSel, routes,
+      goC: () => this.go('C'), goD: () => this.go('D'),
+      palette: st.palette, openPalette: () => this.setState({ palette: true, query: '', qi: 0 }), closePalette: () => this.setState({ palette: false }), stop: e => e.stopPropagation(),
+      query: st.query, onQuery: e => this.setState({ query: e.target.value, qi: 0 }), commands, noCommands: commands.length === 0,
+      onPaletteKey: e => { if (e.key === 'ArrowDown') { e.preventDefault(); this.setState({ qi: Math.min(cmds.length - 1, qi + 1) }); } if (e.key === 'ArrowUp') { e.preventDefault(); this.setState({ qi: Math.max(0, qi - 1) }); } if (e.key === 'Enter' && cmds[qi]) cmds[qi].run(); },
+      toast: st.toast, closeToast: () => this.setState({ toast: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

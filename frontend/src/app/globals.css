@@ -1,0 +1,72 @@
+/* CSS variables for tokens, reduced-motion rules */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #faf9f6;
+  --ink: #0b1215;
+  --muted: #4a555b;
+  --line: #e6e3dc;
+  --teal: #0f766e;
+  /* page gutter: fluid, and wide enough on huge screens that content never stretches past ~1640px */
+  --gutter: max(clamp(20px, 5vw, 88px), calc((100vw - 1640px) / 2));
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-paper text-ink font-sans; font-variant-numeric: tabular-nums; }
+  button { font-family: inherit; }
+  a { color: var(--teal); }
+  a:hover { color: var(--ink); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+}
+
+@layer components {
+  /* Buttons: one primary (teal) per view, the rest quiet. */
+  .btn { @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md border font-medium transition-colors; }
+  .btn-sm { @apply h-[30px] px-[11px] text-[13.5px]; }
+  .btn-md { @apply h-8 px-[11px] text-[13.5px]; }
+  .btn-lg { @apply h-9 px-3.5 text-sm; }
+  .btn-quiet { @apply border-line bg-white text-ink hover:bg-hover; }
+  .btn-outline { @apply border-ink bg-white text-ink hover:bg-hover; }
+  .btn-primary { @apply border-teal bg-teal font-semibold text-white hover:bg-teal-dark; }
+  a.btn-primary, a.btn-primary:hover { color: #fff; }
+
+  .card { @apply rounded-[10px] border border-line bg-white; }
+  .panel-head { @apply border-b border-line px-[18px] pb-3 pt-4; }
+  .fact-row { @apply flex flex-wrap justify-between gap-x-3 gap-y-1 py-2 text-sm; }
+  .fact-row + .fact-row { @apply border-t border-line-soft; }
+  .table-head { @apply sticky top-0 border-b border-line bg-white px-4 py-2.5 text-[13px] font-medium text-muted; }
+  .table-row { @apply border-b border-line-soft px-4 text-sm; }
+  .row-selected { @apply bg-teal-tint shadow-sel; }
+  .hint { @apply cursor-help border-b border-dotted border-muted; }
+  .pixel-clip {
+    clip-path: polygon(2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px), 0 2px, 2px 2px);
+  }
+  .pixel-clip-lg {
+    clip-path: polygon(3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 3px, 3px 3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+@keyframes logoSpin { 0%, 80% { transform: rotate(0); } 90%, 100% { transform: rotate(90deg); } }
+@keyframes navIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+
+@keyframes lineIn { from { opacity: 0; transform: translateY(28px); clip-path: inset(0 0 100% 0); } to { opacity: 1; transform: none; clip-path: inset(0 0 -20% 0); } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes rowIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes asideIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes ping { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(2.6); opacity: 0; } }
+
+/* Lenis smooth scrolling (landing only; the class is removed when it is destroyed) */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+@keyframes barIn { from { transform: scaleX(0); } to { transform: scaleX(1); } }

@@ -1,0 +1,77 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.npm/
+
+# Production & Build outputs
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+
+# Python & ML
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+
+# AWS CDK & Cloud
+cdk.out/
+.aws-sam/
+.serverless/
+
+# Environment Variables & Secrets
+.env
+.env*.local
+.env.production
+.env.staging
+!.env.example
+
+# Device Firmware & Hardware (PlatformIO / ESP-IDF)
+.pio/
+.pioenvs/
+.piolibdeps/
+**/device/firmware/include/secrets.h
+**/device/firmware/certs/*
+!**/device/firmware/certs/.gitkeep
+*.pem
+*.crt
+*.key
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# Temporary / Scratch
+scratch/
+tmp/
+
+# local tool config
+.claude/

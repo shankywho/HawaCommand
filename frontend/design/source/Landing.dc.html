@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Silkscreen&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="./hawa.js"></script>
+<script src="./pixel.js"></script>
+<script src="./hawa-gl.js"></script>
+<style>html{scroll-behavior:smooth;scroll-padding-top:96px}body{margin:0;background:#B39571;color:#0B1215;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased}*{box-sizing:border-box}a{color:#0F766E}a:hover{color:#0B1215}input[type=range]{accent-color:#0F766E}@keyframes navIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}@keyframes logoSpin{0%,80%{transform:rotate(0)}90%,100%{transform:rotate(90deg)}}@keyframes blink{0%{opacity:1}100%{opacity:.25}}@media (prefers-reduced-motion: reduce){header *{animation:none!important;transition:none!important}}@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}</style>
+</helmet>
+<px-sky scroll="" style="position:fixed;inset:0;z-index:0"></px-sky>
+<div style="position:relative;z-index:1">
+
+<header style="position:sticky;top:0;z-index:20;height:0;overflow:visible">
+  <div style="max-width:{{ navMax }};margin:0 auto;padding:{{ navPad }};transition:max-width .25s ease-out,padding .25s ease-out;animation:navIn .5s cubic-bezier(.2,.7,.2,1) both">
+    <div style="height:{{ navH }};display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-radius:{{ navRadius }};background:rgba(250,249,246,.96);border:1px solid {{ navBorder }};box-shadow:{{ navShadow }};transition:height .25s ease-out,border-radius .25s ease-out,box-shadow .25s ease-out,border-color .25s ease-out">
+      <a href="#top" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#0B1215;margin-right:12px"><span style="display:grid;grid-template-columns:repeat(2,6px);gap:2px;animation:logoSpin 6s ease-in-out infinite"><i style="width:6px;height:6px;background:#0B1215"></i><i style="width:6px;height:6px;background:#0F766E"></i><i style="width:6px;height:6px;background:#0F766E"></i><i style="width:6px;height:6px;background:#0B1215"></i></span><span style="font-weight:600;font-size:15px;letter-spacing:-.01em;white-space:nowrap">HawaCommand</span></a>
+      <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+        <nav style="display:flex;gap:2px;font:500 14px Geist">
+          <sc-for list="{{ navLinks }}" as="n" hint-placeholder-count="5">
+            <a href="{{ n.href }}" style="position:relative;white-space:nowrap;height:34px;padding:0 12px;display:flex;align-items:center;border-radius:7px;text-decoration:none;color:{{ n.color }};background:{{ n.bg }};transition:background .18s ease-out,color .18s ease-out" style-hover="background:rgba(11,18,21,.05);color:#0B1215">{{ n.label }}<i style="position:absolute;left:12px;right:12px;bottom:4px;height:2px;border-radius:1px;background:#0F766E;transform:scaleX({{ n.bar }});transform-origin:left;transition:transform .25s ease-out"></i></a>
+          </sc-for>
+        </nav>
+      </sc-if>
+      <div style="flex:1"></div>
+      <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;background:{{ navAqiBg }};color:{{ navAqiFg }};font:10.5px 'Silkscreen',monospace;transition:background .4s ease-out;clip-path:polygon(2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px),0 2px,2px 2px)"><i style="width:5px;height:5px;background:currentColor;animation:blink 1.6s steps(2) infinite"></i>DELHI · AQI <hc-count to="{{ navAqi }}" dur="500"></hc-count></span>
+      <a href="Console v4.dc.html" style="white-space:nowrap;height:36px;padding:0 14px;border-radius:8px;background:#0B1215;color:#FAF9F6;font:500 14px Geist;display:flex;align-items:center;gap:6px;text-decoration:none;transition:background .18s ease-out" style-hover="background:#0F766E;color:#FFFFFF">Open live console<hc-icon name="arrow-up-right" size="15"></hc-icon></a>
+    </div>
+  </div>
+</header>
+
+<section id="top" data-screen-label="Hero" style="position:relative;min-height:100vh;padding-top:68px;display:flex;flex-direction:column">
+  <div style="max-width:1400px;width:100%;margin:0 auto;padding:{{ heroPad }};display:grid;grid-template-columns:{{ heroCols }};gap:24px;align-items:stretch;flex:1">
+    <div style="min-width:0;align-self:center;background:rgba(250,249,246,.96);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:{{ cardPad }};box-shadow:0 12px 40px rgba(60,40,20,.18)">
+      <p style="margin:0 0 20px;font:15px/1.4 Geist;color:#4A555B">For MCD and DPCC ward officers · new plan every 3 hours</p>
+      <h1 style="margin:0 0 22px;font-size:clamp(44px,4.4vw,60px);line-height:1.05;letter-spacing:-.035em;font-weight:600;text-wrap:balance"><span style="display:block;text-wrap:balance">Delhi already owns the machines.</span><span style="display:block;color:#0F766E;text-wrap:balance">We give them a brain.</span></h1>
+      <p style="margin:0 0 32px;font:19px/1.5 Geist;color:#3B474D;max-width:560px;text-wrap:pretty">HawaCommand finds hotspots street by street, sends sprinklers before the spike, and proves each fix worked.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="Console v4.dc.html" style="white-space:nowrap;height:44px;padding:0 18px;border-radius:8px;background:#0B1215;color:#FAF9F6;font:500 15px Geist;display:flex;align-items:center;gap:8px;text-decoration:none" style-hover="background:#1C272C;color:#FAF9F6">Open live console<hc-icon name="arrow-up-right" size="16"></hc-icon></a>
+        <a href="#how" style="white-space:nowrap;height:44px;padding:0 18px;border-radius:8px;background:#FFFFFF;border:1px solid #E6E3DC;color:#0B1215;font:500 15px Geist;display:flex;align-items:center;gap:8px;text-decoration:none;box-shadow:0 1px 2px rgba(11,18,21,.06)" style-hover="border-color:#C9C4B9;color:#0B1215"><hc-icon name="play" size="15"></hc-icon>Watch the 3-min demo</a>
+      </div>
+    </div>
+    <div style="position:relative;min-height:{{ cityH }};min-width:0">
+      <vx-city haze="1" style="position:absolute;inset:0"></vx-city>
+      <span style="position:absolute;left:8px;top:16px;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;background:#7F1D3A;color:#FFFFFF;font:12px 'Silkscreen',monospace;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)"><i style="width:6px;height:6px;background:#FFFFFF"></i>MUNDKA · PM2.5 437 · SEVERE</span>
+    </div>
+  </div>
+  <px-skyline stage="0.05" seed="5" style="height:240px;margin-top:-40px"></px-skyline>
+</section>
+
+<section id="problem" data-screen-label="Problem" style="max-width:1200px;margin:0 auto;padding:96px 24px 48px">
+  <div style="background:rgba(250,249,246,.96);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;align-items:end;margin-bottom:12px">
+    <div><div style="font:15px Geist;color:#4A555B;margin-bottom:10px">The problem</div><h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0;text-wrap:balance">Delhi has the machines. It has no way to tell if they work.</h2></div>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#3B474D;text-wrap:pretty">GPS proves where a machine went. It does not prove the air got cleaner. Routes are largely fixed while hotspots move with wind, traffic and construction.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ threeCols }};gap:12px">
+    <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px"><px-scene kind="smoggun" stage="0.05" style="width:64px;aspect-ratio:96/56;border-radius:6px;overflow:hidden"></px-scene><div style="font:600 56px/1.02 Geist;letter-spacing:-.04em;font-variant-numeric:tabular-nums;text-wrap:balance"><hc-count to="376" dur="1200"></hc-count></div><div style="font-size:15px;line-height:1.5;color:#3B474D;text-wrap:pretty">anti-smog guns deployed, plus 266 sprinklers and 91 mechanised sweepers</div></div>
+    <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px"><px-scene kind="question" stage="0.05" style="width:64px;aspect-ratio:96/56;border-radius:6px;overflow:hidden"></px-scene><div style="font:600 56px/1.02 Geist;letter-spacing:-.04em;font-variant-numeric:tabular-nums;text-wrap:balance">No routine impact check</div><div style="font-size:15px;line-height:1.5;color:#3B474D;text-wrap:pretty">Nobody measures whether a spray run cleaned the air.</div></div>
+    <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px"><px-scene kind="coin" stage="0.05" style="width:64px;aspect-ratio:96/56;border-radius:6px;overflow:hidden"></px-scene><div style="font:600 56px/1.02 Geist;letter-spacing:-.04em;font-variant-numeric:tabular-nums;text-wrap:balance">15% <span style="font-size:28px;font-weight:400;color:#5F6B70;letter-spacing:0">vs</span> 64%</div><div style="font-size:15px;line-height:1.5;color:#3B474D;text-wrap:pretty">road dust's share of winter PM2.5, vs its share of available NCAP funds</div></div>
+  </div>
+  <div style="font:13px Geist;color:#3B474D;margin-top:10px;background:rgba(250,249,246,.85);display:inline-block;padding:4px 8px;border-radius:4px">Sources: The Tribune (fleet) · CEEW, Feb 2026 (dust vs funds)</div>
+</section>
+
+<section id="causes" data-screen-label="Causes" style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="background:rgba(250,249,246,.96);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;align-items:end;margin-bottom:12px">
+    <div><div style="font:15px Geist;color:#4A555B;margin-bottom:10px">Four causes, four fixes</div><h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0;text-wrap:balance">Water settles dust. It does nothing for smoke.</h2></div>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#3B474D;text-wrap:pretty">Each hotspot is tagged with a likely cause and a suspect location upwind. The cause decides which team goes.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ fourCols }};gap:12px">
+    <sc-for list="{{ causes }}" as="c" hint-placeholder-count="4">
+      <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:6px 6px 0"><px-scene kind="{{ c.scene }}" stage="{{ c.stage }}" style="aspect-ratio:96/56;border-radius:4px;overflow:hidden"></px-scene></div>
+        <div style="padding:20px 20px 24px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <div style="font:13px Geist;color:#5F6B70">Cause {{ c.n }}</div>
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-size:24px;font-weight:500;letter-spacing:-.02em">{{ c.name }}</span><span style="font:500 16px 'Noto Sans Devanagari',Geist,sans-serif;color:#5F6B70">{{ c.hi }}</span></div>
+          <div style="font:13px/1.5 Geist;color:#3B474D;padding:8px 10px;background:#F4F2ED;border-radius:6px">{{ c.signal }}</div>
+          <div style="margin-top:auto;padding-top:14px;border-top:1px dashed #E6E3DC;display:flex;flex-direction:column;gap:4px"><span style="font:500 13px Geist;color:#0F766E">Fix</span><span style="font-size:15px;line-height:1.45">{{ c.fix }}</span></div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section id="how" data-screen-label="How it works" ref="{{ howRef }}" style="position:relative;height:520vh;background:#EFE6D8">
+  <div style="position:sticky;top:0;height:100vh;max-width:1280px;margin:0 auto;padding:88px 32px 32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));grid-auto-rows:minmax(0,1fr);gap:32px">
+    <div style="display:flex;flex-direction:column;min-height:0">
+      <div style="font:15px Geist;color:#4A555B;margin-bottom:10px">How it works</div>
+      <h2 style="margin:0 0 28px;font-size:clamp(30px,3vw,42px);line-height:1.04;letter-spacing:-.03em;font-weight:600">Every three hours, the same seven steps.</h2>
+      <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="7">
+          <li style="padding:12px 0;border-top:1px solid rgba(11,18,21,.14);display:grid;grid-template-columns:36px minmax(0,1fr);gap:8px;opacity:{{ s.op }};transition:opacity .2s ease-out">
+            <span style="font:500 14px Geist;color:{{ s.numColor }};padding-top:3px">{{ s.n }}</span>
+            <div><div style="font-size:19px;font-weight:{{ s.weight }};letter-spacing:-.015em">{{ s.name }}</div><sc-if value="{{ s.active }}"><p style="margin:6px 0 0;font-size:15px;line-height:1.55;color:#3B474D;text-wrap:pretty">{{ s.desc }}</p></sc-if></div>
+          </li>
+        </sc-for>
+      </ol>
+    </div>
+    <div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid rgba(11,18,21,.12);background:#F2F0EB;min-height:0">
+      <hawa-gl theme="light" layers="{{ howLayers }}" hour="{{ howHour }}" mode="{{ howMode }}" labels="{{ howLabels }}" threshold="{{ howThr }}" center="{{ howCenter }}" zoom="{{ howZoom }}" interactive="false" style="position:absolute;inset:0"></hawa-gl>
+      <div style="position:absolute;left:14px;top:14px;display:flex;gap:6px;flex-wrap:wrap"><span style="white-space:nowrap;height:28px;padding:0 10px;border-radius:6px;background:#FFFFFF;border:1px solid #E6E3DC;font:13px Geist;display:flex;align-items:center">{{ howCaption }}</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="whatif" data-screen-label="What-If" style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px">
+    <div style="background:rgba(250,249,246,.94);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:24px">
+      <div><div style="font:15px Geist;color:#4A555B;margin-bottom:10px">What-if</div><h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0 0 12px;text-wrap:balance">Thursday morning in East Delhi: usual routes vs. the plan</h2><p style="margin:0;font-size:16px;line-height:1.6;color:#3B474D">Move the slider from the usual routes to the plan. Each column is a 500 m cell and its height is PM2.5. Same trucks, same shift, different streets.</p></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input type="range" min="0" max="100" value="{{ mixPct }}" onChange="{{ onMix }}" aria-label="Usual routes to HawaCommand plan" style="width:100%;height:24px;cursor:pointer">
+        <div style="display:flex;justify-content:space-between;font:14px Geist;color:#3B474D"><span>Usual routes</span><span style="color:#0F766E">HawaCommand plan</span></div>
+      </div>
+      <div style="padding-top:20px;border-top:1px solid #E6E3DC">
+        <div style="font:14px Geist;color:#5F6B70;margin-bottom:6px">Person-hours of exposure avoided</div>
+        <div style="font:600 clamp(56px,6vw,80px)/1 Geist;letter-spacing:-.04em;font-variant-numeric:tabular-nums"><hc-count to="{{ avoided }}" dur="400"></hc-count></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font:14px Geist"><span style="color:#0F766E">{{ pctLabel }} vs usual routes</span><span style="color:#5F6B70">Plan #214 · East Delhi · Thu 06:00–10:00 · simulated</span></div>
+      </div>
+    </div>
+    <div style="position:relative;background:#F2F0EB;border:1px solid rgba(11,18,21,.12);border-radius:8px;min-height:460px;overflow:hidden">
+      <hawa-gl theme="light" layers="hex,trucks" mix="{{ mix }}" hour="42" extrude="" pitch="50" bearing="-20" hscale="6" center="77.30,28.635" zoom="11.6" assets="T-12,ASG-07,SW-03,I-3" interactive="false" style="position:absolute;inset:0"></hawa-gl>
+      <div style="position:absolute;left:16px;top:16px;display:flex;gap:6px;flex-wrap:wrap">
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:6px;background:#FFFFFF;border:1px solid #E6E3DC;font:13px Geist;color:#0B1215"><i style="width:12px;border-top:2px dashed #5F6B70"></i>Usual route</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:6px;background:#FFFFFF;border:1px solid #E6E3DC;font:13px Geist;color:#0B1215"><i style="width:12px;border-top:2px dashed #0F766E"></i>AI plan</span>
+      </div>
+      <div style="position:absolute;left:16px;right:16px;bottom:22px;display:grid;grid-template-columns:repeat(6,1fr);gap:2px">
+        <i style="height:6px;background:#1E8A4C"></i><i style="height:6px;background:#5E8F1B"></i><i style="height:6px;background:#B8920A"></i><i style="height:6px;background:#D0690E"></i><i style="height:6px;background:#C02A2A"></i><i style="height:6px;background:#7F1D3A"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="proof" data-screen-label="Proof" style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="background:rgba(250,249,246,.96);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;align-items:end;margin-bottom:20px">
+    <div><div style="font:15px Geist;color:#4A555B;margin-bottom:10px">Proof</div><h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0;text-wrap:balance">How we check whether a spray run worked</h2></div>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#3B474D;text-wrap:pretty">HawaTag logs exactly when the pump ran. A synthetic control built from similar untreated cells predicts what the air would have done anyway. The difference is the effect.</p>
+  </div>
+  <div style="background:#FFFFFF;box-shadow:0 0 0 2px #0B1215,6px 6px 0 2px #0B1215;margin:0 8px 8px 2px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px;background:#0B1215;color:#FAF9F6"><span style="font:500 14px Geist">Progress report · intervention 0412</span><span style="font:13px Geist;color:#C5D0D6">Anand Vihar · cell 28.647, 77.316 · Thu 06:40</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))">
+      <div style="padding:24px;border-right:1px solid #E6E3DC">
+        <div style="font-size:20px;font-weight:500;letter-spacing:-.01em;margin-bottom:4px">Sprinkler T-12 · PM10 −18% for 90 min · verified</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font:13px Geist;color:#5F6B70;margin-bottom:16px"><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:2px;background:#0B1215"></i>observed PM10</span><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:0;border-top:2px dashed #5F6B70"></i>synthetic control</span><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:8px;background:rgba(11,18,21,.08)"></i>95% band</span></div>
+        <hc-chart type="impact" theme="light" height="240"></hc-chart>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ grades }}" as="g" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:14px 24px;border-bottom:1px solid #E6E3DC;align-items:baseline"><span style="font:13px Geist;color:#5F6B70">{{ g.k }}</span><span style="font:500 15px Geist">{{ g.v }}</span></div>
+        </sc-for>
+        <div style="padding:20px 24px;display:flex;align-items:center;gap:16px;margin-top:auto">
+          <span style="font:600 16px Geist;color:#0F766E;border:2px solid #0F766E;border-radius:6px;padding:7px 14px;transform:rotate(-4deg);display:inline-block">Verified</span>
+          <span style="font-size:13px;line-height:1.5;color:#5F6B70">Demo interventions are simulated with injected, known effects, so you can see the verifier recover them.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="hardware" data-screen-label="Hardware" style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="background:rgba(250,249,246,.96);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;align-items:end;margin-bottom:12px">
+    <div><div style="font:15px Geist;color:#4A555B;margin-bottom:10px">Hardware</div><h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0;text-wrap:balance">The sensors, and what each one costs</h2></div>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#3B474D;text-wrap:pretty">Low-cost sensors ride on vehicles already moving through the city. For the demo, a simulator emits the exact same MQTT packets, so a real pod plugs in with no cloud change.</p>
+  </div>
+  <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));overflow:hidden;margin-bottom:12px">
+    <div style="position:relative;min-height:520px;background:#FAF9F6;border-right:1px solid #E6E3DC"><vx-pod scrub="" style="position:absolute;inset:0"></vx-pod><span style="position:absolute;left:20px;top:20px;font:13px Geist;color:#5F6B70">Scroll to take it apart</span></div>
+    <div style="padding:32px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap"><div style="font-size:28px;font-weight:600;letter-spacing:-.02em">HawaPod-M</div><span style="font:500 16px Geist">₹7,000–9,500</span></div>
+      <p style="margin:0;font-size:15px;line-height:1.55;color:#3B474D">Rides on buses, e-rickshaws and delivery bikes. Street-level PM, gases, weather and GPS. A tiny on-device model flags spikes and publishes them instantly.</p>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ podSpecs }}" as="p" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid #F0EEE9;font-size:14px"><span style="font:13px Geist;color:#5F6B70">{{ p.k }}</span><span>{{ p.v }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px">
+    <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden"><div style="position:relative;min-height:220px;background:#FAF9F6"><vx-model kind="pod-s" style="position:absolute;inset:0"></vx-model></div><div style="padding:20px;display:flex;flex-direction:column;gap:8px"><div style="font-size:20px;font-weight:600;letter-spacing:-.01em">HawaPod-S</div><div style="font:500 14px Geist">₹4,500 <span style="color:#5F6B70">+ ₹2,500 CO₂</span></div><p style="margin:0;font-size:14px;line-height:1.5;color:#3B474D">A school pair: gate and classroom. Indoor unit adds an NDIR CO₂ sensor, so the school knows when to seal windows and when to ventilate.</p></div></div>
+    <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden"><div style="position:relative;min-height:220px;background:#FAF9F6"><vx-model kind="tag" style="position:absolute;inset:0"></vx-model></div><div style="padding:20px;display:flex;flex-direction:column;gap:8px"><div style="font-size:20px;font-weight:600;letter-spacing:-.01em">HawaTag</div><div style="font:500 14px Geist">≈ ₹6,000</div><p style="margin:0;font-size:14px;line-height:1.5;color:#3B474D">Fits sprinklers and smog guns. Water-flow and pump-current sensors prove spraying happened, not just driving. Cab-roof PM sensor captures before and after.</p></div></div>
+  </div>
+</section>
+
+<section id="learned" data-screen-label="Learned" style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="background:rgba(250,249,246,.96);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;align-items:end;margin-bottom:12px">
+    <div><div style="font:15px Geist;color:#4A555B;margin-bottom:10px">Learned from China and Japan</div><h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0;text-wrap:balance">What we copied from Beijing, Shanghai and Tokyo, and what we didn't</h2></div>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#3B474D;text-wrap:pretty">China and Japan fought severe urban air before India did. We copy their data and governance systems, not their purifier hardware.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:{{ fourCols }};gap:12px">
+    <sc-for list="{{ cards }}" as="p" hint-placeholder-count="5">
+      <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:12px;position:relative">
+        <div style="position:relative"><px-scene kind="{{ p.scene }}" stage="0.75" style="aspect-ratio:96/56;border-radius:4px;overflow:hidden"></px-scene><span style="position:absolute;right:6px;top:6px;font:500 12px Geist;background:#FAF9F6;padding:2px 7px;border-radius:4px">{{ p.cc }}</span></div>
+        <div style="padding:2px 6px 8px;display:flex;flex-direction:column;gap:6px;flex:1">
+          <div style="font-size:17px;font-weight:500;letter-spacing:-.01em">{{ p.title }}</div>
+          <div style="font-size:13px;line-height:1.5;color:#3B474D;text-wrap:pretty">{{ p.body }}</div>
+          <div style="margin-top:auto;padding-top:10px;border-top:1px dashed #E6E3DC;font:13px Geist;color:#0F766E">{{ p.feature }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="margin-top:12px;background:#F4F2ED;border:1px dashed #0B1215;border-radius:8px;padding:10px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center">
+    <div style="position:relative;flex:0 1 300px;min-width:200px"><px-scene kind="tower" stage="0.75" style="aspect-ratio:96/56;border-radius:4px;overflow:hidden"></px-scene><span style="position:absolute;right:6px;top:6px;font:500 12px Geist;background:#FAF9F6;padding:2px 7px;border-radius:4px">CN</span></div>
+    <div style="flex:1 1 320px;padding:6px 10px;display:flex;flex-direction:column;gap:6px">
+      <div style="font:500 14px Geist;color:#4A555B">What we refused to copy</div>
+      <div style="font-size:24px;font-weight:500;letter-spacing:-.02em;text-decoration:line-through;text-decoration-thickness:2px">Smog towers</div>
+      <div style="font-size:15px;line-height:1.55;color:#3B474D;text-wrap:pretty;max-width:620px">Measured effect fell to about 12–16% beyond 100–200 m. The Connaught Place tower cost about ₹20 crore to build.</div>
+    </div>
+  </div>
+</section>
+
+<section id="aws" data-screen-label="AWS" style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px;align-items:stretch">
+    <div style="background:rgba(250,249,246,.92);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:16px">
+      <div style="font:15px Geist;color:#4A555B">Built on AWS</div>
+      <h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0;text-wrap:balance">What runs where on AWS</h2>
+      <p style="margin:0;font-size:16px;line-height:1.6;color:#3B474D">The whole cloud pipeline runs for real. A deterministic optimiser proposes; Strands agents on Bedrock explain and critique, but cannot bypass constraints. Nothing dispatches without an officer.</p>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;font:13px Geist;color:#5F6B70;padding-top:16px;border-top:1px solid #E6E3DC"><span>Orchestration · EventBridge + Step Functions</span><span>Auth · Cognito · Observability · CloudWatch</span></div>
+    </div>
+    <div style="background:rgba(250,249,246,.7);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+      <sc-for list="{{ tower }}" as="b" hint-placeholder-count="6">
+        <div style="width:{{ b.w }};background:{{ b.c }};color:{{ b.fg }};box-shadow:inset -4px -4px 0 rgba(0,0,0,.16),inset 4px 4px 0 rgba(255,255,255,.3);padding:12px 16px;display:flex;align-items:center;gap:14px">
+          <span style="font:600 13px Geist;width:64px;flex:none">{{ b.layer }}</span><span style="font:500 14px Geist;line-height:1.4">{{ b.items }}</span>
+        </div>
+      </sc-for>
+      <div style="width:100%;height:8px;background:#8E8A80;margin-top:2px"></div>
+    </div>
+  </div>
+</section>
+
+<section id="cost" data-screen-label="Cost" style="max-width:1200px;margin:0 auto;padding:48px 24px">
+  <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;overflow:hidden;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))">
+    <div style="padding:32px;display:flex;flex-direction:column;gap:24px">
+      <div><div style="font:15px Geist;color:#4A555B;margin-bottom:10px">Cost</div><h2 style="font-size:clamp(32px,3.6vw,44px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:0;text-wrap:balance">A district pilot costs about a hundredth of one smog tower</h2></div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1px;background:#E6E3DC;border:1px solid #E6E3DC;border-radius:8px;overflow:hidden">
+        <div style="background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font:500 13px Geist;color:#0F766E">District pilot</span><span style="font:600 32px Geist;letter-spacing:-.03em">≈ ₹22–24 lakh</span><span style="font-size:13px;line-height:1.5;color:#5F6B70">Year one: 100 HawaPod-M, 20 school pairs, 50 HawaTags, 4G data and AWS.</span></div>
+        <div style="background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font:500 13px Geist;color:#5F6B70">One smog tower</span><span style="font:600 32px Geist;letter-spacing:-.03em">≈ ₹20–22 crore</span><span style="font-size:13px;line-height:1.5;color:#5F6B70">Build only, plus about ₹15 lakh a month to run.</span></div>
+      </div>
+    </div>
+    <div style="min-height:320px"><px-scene kind="podtower" stage="0.85" style="width:100%;height:100%;min-height:320px"></px-scene></div>
+  </div>
+</section>
+
+<footer id="open" data-screen-label="Footer" style="position:relative;padding-top:120px">
+  <div style="max-width:760px;margin:0 auto;padding:0 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px">
+    <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;background:#1B7F45;color:#FFFFFF;font:12px 'Silkscreen',monospace;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)"><i style="width:6px;height:6px;background:#FFFFFF"></i>DELHI · 48 · GOOD</span>
+    <div style="background:rgba(250,249,246,.96);border:1px solid rgba(11,18,21,.08);border-radius:8px;padding:40px 32px;display:flex;flex-direction:column;align-items:center;gap:20px">
+      <h2 style="font-size:clamp(34px,4.4vw,56px);line-height:1.02;letter-spacing:-.04em;font-weight:600;margin:0;text-wrap:balance">Watch Thursday's plan for East Delhi get drafted, checked and approved.</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <a href="Console v4.dc.html" style="white-space:nowrap;height:44px;padding:0 18px;border-radius:8px;background:#0B1215;color:#FAF9F6;font:500 15px Geist;display:flex;align-items:center;gap:8px;text-decoration:none" style-hover="background:#1C272C;color:#FAF9F6">Open live console<hc-icon name="arrow-up-right" size="16"></hc-icon></a>
+        <a href="#" style="white-space:nowrap;height:44px;padding:0 18px;border-radius:8px;background:#FFFFFF;border:1px solid #E6E3DC;color:#0B1215;font:500 15px Geist;display:flex;align-items:center;gap:8px;text-decoration:none" style-hover="border-color:#C9C4B9;color:#0B1215"><hc-icon name="braces" size="15"></hc-icon>GET /open/v1/air</a>
+      </div>
+    </div>
+  </div>
+  <px-skyline stage="1" seed="5" style="height:260px;margin-top:40px"></px-skyline>
+  <div style="background:#FAF9F6;border-top:1px solid #E6E3DC">
+    <div style="max-width:1200px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:13px Geist;color:#5F6B70">
+      <span style="display:flex;flex-direction:column;gap:4px"><span>HawaCommand · Environmental Hacks 2026 · Air track</span><span>Live: CPCB, IMD, NASA FIRMS · Simulated: sensor fleet</span></span>
+      <span style="display:flex;gap:20px;flex-wrap:wrap"><a href="#causes" style="color:#5F6B70;text-decoration:none">Product</a><a href="#how" style="color:#5F6B70;text-decoration:none">How it works</a><a href="#proof" style="color:#5F6B70;text-decoration:none">Proof</a><a href="#hardware" style="color:#5F6B70;text-decoration:none">Hardware</a><a href="#" style="color:#5F6B70;text-decoration:none">Open data portal</a></span>
+    </div>
+  </div>
+</footer>
+</div>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0F766E"/><rect x="34" y="34" width="14" height="14" fill="#FAF9F6"/><rect x="52" y="34" width="14" height="14" fill="#0B1215"/><rect x="34" y="52" width="14" height="14" fill="#0B1215"/><rect x="52" y="52" width="14" height="14" fill="#FAF9F6"/></svg></template></x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { step: 0, mix: 0.5, wide: true, vw: innerWidth, y: 0, sec: '', p: 0 };
+  howRef = React.createRef();
+  componentDidMount() {
+    this.onScroll = () => {
+      { const se0 = document.scrollingElement || document.documentElement, yy = se0.scrollTop, pp = Math.min(1, yy / Math.max(1, se0.scrollHeight - innerHeight));
+      let sec = ''; ['causes', 'how', 'proof', 'hardware', 'open'].forEach(id => { const e = document.getElementById(id); if (e && e.getBoundingClientRect().top < innerHeight * .4) sec = id; });
+      if ((yy > 24) !== (this.state.y > 24) || sec !== this.state.sec || Math.abs(pp - this.state.p) > .04) this.setState({ y: yy, sec, p: pp }); }
+      const el = this.howRef.current; if (!el) return;
+      const r = el.getBoundingClientRect();
+      const p = Math.min(0.999, Math.max(0, -r.top / Math.max(1, r.height - innerHeight)));
+      const s = Math.floor(p * 7);
+      if (s !== this.state.step) this.setState({ step: s });
+    };
+    this.onResize = () => { const w = document.documentElement.clientWidth || innerWidth; if (w !== this.state.vw) this.setState({ wide: w >= 1080, vw: w }); };
+    addEventListener('scroll', this.onScroll, { passive: true });
+    addEventListener('resize', this.onResize);
+    this.onResize(); this.onScroll(); this.ro = new ResizeObserver(() => this.onResize()); this.ro.observe(document.documentElement); requestAnimationFrame(() => this.onResize());
+  }
+  componentWillUnmount() { removeEventListener('scroll', this.onScroll); removeEventListener('resize', this.onResize); this.ro && this.ro.disconnect(); }
+  renderVals() {
+    const S = [
+      ['Sense', 'Sensors on buses and bikes, school sentinels, trackers on cleaning trucks, official stations, weather and satellite fire data all stream to AWS.', 'Stations are CCTV at a few crossings. Buses walk every street.'],
+      ['Map', 'The city is cut into 500 m cells. A digital twin fills the gaps between sensors and gives every cell a value and a confidence.', 'Weather radar, for pollution.'],
+      ['Attribute', 'Each hotspot gets a likely cause (road dust, traffic, burning, regional smoke) and an upwind suspect location.', 'A doctor diagnosing before prescribing.'],
+      ['Forecast', 'A 72-hour forecast per 1 km cell, and the GRAP stage it will trigger, 24–48 hours before it is invoked.', 'A cyclone warning, but for smog.'],
+      ['Decide', 'Planner agents rank cells by people exposed and assign machines to causes they can fix. An Auditor agent challenges the plan. An officer approves.', 'A war room with a very fast analyst.'],
+      ['Act', 'Drivers receive routes, inspectors receive targets, and schools in the path receive a warning with a safe window.', 'Dispatch, like an ambulance service.'],
+      ['Verify', 'HawaTag logs exactly when the truck sprayed. The cell is compared with similar untreated cells to record the true effect.', 'How we check whether a spray run worked']
+    ];
+    const step = this.state.step, mix = this.state.mix;
+    const steps = S.map((s, i) => ({ n: String(i + 1).padStart(2, '0'), name: s[0], desc: s[1], analogy: s[2], active: i === step, done: i < step, todo: i > step, op: i === step ? '1' : i < step ? '.55' : '.4', weight: i === step ? '600' : '500', numColor: i === step ? '#0F766E' : '#6B5A45' }));
+    const HW = [['stations,buses,trucks', 0, 'live', 'none', 'CAAQMS stations + bus sensor trails'], ['hex,stations,buses', 0, 'live', 'none', '500 m twin · Tue 14:00'], ['hex,stations,causes,suspect', 0, 'live', 'major', 'Cause + upwind suspect'], ['hex,stations', 42, 'live', 'major', 'Forecast · Thu 08:00'], ['hex,trucks,stations', 42, 'plan', 'none', 'Plan #214 routes'], ['hex,trucks,schools,stations', 42, 'plan', 'none', 'Dispatched · 3 schools warned'], ['hex', 42, 'donor', 'none', 'Treated cell vs 5 donor cells']][step];
+    const avoided = Math.round(12016 * mix);
+    return {
+      wide: this.state.wide, howRef: this.howRef, howThr: step === 4 || step === 5 ? '250' : '',
+      heroCols: this.state.vw >= 1024 ? 'minmax(0,640px) minmax(520px,1fr)' : 'minmax(0,1fr)', heroPad: this.state.vw >= 1024 ? '40px 24px 0' : '12px 16px 0', cardPad: this.state.vw >= 1024 ? '40px' : '24px', cityH: this.state.vw >= 1024 ? '460px' : '420px',
+      fourCols: this.state.vw >= 1080 ? 'repeat(4,minmax(0,1fr))' : this.state.vw >= 600 ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)',
+      threeCols: this.state.vw >= 900 ? 'repeat(3,minmax(0,1fr))' : 'minmax(0,1fr)', ...(() => { const c = this.state.y > 24, sec = this.state.sec, aqi = Math.round(412 - 364 * this.state.p), b = aqi > 400 ? ['#7F1D3A', '#FFFFFF'] : aqi > 300 ? ['#C02A2A', '#FFFFFF'] : aqi > 200 ? ['#B35609', '#FFFFFF'] : aqi > 100 ? ['#E8C53A', '#0B1215'] : aqi > 50 ? ['#9CCB4E', '#0B1215'] : ['#1B7F45', '#FFFFFF']; return { navMax: c ? '980px' : '1248px', navPad: c ? '10px 24px 0' : '0', navH: c ? '52px' : '64px', navRadius: c ? '12px' : '0', navBorder: c ? 'rgba(11,18,21,.1)' : 'transparent', navShadow: c ? '0 8px 28px rgba(60,40,20,.14)' : 'none', navAqi: aqi, navAqiBg: b[0], navAqiFg: b[1], navLinks: [['#causes', 'Product', 'causes'], ['#how', 'How it works', 'how'], ['#proof', 'Proof', 'proof'], ['#hardware', 'Hardware', 'hardware'], ['#open', 'Open data', 'open']].map(([href, label, id]) => ({ href, label, bar: sec === id ? '1' : '0', color: sec === id ? '#0B1215' : '#3B474D', bg: sec === id ? 'rgba(15,118,110,.07)' : 'transparent' })) }; })(), howLayers: HW[0], howHour: String(HW[1]), howMode: HW[2], howLabels: HW[3], howCaption: HW[4], howCenter: step === 6 ? '77.316,28.647' : step >= 4 ? '77.30,28.635' : '77.19,28.64', howZoom: step === 6 ? '13.2' : step >= 4 ? '12.2' : '10.2', step, steps, cur: steps[step],
+      haze: Math.max(0, 1 - step / 6).toFixed(2), progressPct: ((step + 1) / 7 * 100).toFixed(1) + '%',
+      mix: mix.toFixed(3), mixPct: Math.round(mix * 100), avoided, pctLabel: '+' + Math.round(31 * mix) + '%',
+      onMix: e => this.setState({ mix: +e.target.value / 100 }),
+      causes: [
+        { n: '01', name: 'Road dust', hi: 'सड़क की धूल', scene: 'dust', stage: '0.2', signal: 'High PM10 · low PM2.5/PM10 ratio · daytime · near roads or sites', fix: 'Sprinkler, sweeper, site check' },
+        { n: '02', name: 'Traffic', hi: 'गाड़ियों का धुआँ', scene: 'traffic', stage: '0.25', signal: 'High NO₂ + CO · rush hours · along corridors', fix: 'Diversion advice, smoky-vehicle checks, alerts' },
+        { n: '03', name: 'Open burning', hi: 'कचरा जलाना', scene: 'burning', stage: '0.25', signal: 'Sharp PM2.5 + VOC spike · night · fire point or photo', fix: 'Inspection team to the suspect pin' },
+        { n: '04', name: 'Stubble smoke', hi: 'पराली का धुआँ', scene: 'stubble', stage: '0.3', signal: 'City-wide PM2.5 rise · north-west wind · FIRMS fires upwind', fix: 'No trucks. Protect people: alerts, windows shut' }
+      ],
+      grades: [
+        { k: 'Effect', v: 'PM10 −18%  (CI −24% to −11%)' },
+        { k: 'Duration', v: '90 min' },
+        { k: 'Method', v: 'Synthetic control · 5 donor cells' },
+        { k: 'Spray', v: '1,850 L · pump on 15 min' },
+        { k: 'Remarks', v: 'Second pass at 07:30 held it through the 08:00 peak.' }
+      ],
+      podSpecs: [
+        { k: 'Controller', v: 'ESP32-S3, TinyML spike detector' },
+        { k: 'Particles', v: 'Plantower PMS5003 · PM1 / PM2.5 / PM10' },
+        { k: 'Gases', v: 'MiCS-6814 via ADS1115 · NO₂, CO, NH₃' },
+        { k: 'Weather', v: 'BME680 · T, RH, pressure, VOC' },
+        { k: 'Position', v: 'u-blox NEO-M8N GPS' },
+        { k: 'Uplink', v: 'A7670C 4G · MQTT over TLS · 72 h SD buffer' }
+      ],
+      cards: [
+        { scene: 'grid', cc: 'CN', title: 'Hotspot grid', body: 'Beijing–Tianjin–Hebei split into 3×3 km blocks. In the Cangzhou pilot, PM2.5 fell 38.3% vs about 20% city average.', feature: 'F1 · Hotspot Grid Engine' },
+        { scene: 'taxi', cc: 'CN', title: 'Taxi sensor networks', body: 'Shanghai put sensors on 125 taxis. 80–100 of them covered about 80% of major roads at ~200 m.', feature: 'F2 · Mobile sensing fleet' },
+        { scene: 'alerts', cc: 'CN', title: 'Graded response', body: 'Blue to red alerts issued at least 24 h ahead, each level triggering preset emission cuts.', feature: 'F6 · Graded Response Copilot' },
+        { scene: 'opendata', cc: 'JP', title: 'Open data, AEROS', body: 'Real-time readings from every station, published openly. Open data built public trust.', feature: 'F21 · Open Air Data portal' }
+      ],
+      tower: [
+        { layer: 'Act', items: 'Officer console · Driver PWA · WhatsApp + SNS', w: '62%', c: '#0F766E', fg: '#FFFFFF' },
+        { layer: 'Agents', items: 'Amazon Bedrock · Strands Agents SDK', w: '70%', c: '#2E4750', fg: '#FFFFFF' },
+        { layer: 'Think', items: 'Lambda containers · SageMaker · OR-Tools', w: '78%', c: '#5F7F8A', fg: '#FFFFFF' },
+        { layer: 'Store', items: 'Timestream · RDS Postgres + PostGIS · S3', w: '86%', c: '#C9B28A', fg: '#0B1215' },
+        { layer: 'Ingest', items: 'AWS IoT Core · IoT Rules · Lambda · SQS', w: '94%', c: '#D9C7A4', fg: '#0B1215' },
+        { layer: 'Edge', items: 'HawaPod-M · HawaPod-S · HawaTag', w: '100%', c: '#E8DCC2', fg: '#0B1215' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

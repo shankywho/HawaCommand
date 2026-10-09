@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Silkscreen&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="./hawa.js"></script>
+<script src="./pixel.js"></script>
+<style>body{margin:0;background:#FAF9F6;color:#0B1215;font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#0F766E}a:hover{color:#0B1215}*{box-sizing:border-box}@keyframes sk{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}</style>
+</helmet>
+<div style="max-width:1280px;margin:0 auto;padding:0 40px;border-left:1px solid #E6E3DC;border-right:1px solid #E6E3DC;min-height:100vh">
+  <header style="display:flex;align-items:center;justify-content:space-between;height:64px;border-bottom:1px solid #E6E3DC">
+    <div style="display:flex;align-items:center;gap:10px"><div style="display:grid;grid-template-columns:repeat(2,6px);gap:2px"><i style="width:6px;height:6px;background:#0B1215"></i><i style="width:6px;height:6px;background:#0F766E"></i><i style="width:6px;height:6px;background:#0F766E"></i><i style="width:6px;height:6px;background:#0B1215"></i></div><span style="font-weight:600;font-size:15px;letter-spacing:-.01em">HawaCommand</span><span style="font:12px 'Geist Mono',monospace;color:#5F6B70">/ design system v1</span></div>
+    <nav style="display:flex;gap:24px;font:12px 'Geist Mono',monospace;letter-spacing:.06em;color:#5F6B70;text-transform:uppercase"><a href="#type" style="color:inherit;text-decoration:none">Type</a><a href="#color" style="color:inherit;text-decoration:none">Color</a><a href="#world" style="color:inherit;text-decoration:none">Pixel world</a><a href="#light" style="color:inherit;text-decoration:none">Landing UI</a><a href="#dark" style="color:inherit;text-decoration:none">Console UI</a></nav>
+  </header>
+
+  <section style="padding:56px 0 40px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:end">
+    <div>
+      <div style="font:11px 'Silkscreen',monospace;color:#0F766E;letter-spacing:.04em;margin-bottom:16px">00 / FOUNDATIONS</div>
+      <h1 style="font-size:56px;line-height:1.02;letter-spacing:-.035em;font-weight:600;margin:0 0 16px;text-wrap:pretty">Calm instrument panel, in a sky that clears.</h1>
+      <p style="font-size:17px;line-height:1.55;color:#3B474D;margin:0;max-width:560px;text-wrap:pretty">Two surfaces, one system. The landing page is a pixel-and-voxel Delhi whose sky cleans itself as you scroll. The console is dark, quiet and data-first. Both share Geist, one teal accent, and CPCB AQI colours reserved strictly for data.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+      <div style="display:flex;flex-direction:column;gap:8px"><px-sky stage="0" style="height:150px;border-radius:8px;border:1px solid #E6E3DC" noparticles=""></px-sky><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">stage 0 · hero</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><px-sky stage="0.5" style="height:150px;border-radius:8px;border:1px solid #E6E3DC" noparticles=""></px-sky><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">stage .5 · how it works</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><px-sky stage="1" style="height:150px;border-radius:8px;border:1px solid #E6E3DC"></px-sky><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">stage 1 · footer</span></div>
+    </div>
+  </section>
+
+  <section id="type" style="padding:40px 0;border-top:1px solid #E6E3DC;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px">
+    <div><div style="font:11px 'Silkscreen',monospace;color:#0F766E;margin-bottom:8px">01 / TYPE</div><p style="margin:0;font-size:13px;line-height:1.5;color:#5F6B70">Geist Sans for UI. Geist Mono with tabular numbers for every reading, time and count. Silkscreen only for tiny labels: AQI chips and section numbers.</p></div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:grid;grid-template-columns:140px minmax(0,1fr);align-items:baseline;padding:14px 0;border-bottom:1px solid #E6E3DC"><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">Display 72/600</span><span style="font-size:72px;font-weight:600;letter-spacing:-.04em;line-height:1">We give them a brain.</span></div>
+      <div style="display:grid;grid-template-columns:140px minmax(0,1fr);align-items:baseline;padding:14px 0;border-bottom:1px solid #E6E3DC"><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">H2 40/600</span><span style="font-size:40px;font-weight:600;letter-spacing:-.03em">Four causes, four fixes</span></div>
+      <div style="display:grid;grid-template-columns:140px minmax(0,1fr);align-items:baseline;padding:14px 0;border-bottom:1px solid #E6E3DC"><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">H3 20/500</span><span style="font-size:20px;font-weight:500;letter-spacing:-.01em">Plan #214 · East Delhi · Thu 06:00–10:00</span></div>
+      <div style="display:grid;grid-template-columns:140px minmax(0,1fr);align-items:baseline;padding:14px 0;border-bottom:1px solid #E6E3DC"><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">Body 15/400</span><span style="font-size:15px;line-height:1.55;color:#3B474D;max-width:620px">Planner agents rank cells by people exposed and assign machines to causes they can fix. An Auditor agent challenges the plan. An officer approves.</span></div>
+      <div style="display:grid;grid-template-columns:140px minmax(0,1fr);align-items:baseline;padding:14px 0;border-bottom:1px solid #E6E3DC"><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">Reading mono</span><span style="display:flex;gap:32px;flex-wrap:wrap;font-family:'Geist Mono',monospace;font-variant-numeric:tabular-nums"><span style="font-size:40px;font-weight:500;letter-spacing:-.02em">212<span style="font-size:16px;color:#5F6B70"> µg/m³</span></span><span style="font-size:40px;font-weight:500;letter-spacing:-.02em">06:42<span style="font-size:16px;color:#5F6B70"> IST</span></span><span style="font-size:40px;font-weight:500;letter-spacing:-.02em">0.82<span style="font-size:16px;color:#5F6B70"> conf</span></span></span></div>
+      <div style="display:grid;grid-template-columns:140px minmax(0,1fr);align-items:baseline;padding:14px 0"><span style="font:11px 'Geist Mono',monospace;color:#5F6B70">Label mono 12</span><span style="display:flex;gap:28px;align-items:baseline;flex-wrap:wrap"><span style="font:12px 'Geist Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#5F6B70">Simulated fleet · 30 s packets</span><span style="font:11px 'Silkscreen',monospace;color:#0F766E">03 / PROOF</span></span></div>
+    </div>
+  </section>
+
+  <section id="color" style="padding:40px 0;border-top:1px solid #E6E3DC;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px">
+    <div><div style="font:11px 'Silkscreen',monospace;color:#0F766E;margin-bottom:8px">02 / COLOR</div><p style="margin:0;font-size:13px;line-height:1.5;color:#5F6B70">Teal is the only UI accent. AQI colours appear only on data: map cells, AQI chips, charts. Never on buttons, nav or chrome.</p></div>
+    <div style="display:flex;flex-direction:column;gap:28px">
+      <div>
+        <div style="font:12px 'Geist Mono',monospace;letter-spacing:.06em;color:#5F6B70;margin-bottom:10px">NEUTRALS</div>
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px">
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#0B1215"></div><span style="font:500 12px Geist">Ink</span><span style="font:11px 'Geist Mono';color:#5F6B70">#0B1215</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#0E1417"></div><span style="font:500 12px Geist">Surface dark</span><span style="font:11px 'Geist Mono';color:#5F6B70">#0E1417</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#151D21"></div><span style="font:500 12px Geist">Panel dark</span><span style="font:11px 'Geist Mono';color:#5F6B70">#151D21</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#24303A"></div><span style="font:500 12px Geist">Border dark</span><span style="font:11px 'Geist Mono';color:#5F6B70">#24303A</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#FAF9F6;border:1px solid #E6E3DC"></div><span style="font:500 12px Geist">Off-white</span><span style="font:11px 'Geist Mono';color:#5F6B70">#FAF9F6</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#E6E3DC"></div><span style="font:500 12px Geist">Border light</span><span style="font:11px 'Geist Mono';color:#5F6B70">#E6E3DC</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:24px">
+        <div>
+          <div style="font:12px 'Geist Mono',monospace;letter-spacing:.06em;color:#5F6B70;margin-bottom:10px">ACCENT</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#0F766E"></div><span style="font:500 12px Geist">Teal / light</span><span style="font:11px 'Geist Mono';color:#5F6B70">#0F766E · 5.4:1</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:8px;background:#2DD4BF"></div><span style="font:500 12px Geist">Teal / dark</span><span style="font:11px 'Geist Mono';color:#5F6B70">#2DD4BF · 9.9:1</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font:12px 'Geist Mono',monospace;letter-spacing:.06em;color:#5F6B70;margin-bottom:10px">CPCB AQI · DATA ONLY · top: light, bottom: dark-tuned</div>
+          <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px">
+            <div style="display:flex;flex-direction:column;gap:4px"><div style="height:30px;border-radius:6px 6px 0 0;background:#1E8A4C"></div><div style="height:30px;border-radius:0 0 6px 6px;background:#3FB871"></div><span style="font:500 12px Geist">Good</span><span style="font:11px 'Geist Mono';color:#5F6B70">0–50</span></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><div style="height:30px;border-radius:6px 6px 0 0;background:#5E8F1B"></div><div style="height:30px;border-radius:0 0 6px 6px;background:#9CCB4E"></div><span style="font:500 12px Geist">Satisfactory</span><span style="font:11px 'Geist Mono';color:#5F6B70">51–100</span></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><div style="height:30px;border-radius:6px 6px 0 0;background:#8A6D00"></div><div style="height:30px;border-radius:0 0 6px 6px;background:#E8C53A"></div><span style="font:500 12px Geist">Moderate</span><span style="font:11px 'Geist Mono';color:#5F6B70">101–200</span></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><div style="height:30px;border-radius:6px 6px 0 0;background:#B35609"></div><div style="height:30px;border-radius:0 0 6px 6px;background:#F08C35"></div><span style="font:500 12px Geist">Poor</span><span style="font:11px 'Geist Mono';color:#5F6B70">201–300</span></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><div style="height:30px;border-radius:6px 6px 0 0;background:#C02A2A"></div><div style="height:30px;border-radius:0 0 6px 6px;background:#E5484D"></div><span style="font:500 12px Geist">Very Poor</span><span style="font:11px 'Geist Mono';color:#5F6B70">301–400</span></div>
+            <div style="display:flex;flex-direction:column;gap:4px"><div style="height:30px;border-radius:6px 6px 0 0;background:#7F1D3A"></div><div style="height:30px;border-radius:0 0 6px 6px;background:#C43A6B"></div><span style="font:500 12px Geist">Severe</span><span style="font:11px 'Geist Mono';color:#5F6B70">401–500</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="world" style="padding:40px 0;border-top:1px solid #E6E3DC;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px">
+    <div><div style="font:11px 'Silkscreen',monospace;color:#0F766E;margin-bottom:8px">03 / PIXEL WORLD</div><p style="margin:0;font-size:13px;line-height:1.5;color:#5F6B70">2D pixel skies and scenes, 3D voxel models in the same palette. Everything is procedural and respects reduced motion. Copy always sits on a calm solid panel.</p></div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="position:relative;height:200px;border-radius:8px;overflow:hidden;border:1px solid #E6E3DC"><px-sky stage="0.15" style="position:absolute;inset:0"></px-sky><px-skyline stage="0.15" style="position:absolute;left:0;right:0;bottom:0;height:140px"></px-skyline><span style="position:absolute;left:12px;top:12px;font:11px 'Geist Mono';background:#FAF9F6;padding:2px 6px;border-radius:4px">px-sky + px-skyline · stage 0.15</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+        <div style="display:flex;flex-direction:column;gap:6px"><px-scene kind="dust" stage="0.2" style="aspect-ratio:96/56;border-radius:6px;overflow:hidden"></px-scene><span style="font:11px 'Geist Mono';color:#5F6B70">dust → sprinkler</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><px-scene kind="traffic" stage="0.3" style="aspect-ratio:96/56;border-radius:6px;overflow:hidden"></px-scene><span style="font:11px 'Geist Mono';color:#5F6B70">traffic → bus + pod</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><px-scene kind="burning" stage="0.25" style="aspect-ratio:96/56;border-radius:6px;overflow:hidden"></px-scene><span style="font:11px 'Geist Mono';color:#5F6B70">burning → inspector</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><px-scene kind="stubble" stage="0.3" style="aspect-ratio:96/56;border-radius:6px;overflow:hidden"></px-scene><span style="font:11px 'Geist Mono';color:#5F6B70">stubble → school shuts</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:8px">
+        <div style="height:260px;border-radius:8px;border:1px solid #E6E3DC;background:#F2F0EB;position:relative"><vx-city style="position:absolute;inset:0"></vx-city><span style="position:absolute;left:10px;top:10px;font:11px 'Geist Mono';color:#5F6B70">vx-city</span></div>
+        <div style="height:260px;border-radius:8px;background:#0E1417;position:relative"><vx-hexmap mix="1" style="position:absolute;inset:0"></vx-hexmap><span style="position:absolute;left:10px;top:10px;font:11px 'Geist Mono';color:#8B9AA3">vx-hexmap</span></div>
+        <div style="height:260px;border-radius:8px;border:1px solid #E6E3DC;background:#FFFFFF;position:relative"><vx-model kind="tag" style="position:absolute;inset:0"></vx-model><span style="position:absolute;left:10px;top:10px;font:11px 'Geist Mono';color:#5F6B70">vx-model · HawaTag</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="light" style="padding:40px 0;border-top:1px solid #E6E3DC;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px">
+    <div><div style="font:11px 'Silkscreen',monospace;color:#0F766E;margin-bottom:8px">04 / LANDING UI</div><p style="margin:0;font-size:13px;line-height:1.5;color:#5F6B70">1px borders, 8px radius, soft shadow, 4/8 grid. The pixel AQI chip is the one playful element that also appears in the console.</p></div>
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <button style="white-space:nowrap;height:40px;padding:0 16px;border-radius:8px;border:1px solid #0B1215;background:#0B1215;color:#FAF9F6;font:500 14px Geist;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="background:#1C272C">Open live console<hc-icon name="arrow-up-right" size="15"></hc-icon></button>
+        <button style="white-space:nowrap;height:40px;padding:0 16px;border-radius:8px;border:1px solid #E6E3DC;background:#FFFFFF;color:#0B1215;font:500 14px Geist;display:flex;align-items:center;gap:8px;cursor:pointer;box-shadow:0 1px 2px rgba(11,18,21,.06)" style-hover="border-color:#C9C4B9"><hc-icon name="play" size="14"></hc-icon>Watch the 3-min demo</button>
+        <button style="white-space:nowrap;height:40px;padding:0 16px;border-radius:8px;border:1px solid #0F766E;background:#0F766E;color:#FFFFFF;font:500 14px Geist;cursor:pointer" style-hover="background:#0D6660">Approve &amp; dispatch</button>
+        <a href="#" style="font:500 14px Geist;color:#0F766E;text-decoration:none;display:flex;align-items:center;gap:4px">Read the method<hc-icon name="arrow-right" size="14"></hc-icon></a>
+        <input placeholder="Search wards, assets, plans" style="height:40px;width:260px;padding:0 12px;border-radius:8px;border:1px solid #E6E3DC;background:#FFFFFF;font:14px Geist;color:#0B1215;outline:none" style-focus="border-color:#0F766E;box-shadow:0 0 0 3px rgba(15,118,110,.15)">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;background:#7F1D3A;color:#FFFFFF;font:11px 'Silkscreen',monospace;letter-spacing:.02em;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)"><i style="width:6px;height:6px;background:#FFFFFF"></i>ANAND VIHAR · 412 · SEVERE</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;background:#C02A2A;color:#FFFFFF;font:11px 'Silkscreen',monospace;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)"><i style="width:6px;height:6px;background:#FFFFFF"></i>ITO · 338 · VERY POOR</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;background:#E8C53A;color:#0B1215;font:11px 'Silkscreen',monospace;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)"><i style="width:6px;height:6px;background:#0B1215"></i>RK PURAM · 162 · MODERATE</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;background:#1B7F45;color:#FFFFFF;font:11px 'Silkscreen',monospace;clip-path:polygon(3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px),0 3px,3px 3px)"><i style="width:6px;height:6px;background:#FFFFFF"></i>DELHI · 48 · GOOD</span>
+      </div>
+      <div style="display:flex;gap:0;border-bottom:1px solid #E6E3DC;font:12px 'Geist Mono',monospace;letter-spacing:.06em">
+        <span style="padding:10px 16px;border-bottom:2px solid #0F766E;color:#0F766E;margin-bottom:-1px">OVERVIEW</span><span style="padding:10px 16px;color:#5F6B70">METHOD</span><span style="padding:10px 16px;color:#5F6B70">OPEN DATA</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(11,18,21,.04)"><px-scene kind="dust" stage="0.2" style="aspect-ratio:96/40"></px-scene><div style="padding:16px"><div style="font:11px 'Silkscreen';color:#5F6B70;margin-bottom:6px">CAUSE 01</div><div style="font:500 18px Geist;margin-bottom:4px">Road dust</div><div style="font:13px/1.5 Geist;color:#3B474D">Card: illustration on top, copy on solid white.</div></div></div>
+        <div style="background:#FFFFFF;border:1px solid #E6E3DC;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font:12px 'Geist Mono';letter-spacing:.06em;color:#5F6B70">STAT</span><span style="font:500 48px 'Geist Mono';letter-spacing:-.03em;font-variant-numeric:tabular-nums">376</span><span style="font:13px/1.5 Geist;color:#3B474D">anti-smog guns deployed</span></div>
+        <div style="background:rgba(250,249,246,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(230,227,220,.9);border-radius:8px;padding:20px;position:relative;overflow:hidden"><span style="font:12px 'Geist Mono';letter-spacing:.06em;color:#5F6B70">CALM PANEL</span><p style="font:14px/1.5 Geist;margin:8px 0 0;color:#0B1215">82% off-white + 10px blur. Used for copy over sky.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dark" style="padding:40px 0 64px;border-top:1px solid #E6E3DC;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px">
+    <div><div style="font:11px 'Silkscreen',monospace;color:#0F766E;margin-bottom:8px">05 / CONSOLE UI</div><p style="margin:0;font-size:13px;line-height:1.5;color:#5F6B70">Dark-first. Heatmaps pop on #0E1417. Every AI output carries a confidence. Diffs use +/− and neutral styling, never AQI colours.</p></div>
+    <div style="background:#0E1417;border-radius:12px;padding:24px;color:#E6EDF0;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button style="white-space:nowrap;height:32px;padding:0 12px;border-radius:6px;border:1px solid #2DD4BF;background:#2DD4BF;color:#0B1215;font:500 13px Geist;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:#5EE0CF"><hc-icon name="check" size="14"></hc-icon>Approve &amp; dispatch</button>
+        <button style="white-space:nowrap;height:32px;padding:0 12px;border-radius:6px;border:1px solid #24303A;background:#151D21;color:#E6EDF0;font:500 13px Geist;cursor:pointer" style-hover="border-color:#3A4953">Request changes</button>
+        <button style="white-space:nowrap;height:32px;padding:0 10px;border-radius:6px;border:1px solid transparent;background:transparent;color:#8B9AA3;font:500 13px Geist;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:#151D21;color:#E6EDF0"><hc-icon name="sliders-horizontal" size="14"></hc-icon>Layers</button>
+        <div style="height:32px;width:240px;padding:0 10px;border-radius:6px;border:1px solid #24303A;background:#151D21;display:flex;align-items:center;gap:8px;color:#8B9AA3;font:13px Geist"><hc-icon name="search" size="14"></hc-icon><span style="flex:1">Search or run a command</span><span style="font:11px 'Geist Mono';border:1px solid #24303A;border-radius:4px;padding:1px 5px">⌘K</span></div>
+        <span style="white-space:nowrap;height:24px;padding:0 8px;border-radius:999px;border:1px dashed #3A4953;color:#8B9AA3;font:11px 'Geist Mono';display:inline-flex;align-items:center;gap:6px"><i style="width:6px;height:6px;border-radius:50%;background:#8B9AA3"></i>Simulated fleet</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:rgba(196,58,107,.14);border:1px solid rgba(196,58,107,.5);font:500 12px 'Geist Mono';color:#F4D3DF"><i style="width:8px;height:8px;border-radius:2px;background:#C43A6B"></i>388 Severe</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:rgba(229,72,77,.14);border:1px solid rgba(229,72,77,.5);font:500 12px 'Geist Mono';color:#F8D4D5"><i style="width:8px;height:8px;border-radius:2px;background:#E5484D"></i>212 Very Poor</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:rgba(240,140,53,.14);border:1px solid rgba(240,140,53,.5);font:500 12px 'Geist Mono';color:#FBE0C8"><i style="width:8px;height:8px;border-radius:2px;background:#F08C35"></i>104 Poor</span>
+        <span style="width:1px;height:20px;background:#24303A;margin:0 4px"></span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:#151D21;border:1px solid #24303A;font:12px Geist;color:#C5D0D6"><hc-icon name="wind" size="12"></hc-icon>Dust</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:#151D21;border:1px solid #24303A;font:12px Geist;color:#C5D0D6"><hc-icon name="car" size="12"></hc-icon>Traffic</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:#151D21;border:1px solid #24303A;font:12px Geist;color:#C5D0D6"><hc-icon name="flame" size="12"></hc-icon>Burning</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:#151D21;border:1px solid #24303A;font:12px Geist;color:#C5D0D6"><hc-icon name="cloud-fog" size="12"></hc-icon>Regional smoke</span>
+        <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:24px;padding:0 8px;background:#7F1D3A;color:#FFFFFF;font:10px 'Silkscreen';clip-path:polygon(2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px),0 2px,2px 2px)">AQI 412 · SEVERE</span>
+      </div>
+      <div style="display:flex;border-bottom:1px solid #24303A;font:13px Geist">
+        <span style="white-space:nowrap;padding:8px 12px;border-bottom:2px solid #2DD4BF;margin-bottom:-1px;color:#E6EDF0">Tasks <span style="font-family:'Geist Mono';color:#8B9AA3">14</span></span><span style="white-space:nowrap;padding:8px 12px;color:#8B9AA3">Conversation <span style="font-family:'Geist Mono'">3</span></span><span style="white-space:nowrap;padding:8px 12px;color:#8B9AA3">What-If</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#24303A;border:1px solid #24303A;border-radius:8px;overflow:hidden">
+        <div style="background:#151D21;padding:14px 16px;display:flex;flex-direction:column;gap:6px"><span style="font:12px Geist;color:#8B9AA3">PM2.5 · Ghazipur</span><span style="font:500 28px 'Geist Mono';letter-spacing:-.02em">388<span style="font-size:13px;color:#8B9AA3"> µg/m³</span></span><hc-chart type="spark" value="4" height="22" theme="dark"></hc-chart></div>
+        <div style="background:#151D21;padding:14px 16px;display:flex;flex-direction:column;gap:6px"><span style="font:12px Geist;color:#8B9AA3">Confidence</span><span style="font:500 28px 'Geist Mono';letter-spacing:-.02em">0.74</span><span style="font:11px 'Geist Mono';color:#8B9AA3">σ ±41 µg/m³</span></div>
+        <div style="background:#151D21;padding:14px 16px;display:flex;flex-direction:column;gap:6px"><span style="font:12px Geist;color:#8B9AA3">Exposure</span><span style="font:500 28px 'Geist Mono';letter-spacing:-.02em">18,420<span style="font-size:13px;color:#8B9AA3"> p·h</span></span><span style="font:11px 'Geist Mono';color:#8B9AA3">next 4 h</span></div>
+        <div style="background:#151D21;padding:14px 16px;display:flex;flex-direction:column;gap:6px"><span style="font:12px Geist;color:#8B9AA3">Avoided vs usual</span><span style="font:500 28px 'Geist Mono';letter-spacing:-.02em;color:#2DD4BF">+31%</span><span style="font:11px 'Geist Mono';color:#8B9AA3">simulated</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px">
+        <div style="border:1px solid #24303A;border-radius:8px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:28px minmax(0,1fr) 90px 80px 70px;padding:8px 12px;font:12px Geist;color:#8B9AA3;background:#151D21;border-bottom:1px solid #24303A"><span>#</span><span>Ward</span><span style="text-align:right">p·h exposure</span><span style="text-align:right">Peak</span><span style="text-align:right">Conf</span></div>
+          <div style="display:grid;grid-template-columns:28px minmax(0,1fr) 90px 80px 70px;padding:9px 12px;font:13px Geist;border-bottom:1px solid #1C262C;align-items:center"><span style="font-family:'Geist Mono';color:#8B9AA3">1</span><span>Shahdara</span><span style="text-align:right;font-family:'Geist Mono'">41,200</span><span style="text-align:right"><span style="font:12px 'Geist Mono';display:inline-flex;align-items:center;gap:5px"><i style="width:7px;height:7px;border-radius:2px;background:#C43A6B"></i>452</span></span><span style="text-align:right;font-family:'Geist Mono';color:#8B9AA3">0.71</span></div>
+          <div style="display:grid;grid-template-columns:28px minmax(0,1fr) 90px 80px 70px;padding:9px 12px;font:13px Geist;align-items:center;background:rgba(45,212,191,.06)"><span style="font-family:'Geist Mono';color:#8B9AA3">2</span><span>East Delhi</span><span style="text-align:right;font-family:'Geist Mono'">38,760</span><span style="text-align:right"><span style="font:12px 'Geist Mono';display:inline-flex;align-items:center;gap:5px"><i style="width:7px;height:7px;border-radius:2px;background:#C43A6B"></i>431</span></span><span style="text-align:right;font-family:'Geist Mono';color:#8B9AA3">0.74</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:8px;background:#151D21;border:1px solid #24303A;box-shadow:0 8px 24px rgba(0,0,0,.35)"><span style="color:#2DD4BF;margin-top:1px"><hc-icon name="circle-check" size="16"></hc-icon></span><div style="flex:1"><div style="font:500 13px Geist">Plan #214 dispatched</div><div style="font:12px Geist;color:#8B9AA3;margin-top:2px">14 tasks sent to 9 drivers · <span style="font-family:'Geist Mono'">05:30</span></div></div><span style="color:#8B9AA3"><hc-icon name="x" size="14"></hc-icon></span></div>
+          <div style="padding:12px;border-radius:8px;border:1px solid #24303A;display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between;font:12px Geist;color:#8B9AA3"><span>PM2.5 µg/m³ · CPCB</span><span style="font-family:'Geist Mono'">500 m cells</span></div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:2px"><i style="height:8px;background:#3FB871"></i><i style="height:8px;background:#9CCB4E"></i><i style="height:8px;background:#E8C53A"></i><i style="height:8px;background:#F08C35"></i><i style="height:8px;background:#E5484D"></i><i style="height:8px;background:#C43A6B"></i></div><div style="display:grid;grid-template-columns:repeat(6,1fr);font:10.5px 'Geist Mono';color:#8B9AA3"><span>0</span><span>31</span><span>61</span><span>91</span><span>121</span><span>251+</span></div></div>
+        </div>
+      </div>
+      <div style="border:1px solid #24303A;border-radius:8px;padding:12px 14px;background:#151D21">
+        <div style="display:flex;justify-content:space-between;font:11px 'Geist Mono';color:#8B9AA3;margin-bottom:8px"><span>−24 h</span><span style="color:#E6EDF0">Now · Tue 14:00</span><span>+24 h</span><span style="color:#2DD4BF">Thu 08:00</span><span>+72 h</span></div>
+        <div style="position:relative;height:28px">
+          <div style="position:absolute;left:0;right:0;top:13px;height:2px;background:#24303A"></div>
+          <div style="position:absolute;left:25%;right:0;top:13px;height:2px;background:repeating-linear-gradient(90deg,#3A4953 0 4px,transparent 4px 8px)"></div>
+          <div style="position:absolute;left:25%;top:4px;width:1px;height:20px;background:#E6EDF0"></div>
+          <div style="position:absolute;left:68.75%;top:6px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#2DD4BF;border:3px solid #0E1417;box-shadow:0 0 0 1px #2DD4BF"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+        <div style="border:1px solid #24303A;border-radius:8px;background:#151D21;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.45)">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #24303A;color:#8B9AA3"><hc-icon name="search" size="15"></hc-icon><span style="font:14px Geist;color:#E6EDF0;flex:1">show hotspots near schools</span><span style="font:11px 'Geist Mono';border:1px solid #24303A;border-radius:4px;padding:1px 5px">esc</span></div>
+          <div style="padding:6px"><div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:#1C262C;font:13px Geist"><hc-icon name="school" size="14"></hc-icon><span style="flex:1">Show hotspots near schools</span><span style="font:11px 'Geist Mono';color:#8B9AA3">7 results</span></div><div style="display:flex;align-items:center;gap:10px;padding:8px 10px;font:13px Geist;color:#C5D0D6"><hc-icon name="git-pull-request" size="14"></hc-icon><span style="flex:1">Draft plan for Shahdara</span></div></div>
+        </div>
+        <div style="display:grid;grid-template-rows:auto auto;gap:12px">
+          <div style="border:1px solid #24303A;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px"><i style="height:12px;width:40%;border-radius:4px;background:#1C262C;animation:sk 1.4s ease-in-out infinite"></i><i style="height:10px;width:90%;border-radius:4px;background:#1C262C;animation:sk 1.4s ease-in-out infinite .1s"></i><i style="height:10px;width:70%;border-radius:4px;background:#1C262C;animation:sk 1.4s ease-in-out infinite .2s"></i><span style="font:11px 'Geist Mono';color:#8B9AA3">loading skeleton</span></div>
+          <div style="border:1px solid #24303A;border-radius:8px;overflow:hidden;position:relative;padding:16px 14px 44px"><div style="font:500 13px Geist">No draft plans</div><div style="font:12px Geist;color:#8B9AA3;margin-top:2px">Next cycle at <span style="font-family:'Geist Mono'">18:30</span></div><px-skyline stage="0.1" px="2" style="position:absolute;left:0;right:0;bottom:0;height:34px;opacity:.45"></px-skyline></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;font:12px 'Geist Mono';color:#8B9AA3;padding-top:4px;border-top:1px solid #24303A"><span>motion · 150–250 ms ease-out</span><span>hotspots pulse 2.4 s</span><span>trucks move along routes</span><span>numbers count up 900 ms</span><span>prefers-reduced-motion → static</span></div>
+    </div>
+  </section>
+</div>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0F766E"/><rect x="34" y="34" width="14" height="14" fill="#FAF9F6"/><rect x="52" y="34" width="14" height="14" fill="#0B1215"/><rect x="34" y="52" width="14" height="14" fill="#0B1215"/><rect x="52" y="52" width="14" height="14" fill="#FAF9F6"/></svg></template></x-dc>
+</body>
+</html>

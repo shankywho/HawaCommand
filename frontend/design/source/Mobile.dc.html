@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Silkscreen&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="./hawa.js"></script>
+<script src="./pixel.js"></script>
+<script src="./hawa-gl.js"></script>
+<style>body{margin:0;background:#EDEBE5;font-family:'Geist',system-ui,sans-serif;color:#0B1215}*{box-sizing:border-box}a{color:#0F766E}a:hover{color:#0B1215}</style>
+</helmet>
+<div style="padding:40px 44px;display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:12px 'Silkscreen',monospace;color:#0F766E">MOBILE · 390</span><span style="font:13px 'Geist Mono',monospace;color:#5F6B70">Driver PWA (Hindi-first, no typing) · school alert · Citizen Eyes</span></div>
+  <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:12px 'Geist Mono';color:#5F6B70">01 · Driver · today's route</span>
+      <div style="width:390px;height:844px;border-radius:44px;background:#0B1215;padding:10px;box-shadow:0 20px 50px rgba(11,18,21,.25)">
+        <div style="width:370px;height:824px;border-radius:36px;overflow:hidden;background:#FAF9F6;display:flex;flex-direction:column;position:relative">
+          <div style="height:44px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font:600 15px Geist"><span>05:32</span><span style="display:flex;gap:6px"><hc-icon name="signal" size="15"></hc-icon><hc-icon name="battery-full" size="17"></hc-icon></span></div>
+          <div style="padding:8px 20px 16px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font:600 13px 'Geist Mono';padding:3px 8px;border-radius:6px;background:#0B1215;color:#FAF9F6">T-12</span><span style="font:13px 'Noto Sans Devanagari',Geist;color:#3B474D">पानी छिड़काव गाड़ी</span></div>
+            <div style="font:700 30px/1.2 'Noto Sans Devanagari',Geist;letter-spacing:-.01em">आज का रूट</div>
+            <div style="font:14px Geist;color:#5F6B70">Today's route · Thu 12 Nov · <span style="font-family:'Geist Mono'">06:00–10:00</span></div>
+          </div>
+          <div style="position:relative;height:150px;margin:0 20px;border-radius:12px;overflow:hidden;border:1px solid #E6E3DC"><hawa-gl theme="light" mode="plan" hour="42" layers="hex,trucks" labels="none" center="77.305,28.638" zoom="12.4" interactive="false" style="position:absolute;inset:0"></hawa-gl></div>
+          <div style="flex:1;padding:16px 20px 0;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+            <div style="display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;background:#FFFFFF;border:1px solid #E6E3DC"><span style="flex:none;width:56px;height:56px;border-radius:10px;background:#0B1215;color:#FAF9F6;display:grid;place-items:center;font:600 28px 'Geist Mono'">1</span><div style="flex:1;min-width:0"><div style="font:600 19px/1.3 'Noto Sans Devanagari',Geist">आनंद विहार ISBT रोड</div><div style="font:13px Geist;color:#5F6B70">Anand Vihar ISBT road · spray</div><div style="font:500 14px 'Geist Mono';margin-top:2px">06:10–06:50</div></div></div>
+            <div style="display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;background:#FFFFFF;border:1px solid #E6E3DC"><span style="flex:none;width:56px;height:56px;border-radius:10px;background:#E6E3DC;color:#0B1215;display:grid;place-items:center;font:600 28px 'Geist Mono'">2</span><div style="flex:1;min-width:0"><div style="font:600 19px/1.3 'Noto Sans Devanagari',Geist">पटपड़गंज डिपो · पानी भरें</div><div style="font:13px Geist;color:#5F6B70">Patparganj depot · refill</div><div style="font:500 14px 'Geist Mono';margin-top:2px">07:00–07:20</div></div></div>
+            <div style="display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;background:#FFFFFF;border:1px solid #E6E3DC"><span style="flex:none;width:56px;height:56px;border-radius:10px;background:#E6E3DC;color:#0B1215;display:grid;place-items:center;font:600 28px 'Geist Mono'">3</span><div style="flex:1;min-width:0"><div style="font:600 19px/1.3 'Noto Sans Devanagari',Geist">आनंद विहार · दूसरा चक्कर</div><div style="font:13px Geist;color:#5F6B70">Anand Vihar · 2nd pass · spray</div><div style="font:500 14px 'Geist Mono';margin-top:2px">07:30–08:10</div></div></div>
+          </div>
+          <div style="padding:16px 20px 28px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(rgba(250,249,246,0),#FAF9F6 24%)">
+            <div style="font:13px 'Noto Sans Devanagari',Geist;color:#3B474D;text-align:center">छिड़काव HawaTag अपने-आप दर्ज करेगा · Spray is logged automatically</div>
+            <button style="height:68px;border-radius:14px;border:none;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;box-shadow:0 6px 16px rgba(15,118,110,.3)" style-active="transform:scale(.98)"><hc-icon name="play" size="22" stroke="2.5"></hc-icon><span style="display:flex;flex-direction:column;align-items:flex-start"><span style="font:700 22px/1.1 'Noto Sans Devanagari',Geist">रूट शुरू करें</span><span style="font:500 13px Geist;opacity:.9">Start route</span></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:12px 'Geist Mono';color:#5F6B70">02 · Driver · spray auto-confirmed</span>
+      <div style="width:390px;height:844px;border-radius:44px;background:#0B1215;padding:10px;box-shadow:0 20px 50px rgba(11,18,21,.25)">
+        <div style="width:370px;height:824px;border-radius:36px;overflow:hidden;background:#FAF9F6;display:flex;flex-direction:column">
+          <div style="height:44px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font:600 15px Geist"><span>06:52</span><span style="display:flex;gap:6px"><hc-icon name="signal" size="15"></hc-icon><hc-icon name="battery-full" size="17"></hc-icon></span></div>
+          <div style="padding:8px 20px 12px;display:flex;align-items:center;gap:10px"><span style="font:600 13px 'Geist Mono';padding:3px 8px;border-radius:6px;background:#0B1215;color:#FAF9F6">T-12</span><span style="font:14px 'Noto Sans Devanagari',Geist;color:#3B474D">स्टॉप 1 / 3</span><div style="flex:1"></div><span style="font:13px Geist;color:#5F6B70">रूट चालू</span></div>
+          <div style="margin:0 20px;padding:24px 20px;border-radius:16px;background:#0F766E;color:#FFFFFF;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+            <span style="width:72px;height:72px;border-radius:50%;background:#FFFFFF;color:#0F766E;display:grid;place-items:center"><hc-icon name="check" size="40" stroke="3"></hc-icon></span>
+            <div style="font:700 28px/1.2 'Noto Sans Devanagari',Geist">छिड़काव दर्ज ✓</div>
+            <div style="font:600 17px Geist">Spray logged</div>
+            <div style="font:14px/1.5 'Noto Sans Devanagari',Geist;opacity:.95">आनंद विहार ISBT रोड · HawaTag ने अपने-आप दर्ज किया</div>
+          </div>
+          <div style="margin:12px 20px 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#E6E3DC;border:1px solid #E6E3DC;border-radius:12px;overflow:hidden">
+            <div style="background:#FFFFFF;padding:12px;display:flex;flex-direction:column;gap:2px"><span style="font:12px 'Noto Sans Devanagari',Geist;color:#5F6B70">पानी</span><span style="font:600 20px 'Geist Mono'">1,210<span style="font-size:12px;color:#5F6B70"> L</span></span></div>
+            <div style="background:#FFFFFF;padding:12px;display:flex;flex-direction:column;gap:2px"><span style="font:12px 'Noto Sans Devanagari',Geist;color:#5F6B70">पंप चालू</span><span style="font:600 20px 'Geist Mono'">32<span style="font-size:12px;color:#5F6B70"> min</span></span></div>
+            <div style="background:#FFFFFF;padding:12px;display:flex;flex-direction:column;gap:2px"><span style="font:12px 'Noto Sans Devanagari',Geist;color:#5F6B70">पंप</span><span style="font:600 20px 'Geist Mono'">OFF</span></div>
+          </div>
+          <div style="margin:20px 20px 0;font:13px Geist;color:#5F6B70">अगला स्टॉप · Next</div>
+          <div style="margin:8px 20px 0;display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;background:#FFFFFF;border:2px solid #0B1215"><span style="flex:none;width:56px;height:56px;border-radius:10px;background:#0B1215;color:#FAF9F6;display:grid;place-items:center;font:600 28px 'Geist Mono'">2</span><div style="flex:1"><div style="font:600 19px/1.3 'Noto Sans Devanagari',Geist">पटपड़गंज डिपो · पानी भरें</div><div style="font:500 14px 'Geist Mono';margin-top:2px">07:00 · 2.4 km</div></div></div>
+          <div style="flex:1"></div>
+          <div style="padding:16px 20px 28px">
+            <button style="width:100%;height:68px;border-radius:14px;border:none;background:#0B1215;color:#FAF9F6;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer"><hc-icon name="navigation" size="22" stroke="2.5"></hc-icon><span style="display:flex;flex-direction:column;align-items:flex-start"><span style="font:700 22px/1.1 'Noto Sans Devanagari',Geist">रास्ता दिखाएँ</span><span style="font:500 13px Geist;opacity:.8">Navigate to stop 2</span></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:12px 'Geist Mono';color:#5F6B70">03 · School principal · WhatsApp alert</span>
+      <div style="width:390px;height:844px;border-radius:44px;background:#0B1215;padding:10px;box-shadow:0 20px 50px rgba(11,18,21,.25)">
+        <div style="width:370px;height:824px;border-radius:36px;overflow:hidden;background:#ECE8DF;display:flex;flex-direction:column">
+          <div style="height:44px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font:600 15px Geist;background:#FAF9F6"><span>19:01</span><span style="display:flex;gap:6px"><hc-icon name="signal" size="15"></hc-icon><hc-icon name="battery-full" size="17"></hc-icon></span></div>
+          <div style="padding:10px 16px;display:flex;align-items:center;gap:12px;background:#FAF9F6;border-bottom:1px solid #E6E3DC"><hc-icon name="chevron-left" size="22"></hc-icon><span style="width:38px;height:38px;border-radius:50%;background:#0B1215;display:grid;place-items:center"><span style="display:grid;grid-template-columns:repeat(2,5px);gap:2px"><i style="width:5px;height:5px;background:#FAF9F6"></i><i style="width:5px;height:5px;background:#2DD4BF"></i><i style="width:5px;height:5px;background:#2DD4BF"></i><i style="width:5px;height:5px;background:#FAF9F6"></i></span></span><div style="flex:1"><div style="font:600 16px Geist">HawaCommand Alerts</div><div style="font:12px Geist;color:#5F6B70">Delhi air · official business account</div></div></div>
+          <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+            <div style="align-self:center;font:12px Geist;color:#3B474D;background:#FAF9F6;padding:4px 10px;border-radius:8px">Wed 11 Nov</div>
+            <div style="align-self:flex-start;max-width:88%;background:#FFFFFF;border-radius:4px 14px 14px 14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 1px rgba(11,18,21,.08)">
+              <span style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;height:22px;padding:0 8px;background:#C02A2A;color:#FFFFFF;font:10px 'Silkscreen',monospace">AQI ~380 · 8 AM</span>
+              <span style="font:16px/1.5 Geist">AQI near your school will reach ~380 at 8 AM. Hold assembly indoors. Safest outdoor window: <b style="font-weight:600">12:30–2:00 PM</b>.</span>
+              <span style="font:13px/1.5 Geist;color:#5F6B70">Main pollutant: PM2.5. Keep classroom windows shut until 11 AM. Forecast confidence 0.81.</span>
+              <span style="font:11px 'Geist Mono';color:#5F6B70;align-self:flex-end">19:00</span>
+            </div>
+            <div style="align-self:flex-start;max-width:88%;background:#FFFFFF;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 1px rgba(11,18,21,.08)">
+              <span style="font:15px/1.6 'Noto Sans Devanagari',Geist">आपके स्कूल के पास कल सुबह 8 बजे AQI लगभग 380 तक पहुँचेगा। प्रार्थना सभा अंदर करें। बाहर के लिए सबसे सुरक्षित समय: दोपहर 12:30–2:00।</span>
+              <span style="font:11px 'Geist Mono';color:#5F6B70;align-self:flex-end">19:00</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;max-width:88%">
+              <span style="height:40px;border-radius:10px;background:#FFFFFF;color:#0F766E;font:500 15px Geist;display:flex;align-items:center;justify-content:center;gap:8px"><hc-icon name="check" size="15"></hc-icon>Assembly moved indoors</span>
+              <span style="height:40px;border-radius:10px;background:#FFFFFF;color:#0F766E;font:500 15px Geist;display:flex;align-items:center;justify-content:center;gap:8px"><hc-icon name="clock" size="15"></hc-icon>Send me the safe window again at 12</span>
+            </div>
+            <div style="align-self:flex-end;max-width:78%;background:#D4EDE8;border-radius:14px 4px 14px 14px;padding:10px 14px;font:15px Geist">Assembly moved indoors<div style="font:11px 'Geist Mono';color:#3B474D;text-align:right;margin-top:2px">19:24 ✓✓</div></div>
+          </div>
+          <div style="padding:10px 12px 26px;background:#FAF9F6;display:flex;gap:8px;align-items:center"><span style="flex:1;height:42px;border-radius:21px;background:#FFFFFF;border:1px solid #E6E3DC;display:flex;align-items:center;padding:0 16px;font:15px Geist;color:#5F6B70">Message</span><span style="width:42px;height:42px;border-radius:50%;background:#0F766E;color:#FFFFFF;display:grid;place-items:center"><hc-icon name="mic" size="18"></hc-icon></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:12px 'Geist Mono';color:#5F6B70">04 · Citizen Eyes · report burning</span>
+      <div style="width:390px;height:844px;border-radius:44px;background:#0B1215;padding:10px;box-shadow:0 20px 50px rgba(11,18,21,.25)">
+        <div style="width:370px;height:824px;border-radius:36px;overflow:hidden;background:#ECE8DF;display:flex;flex-direction:column">
+          <div style="height:44px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font:600 15px Geist;background:#FAF9F6"><span>10:43</span><span style="display:flex;gap:6px"><hc-icon name="signal" size="15"></hc-icon><hc-icon name="battery-full" size="17"></hc-icon></span></div>
+          <div style="padding:10px 16px;display:flex;align-items:center;gap:12px;background:#FAF9F6;border-bottom:1px solid #E6E3DC"><hc-icon name="chevron-left" size="22"></hc-icon><span style="width:38px;height:38px;border-radius:50%;background:#0B1215;display:grid;place-items:center;color:#2DD4BF"><hc-icon name="eye" size="18"></hc-icon></span><div style="flex:1"><div style="font:600 16px Geist">Citizen Eyes</div><div style="font:12px Geist;color:#5F6B70">Report #C-131 · Ghazipur</div></div></div>
+          <div style="flex:1;padding:12px 16px;display:flex;flex-direction:column;gap:8px;overflow:hidden">
+            <div style="align-self:flex-end;width:62%;background:#D4EDE8;border-radius:14px 4px 14px 14px;padding:5px;display:flex;flex-direction:column;gap:4px">
+              <div style="position:relative;height:110px;border-radius:10px;overflow:hidden"><px-scene kind="burning" stage="0.2" style="position:absolute;inset:0"></px-scene></div>
+              <span style="font:14px Geist;padding:2px 6px">Garbage burning behind the market</span><span style="font:11px 'Geist Mono';color:#3B474D;text-align:right;padding:0 6px 2px">09:58 ✓✓</span>
+            </div>
+            <div style="align-self:flex-start;max-width:84%;background:#FFFFFF;border-radius:4px 14px 14px 14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px"><span style="display:flex;align-items:center;gap:6px;font:600 14px Geist"><hc-icon name="badge-check" size="15"></hc-icon>Verified</span><span style="font:13.5px/1.5 Geist;color:#3B474D">Photo shows open burning. Matched to a sensor spike 300 m away. Confidence 0.88.</span><span style="font:11px 'Geist Mono';color:#5F6B70;align-self:flex-end">09:59</span></div>
+            <div style="align-self:flex-start;max-width:84%;background:#FFFFFF;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px"><span style="display:flex;align-items:center;gap:6px;font:600 14px Geist"><hc-icon name="users" size="15"></hc-icon>Inspection team on the way</span><span style="font:13.5px/1.5 'Noto Sans Devanagari',Geist;color:#3B474D">जाँच टीम I-3 रास्ते में है · ETA 25 min</span><span style="font:11px 'Geist Mono';color:#5F6B70;align-self:flex-end">10:02</span></div>
+            <div style="align-self:flex-start;max-width:84%;background:#FFFFFF;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;border:2px solid #0F766E"><span style="display:flex;align-items:center;gap:6px;font:600 15px Geist;color:#0F766E"><hc-icon name="circle-check" size="16"></hc-icon>Resolved at 10:42</span><span style="font:13.5px/1.5 Geist;color:#3B474D">Fire put out and site owner notified. The cell is returning to baseline. Thank you for reporting.</span><span style="font:11px 'Geist Mono';color:#5F6B70;align-self:flex-end">10:42</span></div>
+            <div style="padding:10px 12px;border-radius:12px;background:#FAF9F6;display:flex;justify-content:space-between;font:12px 'Geist Mono';color:#3B474D">
+              <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><i style="width:10px;height:10px;background:#0F766E"></i>Sent</span>
+              <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><i style="width:10px;height:10px;background:#0F766E"></i>Verified</span>
+              <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><i style="width:10px;height:10px;background:#0F766E"></i>On the way</span>
+              <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><i style="width:10px;height:10px;background:#0F766E"></i>Resolved</span>
+            </div>
+          </div>
+          <div style="padding:10px 12px 26px;background:#FAF9F6;display:flex;gap:8px;align-items:center"><span style="width:42px;height:42px;border-radius:50%;background:#FFFFFF;border:1px solid #E6E3DC;display:grid;place-items:center"><hc-icon name="camera" size="18"></hc-icon></span><span style="flex:1;height:42px;border-radius:21px;background:#FFFFFF;border:1px solid #E6E3DC;display:flex;align-items:center;padding:0 16px;font:15px Geist;color:#5F6B70">Send a photo to report</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0F766E"/><rect x="34" y="34" width="14" height="14" fill="#FAF9F6"/><rect x="52" y="34" width="14" height="14" fill="#0B1215"/><rect x="34" y="52" width="14" height="14" fill="#0B1215"/><rect x="52" y="52" width="14" height="14" fill="#FAF9F6"/></svg></template></x-dc>
+</body>
+</html>

@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: HawaCommand backend AWS integration (cache table, alerts topic, sensor stream)
+
+Parameters:
+  CacheTableName:
+    Type: String
+    Default: hawa-cache
+
+Resources:
+  CacheTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref CacheTableName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: hawa-alerts
+
+  SensorStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: hawa-sensor-data
+      StreamModeDetails:
+        StreamMode: ON_DEMAND
+
+  BackendPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Permissions the HawaCommand backend task role needs
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: [dynamodb:GetItem, dynamodb:PutItem]
+            Resource: !GetAtt CacheTable.Arn
+          - Effect: Allow
+            Action: sns:Publish
+            Resource: !Ref AlertsTopic
+          - Effect: Allow
+            Action: kinesis:PutRecord
+            Resource: !GetAtt SensorStream.Arn
+          - Effect: Allow
+            Action: sagemaker:InvokeEndpoint
+            Resource: !Sub arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:endpoint/*
+          - Effect: Allow
+            Action: states:StartSyncExecution
+            Resource: !Sub arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*
+
+Outputs:
+  AlertsTopicArn:
+    Value: !Ref AlertsTopic
+  SensorStreamName:
+    Value: !Ref SensorStream
+  BackendPolicyArn:
+    Value: !Ref BackendPolicy

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Devanagari:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="./hawa.js"></script>
+<script src="./civic-map.js"></script>
+<style>body{margin:0;background:#F4F1EA;color:#1B1B1B;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}*{box-sizing:border-box}a{color:#1F3F9A}a:hover{color:#1B1B1B}button{font-family:inherit}input[type=range]{accent-color:#1F3F9A}@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}</style>
+</helmet>
+<div style="position:fixed;inset:0;min-width:1180px;display:grid;grid-template-columns:{{ railW }} minmax(0,1fr);grid-template-rows:60px minmax(0,1fr);background:#F4F1EA">
+
+  <header style="grid-column:1 / span 2;display:flex;align-items:center;gap:20px;padding:0 20px;border-bottom:1px solid #DDD8CC;background:#FBFAF6">
+    <span style="font:700 18px 'IBM Plex Sans';letter-spacing:-.01em;white-space:nowrap">HawaCommand</span>
+    <span style="font:15px 'IBM Plex Sans';color:#55524C;white-space:nowrap">East Delhi</span>
+    <sc-if value="{{ demo }}">
+      <nav aria-label="Demo steps" style="display:flex;align-items:center;gap:4px;margin-left:12px">
+        <sc-for list="{{ dsteps }}" as="d" hint-placeholder-count="5">
+          <button onClick="{{ d.go }}" style="height:36px;padding:0 14px;border-radius:18px;border:1px solid {{ d.border }};background:{{ d.bg }};color:{{ d.fg }};font:500 15px 'IBM Plex Sans';display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;transition:background .2s ease-out,color .2s ease-out"><span style="font:500 14px 'IBM Plex Mono'">{{ d.n }}</span>{{ d.label }}</button>
+        </sc-for>
+      </nav>
+    </sc-if>
+    <div style="flex:1"></div>
+    <span style="font:14px 'IBM Plex Sans';color:#55524C;white-space:nowrap">Simulated fleet, live CPCB data</span>
+    <span style="font:500 15px 'IBM Plex Mono';white-space:nowrap">{{ clock }}</span>
+    <sc-if value="{{ notDemo }}"><button onClick="{{ startDemo }}" style="height:38px;padding:0 16px;border-radius:8px;border:1px solid #1B1B1B;background:#1B1B1B;color:#FBFAF6;font:500 15px 'IBM Plex Sans';cursor:pointer;white-space:nowrap">Start guided demo</button></sc-if>
+    <sc-if value="{{ demo }}"><button onClick="{{ exitDemo }}" style="height:38px;padding:0 6px;border:none;background:transparent;color:#1F3F9A;font:500 15px 'IBM Plex Sans';cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap">Exit demo</button></sc-if>
+  </header>
+
+  <nav aria-label="Screens" style="grid-row:2;border-right:1px solid #DDD8CC;background:#FBFAF6;display:flex;flex-direction:column;gap:2px;padding:12px 10px">
+    <sc-for list="{{ rail }}" as="r" hint-placeholder-count="6">
+      <button onClick="{{ r.go }}" title="{{ r.title }}" style="height:44px;padding:0 12px;border-radius:8px;border:none;background:{{ r.bg }};color:{{ r.fg }};font:500 16px 'IBM Plex Sans';display:flex;align-items:center;gap:12px;cursor:{{ r.cursor }};text-align:left;white-space:nowrap;overflow:hidden" style-hover="background:#EFEBE1"><hc-icon name="{{ r.icon }}" size="20"></hc-icon><sc-if value="{{ railOpen }}"><span>{{ r.label }}</span></sc-if></button>
+    </sc-for>
+    <div style="flex:1"></div>
+    <button onClick="{{ toggleRail }}" style="height:40px;padding:0 12px;border-radius:8px;border:none;background:transparent;color:#55524C;font:15px 'IBM Plex Sans';display:flex;align-items:center;gap:12px;cursor:pointer;white-space:nowrap"><hc-icon name="{{ railIcon }}" size="18"></hc-icon><sc-if value="{{ railOpen }}"><span>Collapse</span></sc-if></button>
+  </nav>
+
+  <main style="grid-row:2;grid-column:2;display:grid;grid-template-columns:minmax(0,1fr) 420px;min-width:0;min-height:0">
+    <div style="position:relative;min-width:0;min-height:0;border-right:1px solid #DDD8CC">
+      <civic-map selected="{{ sel }}" mode="{{ mapMode }}" layers="{{ mapLayers }}" hour="{{ hour }}" center="{{ mapCenter }}" zoom="{{ mapZoom }}" style="position:absolute;inset:0"></civic-map>
+
+      <sc-if value="{{ isMap }}">
+        <div style="position:absolute;left:20px;top:64px;display:flex;align-items:center;gap:8px;font:14px 'IBM Plex Sans';color:#1B1B1B" title="Wind from north-west, 2.1 m/s">
+          <span style="width:32px;height:32px;border-radius:50%;background:#FBFAF6;border:1px solid #DDD8CC;display:grid;place-items:center;transform:rotate(135deg)"><hc-icon name="arrow-up" size="16"></hc-icon></span><span>Wind NW, 2 m/s</span>
+        </div>
+        <div style="position:absolute;z-index:2;right:20px;top:20px;display:flex;gap:8px;align-items:flex-start">
+          <button onClick="{{ toggleChange }}" aria-pressed="{{ changeOn }}" style="height:40px;padding:0 14px;border-radius:8px;border:1px solid {{ changeBorder }};background:{{ changeBg }};color:{{ changeFg }};font:500 15px 'IBM Plex Sans';cursor:pointer;white-space:nowrap">Show change since yesterday</button>
+          <div style="position:relative">
+            <button onClick="{{ toggleLayers }}" style="height:40px;padding:0 14px;border-radius:8px;border:1px solid #DDD8CC;background:#FBFAF6;color:#1B1B1B;font:500 15px 'IBM Plex Sans';display:flex;align-items:center;gap:8px;cursor:pointer"><hc-icon name="layers" size="16"></hc-icon>Layers</button>
+            <sc-if value="{{ layersOpen }}">
+              <div style="position:absolute;right:0;top:48px;width:220px;padding:8px;border-radius:8px;background:#FBFAF6;border:1px solid #DDD8CC;box-shadow:0 8px 24px rgba(27,27,27,.12);display:flex;flex-direction:column;animation:up .15s ease-out">
+                <sc-for list="{{ layerList }}" as="l" hint-placeholder-count="3">
+                  <label style="display:flex;align-items:center;gap:10px;height:40px;padding:0 8px;border-radius:6px;font:15px 'IBM Plex Sans';cursor:pointer"><input type="checkbox" checked="{{ l.on }}" onChange="{{ l.toggle }}" style="width:16px;height:16px;accent-color:#1F3F9A">{{ l.label }}</label>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        <div style="position:absolute;z-index:1;left:20px;right:20px;bottom:20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:16px;font:14px 'IBM Plex Sans';color:#1B1B1B;flex-wrap:wrap">
+            <sc-if value="{{ notChange }}"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border-radius:50%;background:#E07A2E"></i>Poor</span><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border-radius:50%;background:#C8372D"></i>Very poor</span><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border-radius:50%;background:#7E1F3D"></i>Severe</span><span style="color:#55524C">PM2.5, CPCB scale. Unpainted areas need no action.</span></sc-if>
+            <sc-if value="{{ changeOn }}"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border-radius:50%;background:#B3261E"></i>Worse than yesterday</span><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border-radius:50%;background:#1F3F9A"></i>Better</span><span style="color:#55524C">Change in PM2.5 vs same hour yesterday</span></sc-if>
+          </div>
+          <div style="padding:14px 18px 10px;border-radius:10px;background:#FBFAF6;border:1px solid #DDD8CC">
+            <div style="position:relative;height:40px">
+              <div style="position:absolute;left:0;right:0;top:12px;height:4px;border-radius:2px;background:#E6E1D5"></div>
+              <div style="position:absolute;left:0;width:{{ handlePct }};top:12px;height:4px;border-radius:2px;background:#1F3F9A"></div>
+              <div style="position:absolute;left:0;top:26px;font:500 14px 'IBM Plex Sans'">Now</div>
+              <div style="position:absolute;left:58.3%;top:4px;width:2px;height:20px;background:#1B1B1B"></div>
+              <div style="position:absolute;left:58.3%;top:26px;transform:translateX(-50%);font:500 14px 'IBM Plex Sans';white-space:nowrap">Peak · Thu 08:00</div>
+              <div style="position:absolute;left:{{ handlePct }};top:4px;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:#FBFAF6;border:3px solid #1F3F9A;pointer-events:none"></div>
+              <input type="range" min="0" max="72" value="{{ hour }}" onChange="{{ onHour }}" aria-label="Time, now to 72 hours ahead" style="position:absolute;left:0;right:0;top:0;width:100%;height:28px;opacity:0;margin:0;cursor:pointer">
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isImpact }}">
+        <div style="position:absolute;inset:0;z-index:1;background:#F4F1EA;padding:40px 48px {{ impactPadB }};display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;gap:24px;flex-wrap:wrap;font:15px 'IBM Plex Sans'"><span style="display:flex;align-items:center;gap:8px"><i style="width:18px;height:3px;background:#1B1B1B"></i>Measured PM10</span><span style="display:flex;align-items:center;gap:8px"><i style="width:18px;border-top:3px dashed #8C877D"></i>Expected without spraying</span><span style="display:flex;align-items:center;gap:8px"><i style="width:18px;height:12px;background:rgba(31,63,154,.18)"></i>Effect</span></div>
+          <div ref="{{ chartRef }}" style="flex:1;min-height:0;position:relative">{{ impactChart }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ caption }}">
+        <div style="position:absolute;z-index:3;left:50%;bottom:{{ captionBottom }};transform:translateX(-50%);max-width:min(760px,calc(100% - 40px));padding:16px 22px;border-radius:10px;background:#1B1B1B;color:#FBFAF6;font:500 20px/1.4 'IBM Plex Sans';text-align:center;box-shadow:0 12px 32px rgba(27,27,27,.25);animation:up .25s ease-out">{{ caption }}<div style="margin-top:6px;font:14px 'IBM Plex Sans';color:#CFCAC0">Step {{ dNum }} of 5 · use ← → keys</div></div>
+      </sc-if>
+    </div>
+
+    <aside style="min-height:0;overflow:auto;background:#FBFAF6;display:flex;flex-direction:column">
+      <sc-if value="{{ listState }}">
+        <div style="padding:28px 28px 8px"><h1 style="margin:0;font:600 26px/1.25 'IBM Plex Sans';letter-spacing:-.015em;text-wrap:balance">{{ listTitle }}</h1><p style="margin:10px 0 0;font:16px/1.5 'IBM Plex Sans';color:#55524C">Ranked by how many people breathe it. Pick one to see what to send.</p></div>
+        <ol style="list-style:none;margin:12px 0 0;padding:0">
+          <sc-for list="{{ ranked }}" as="p" hint-placeholder-count="5">
+            <li><button onClick="{{ p.pick }}" style="width:100%;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px 28px;border:none;border-top:1px solid #DDD8CC;background:transparent;text-align:left;cursor:pointer" style-hover="background:#F4F1EA">
+              <span style="font:500 16px 'IBM Plex Mono';color:#55524C">{{ p.rank }}</span>
+              <span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font:600 18px 'IBM Plex Sans'">{{ p.name }}</span><span style="font:14px 'IBM Plex Sans';color:#55524C">{{ p.why }}</span></span>
+              <span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span style="font:500 16px 'IBM Plex Mono';display:flex;align-items:center;gap:8px"><i style="width:10px;height:10px;border-radius:50%;background:{{ p.color }}"></i>{{ p.v }}</span><span style="font:500 14px 'IBM Plex Sans';color:#1F3F9A;white-space:nowrap">{{ p.verb }} →</span></span>
+            </button></li>
+          </sc-for>
+        </ol>
+      </sc-if>
+
+      <sc-if value="{{ detailState }}">
+        <div style="padding:20px 28px 0"><button onClick="{{ clearSel }}" style="border:none;background:transparent;padding:0;color:#1F3F9A;font:500 15px 'IBM Plex Sans';cursor:pointer;display:flex;align-items:center;gap:6px"><hc-icon name="arrow-left" size="16"></hc-icon>All places</button></div>
+        <div style="padding:16px 28px 24px;border-bottom:1px solid #DDD8CC"><div style="font:15px 'IBM Plex Sans';color:#55524C;margin-bottom:6px">{{ d.place }}, {{ d.area }}</div><h1 style="margin:0;font:600 28px/1.2 'IBM Plex Sans';letter-spacing:-.02em;text-wrap:balance">{{ d.headline }}</h1></div>
+        <div style="padding:22px 28px;border-bottom:1px solid #DDD8CC;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:baseline;gap:10px"><span style="font:500 56px/1 'IBM Plex Mono';letter-spacing:-.03em">{{ d.v }}</span><span style="font:16px 'IBM Plex Sans';color:#55524C">µg/m³ PM2.5</span></div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:16px 'IBM Plex Sans'"><span style="display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:6px;background:{{ d.color }};color:#FFFFFF;font-weight:600">{{ d.band }}</span><span>Cause: {{ d.cause }}</span><span title="{{ d.confNum }}" style="color:#55524C;border-bottom:1px dotted #55524C;cursor:help">{{ d.conf }}</span></div>
+        </div>
+        <div style="padding:22px 28px;border-bottom:1px solid #DDD8CC"><div style="font:600 16px 'IBM Plex Sans';margin-bottom:6px">Who's affected</div><p style="margin:0;font:16px/1.55 'IBM Plex Sans'">{{ d.people }}</p></div>
+        <div style="padding:22px 28px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid #DDD8CC">
+          <button onClick="{{ sendAction }}" style="height:52px;border-radius:8px;border:none;background:#1F3F9A;color:#FFFFFF;font:600 17px 'IBM Plex Sans';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><hc-icon name="{{ d.btnIcon }}" size="18"></hc-icon>{{ d.btn }}</button>
+          <button onClick="{{ goPlan }}" style="align-self:flex-start;border:none;background:transparent;padding:0;color:#1F3F9A;font:500 16px 'IBM Plex Sans';text-decoration:underline;text-underline-offset:3px;cursor:pointer">Add to Thursday plan</button>
+          <sc-if value="{{ sentNote }}"><div style="font:15px 'IBM Plex Sans';color:#1B1B1B;display:flex;gap:8px;align-items:center;animation:up .2s ease-out"><hc-icon name="check" size="16"></hc-icon>{{ sentNote }}</div></sc-if>
+        </div>
+        <details style="padding:18px 28px 28px">
+          <summary style="font:500 16px 'IBM Plex Sans';cursor:pointer;color:#1B1B1B">Details: forecast, source trail, raw numbers</summary>
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:16px">
+            <div><div style="font:14px 'IBM Plex Sans';color:#55524C;margin-bottom:6px">Next 72 hours, likely range</div><hc-chart type="mini" theme="light" value="{{ d.v }}" height="130"></hc-chart></div>
+            <div style="font:15px/1.55 'IBM Plex Sans'"><b style="font-weight:600">Source trail.</b> {{ d.trail }}</div>
+            <dl style="margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font:14px 'IBM Plex Sans'"><dt style="color:#55524C">Model confidence</dt><dd style="margin:0;font-family:'IBM Plex Mono'">{{ d.confNum }}</dd><dt style="color:#55524C">Exposure, next 4 h</dt><dd style="margin:0;font-family:'IBM Plex Mono'">{{ d.ph }} person-hours</dd><dt style="color:#55524C">Cell size</dt><dd style="margin:0;font-family:'IBM Plex Mono'">500 m</dd></dl>
+          </div>
+        </details>
+      </sc-if>
+
+      <sc-if value="{{ isPlan }}">
+        <div style="padding:28px 28px 20px;border-bottom:1px solid #DDD8CC">
+          <div style="font:15px 'IBM Plex Sans';color:#55524C;margin-bottom:8px">Plan #214 · East Delhi · Thu 06:00–10:00 · {{ planStatus }}</div>
+          <h1 style="margin:0 0 16px;font:600 26px/1.25 'IBM Plex Sans';letter-spacing:-.015em;text-wrap:balance">Same 9 vehicles, sent where people are breathing the worst air.</h1>
+          <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 56px/1 'IBM Plex Mono';letter-spacing:-.03em;color:#1F3F9A">+31%</span><span style="font:17px/1.35 'IBM Plex Sans'">more people protected<br><span style="color:#55524C;font-size:15px">vs usual routes · simulated</span></span></div>
+        </div>
+        <div style="padding:18px 28px 6px;font:600 16px 'IBM Plex Sans'">What changes from the usual routes</div>
+        <ul style="list-style:none;margin:0;padding:0 0 8px">
+          <sc-for list="{{ diff }}" as="r" hint-placeholder-count="8">
+            <li style="display:grid;grid-template-columns:22px 64px minmax(0,1fr);gap:8px;padding:10px 28px;align-items:baseline;background:{{ r.bg }};font:15px/1.4 'IBM Plex Sans';color:{{ r.fg }};text-decoration:{{ r.deco }}"><span style="font:600 16px 'IBM Plex Mono'">{{ r.sign }}</span><span style="font:500 14px 'IBM Plex Mono'">{{ r.asset }}</span><span>{{ r.text }}</span></li>
+          </sc-for>
+        </ul>
+        <sc-if value="{{ auditOpen }}">
+          <div style="margin:8px 28px 0;padding:18px;border-radius:10px;border:1.5px solid #1B1B1B;background:#FFFFFF;display:flex;flex-direction:column;gap:12px">
+            <div style="font:600 15px 'IBM Plex Sans'">The Auditor objects</div>
+            <p style="margin:0;font:17px/1.5 'IBM Plex Sans'">T-12 is going to a burning site near Ghazipur. Water won't help smoke. Send inspection team I-3 instead.</p>
+            <button onClick="{{ applyAudit }}" style="align-self:flex-start;height:40px;padding:0 16px;border-radius:8px;border:1px solid #1B1B1B;background:#1B1B1B;color:#FBFAF6;font:500 15px 'IBM Plex Sans';cursor:pointer">Accept the fix</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ auditDone }}"><div style="margin:8px 28px 0;font:15px 'IBM Plex Sans';display:flex;gap:8px;align-items:center"><hc-icon name="check" size="16"></hc-icon>Auditor's fix applied. All checks pass.</div></sc-if>
+        <div style="padding:22px 28px;display:flex;flex-direction:column;gap:12px">
+          <sc-if value="{{ notApproved }}"><button onClick="{{ approve }}" style="height:52px;border-radius:8px;border:none;background:#1F3F9A;color:#FFFFFF;font:600 17px 'IBM Plex Sans';cursor:pointer;opacity:{{ approveOp }}">Approve and dispatch</button><span style="font:14px 'IBM Plex Sans';color:#55524C">Nothing is sent until an officer approves.</span></sc-if>
+          <sc-if value="{{ approved }}">
+            <div style="padding:18px;border-radius:10px;background:#EEF1FA;border:1px solid #C9D2EE;display:flex;flex-direction:column;gap:10px;animation:up .25s ease-out">
+              <div style="font:600 17px 'IBM Plex Sans'">Dispatched. Drivers have their routes.</div>
+              <div style="font:15px 'IBM Plex Sans';color:#55524C">What driver T-12 sees at 05:30:</div>
+              <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+                <li style="display:flex;gap:12px;align-items:center;font:500 17px 'IBM Plex Sans Devanagari'"><span style="width:32px;height:32px;border-radius:6px;background:#1B1B1B;color:#FBFAF6;display:grid;place-items:center;font:600 16px 'IBM Plex Mono'">1</span>आनंद विहार ISBT रोड · 06:10</li>
+                <li style="display:flex;gap:12px;align-items:center;font:500 17px 'IBM Plex Sans Devanagari'"><span style="width:32px;height:32px;border-radius:6px;background:#DDD8CC;display:grid;place-items:center;font:600 16px 'IBM Plex Mono'">2</span>पटपड़गंज डिपो · पानी भरें · 07:00</li>
+                <li style="display:flex;gap:12px;align-items:center;font:500 17px 'IBM Plex Sans Devanagari'"><span style="width:32px;height:32px;border-radius:6px;background:#DDD8CC;display:grid;place-items:center;font:600 16px 'IBM Plex Mono'">3</span>आनंद विहार · दूसरा चक्कर · 07:30</li>
+              </ol>
+            </div>
+          </sc-if>
+        </div>
+        <details style="padding:0 28px 28px"><summary style="font:500 16px 'IBM Plex Sans';cursor:pointer">Details: agents, checks, constraints</summary><div style="margin-top:12px;font:15px/1.6 'IBM Plex Sans';color:#1B1B1B">Forecaster (LightGBM, 17:00 run), Planner (OR-Tools, 1.8 s), Auditor (1 objection), Communicator (2 alerts). The optimiser enforces shift, water and cause–tool rules; agents explain and critique but cannot bypass them.</div></details>
+      </sc-if>
+
+      <sc-if value="{{ isImpact }}">
+        <div style="padding:28px">
+          <div style="font:15px 'IBM Plex Sans';color:#55524C;margin-bottom:8px">Anand Vihar ISBT road · Thu 06:40 · simulated intervention</div>
+          <h1 style="margin:0 0 14px;font:600 26px/1.25 'IBM Plex Sans';letter-spacing:-.015em;text-wrap:balance">Sprinkler T-12 cut PM10 by 18% for 90 minutes.</h1>
+          <p style="margin:0;font:16px/1.55 'IBM Plex Sans'">Measured, not guessed. The expected line is built from five similar streets that weren't sprayed. The shaded gap is the effect.</p>
+        </div>
+        <div style="padding:0 28px 28px;display:flex;flex-direction:column">
+          <sc-for list="{{ impactFacts }}" as="f" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #DDD8CC;font:16px 'IBM Plex Sans'"><span style="color:#55524C">{{ f.k }}</span><span style="font-family:'IBM Plex Mono';font-weight:500">{{ f.v }}</span></div></sc-for>
+        </div>
+      </sc-if>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;demo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Console&quot;},&quot;selected&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;&quot;,&quot;ghazipur&quot;,&quot;mundka&quot;,&quot;wazirpur&quot;,&quot;anand&quot;],&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Console&quot;}}">
+class Component extends DCLogic {
+  state = { scr: 'map', sel: '', hour: 0, change: false, layersOpen: false, layers: { schools: true, routes: false }, rail: true, demo: false, dstep: 0, audit: false, approved: false, sent: '' };
+  chartRef = React.createRef();
+  componentDidMount() {
+    this.cro = new ResizeObserver(() => { const e = this.chartRef.current; if (e && (Math.abs(e.clientWidth - (this.state.cw || 0)) > 2 || Math.abs(e.clientHeight - (this.state.ch || 0)) > 2)) this.setState({ cw: e.clientWidth, ch: e.clientHeight }); });
+    this.poll = setInterval(() => { const e = this.chartRef.current; if (e && e !== this._obs) { this._obs = e; this.cro.observe(e); } }, 300);
+    this.onPick = e => { if (this.state.scr === 'map') this.setState({ sel: e.detail.id, sent: '' }); };
+    this.onKey = e => { if (!this.state.demo) return; if (e.key === 'ArrowRight') this.goStep(Math.min(4, this.state.dstep + 1)); if (e.key === 'ArrowLeft') this.goStep(Math.max(0, this.state.dstep - 1)); if (e.key === 'Escape') this.setState({ demo: false }); };
+    document.addEventListener('civic-pick', this.onPick); addEventListener('keydown', this.onKey);
+    if (this.props.demo) this.goStep(0);
+    if (this.props.selected) this.setState({ sel: this.props.selected });
+  }
+  componentWillUnmount() { this.cro && this.cro.disconnect(); clearInterval(this.poll); document.removeEventListener('civic-pick', this.onPick); removeEventListener('keydown', this.onKey); }
+  goStep(i) {
+    const P = [{ scr: 'map', sel: '' }, { scr: 'map', sel: 'ghazipur' }, { scr: 'plan', audit: false, approved: false }, { scr: 'plan', audit: true, approved: true }, { scr: 'impact' }][i];
+    this.setState(Object.assign({ demo: true, dstep: i, layersOpen: false, change: false, hour: 0 }, P));
+  }
+  chart() {
+    const h = React.createElement, W = Math.max(320, this.state.cw || 900), H = Math.max(240, this.state.ch || 420), pl = 56, pr = 16, pt = 16, pb = 40, N = 49;
+    let s = 7; const R = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+    const exp = [], obs = [];
+    for (let i = 0; i < N; i++) { const c = 402 + i * .9 + 14 * Math.sin(i / 5) + (R() - .5) * 8; exp.push(c); let o = c + (R() - .5) * 10; if (i >= 13 && i <= 34) { const k = Math.min(1, (i - 13) / 2) * (i > 30 ? Math.max(0, (34 - i) / 4) : 1); o = c * (1 - .18 * k) + (R() - .5) * 6; } obs.push(o); }
+    const X = i => pl + i / (N - 1) * (W - pl - pr), Y = v => pt + (1 - (v - 250) / 250) * (H - pt - pb);
+    const line = a => 'M' + a.map((v, i) => X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join('L');
+    const gap = 'M' + exp.slice(12, 36).map((v, j) => X(j + 12) + ',' + Y(v)).join('L') + 'L' + obs.slice(12, 36).map((v, j) => [X(j + 12), Y(v)]).reverse().map(p => p.join(',')).join('L') + 'Z';
+    const els = [];
+    [250, 300, 350, 400, 450, 500].forEach(v => { els.push(h('line', { key: 'g' + v, x1: pl, x2: W - pr, y1: Y(v), y2: Y(v), stroke: '#DDD8CC' })); els.push(h('text', { key: 't' + v, x: pl - 10, y: Y(v) + 5, textAnchor: 'end', style: { font: "14px 'IBM Plex Mono'", fill: '#55524C' } }, v)); });
+    els.push(h('path', { key: 'gap', d: gap, fill: 'rgba(31,63,154,.18)' }));
+    els.push(h('path', { key: 'e', d: line(exp), fill: 'none', stroke: '#8C877D', strokeWidth: 2.5, strokeDasharray: '7 5' }));
+    els.push(h('path', { key: 'o', d: line(obs), fill: 'none', stroke: '#1B1B1B', strokeWidth: 3, strokeLinejoin: 'round' }));
+    els.push(h('line', { key: 'sp', x1: X(12), x2: X(12), y1: pt, y2: H - pb, stroke: '#1F3F9A', strokeWidth: 2 }));
+    els.push(h('text', { key: 'spt', x: X(12) + 8, y: pt + 18, style: { font: "500 15px 'IBM Plex Sans'", fill: '#1F3F9A' } }, 'T-12 sprays'));
+    els.push(h('text', { key: 'lab', x: X(24), y: Y(obs[24]) + 36, textAnchor: 'middle', style: { font: "600 18px 'IBM Plex Sans'", fill: '#1B1B1B' } }, '−18% for 90 min'));
+    ['05:30', '06:30', '07:30', '08:30', '09:30'].forEach((l, i) => els.push(h('text', { key: 'x' + i, x: X(i * 12), y: H - 12, textAnchor: i === 0 ? 'start' : i === 4 ? 'end' : 'middle', style: { font: "14px 'IBM Plex Mono'", fill: '#55524C' } }, l)));
+    els.push(h('text', { key: 'u', x: pl, y: pt - 2, style: { font: "13px 'IBM Plex Sans'", fill: '#55524C' } }, 'µg/m³'));
+    return h('svg', { width: W, height: H, style: { position: 'absolute', left: 0, top: 0 } }, els);
+  }
+  renderVals() {
+    const st = this.state, scr = st.scr;
+    const C = window.Civic || { PL: [], COL: [], band: () => 0, NAMES: [] };
+    const ep = h => 1 + 0.14 * (Math.cos(2 * Math.PI * (h - 18) / 24) - Math.cos(2 * Math.PI * (-18) / 24)) + 0.2 * Math.exp(-Math.pow((h - 42) / 12, 2));
+    const f = ep(st.hour);
+    const PEOPLE = { mundka: [5200, 2], wazirpur: [6100, 2], ghazipur: [4600, 3], anand: [3900, 3], shahdara: [4800, 1], ito: [2700, 0], okhla: [2200, 1], punjabi: [1900, 1], jahangirpuri: [3100, 2], rkpuram: [1500, 1] };
+    const VERB = { 'Open burning': 'Send inspector', 'Road dust': 'Send sprinkler', 'Traffic': 'Issue traffic advisory', 'Regional smoke': 'Alert schools' };
+    const HEAD = { 'Open burning': n => `${n} needs an inspector, not a sprinkler.`, 'Road dust': n => `${n} needs a sprinkler before 07:00.`, 'Traffic': n => `${n} needs a traffic advisory, not a truck.`, 'Regional smoke': n => `${n} needs school alerts. Trucks won't help.` };
+    const TRAIL = { 'Open burning': 'Sharp night-time PM2.5 and VOC spike, a verified citizen photo 300 m away, wind carrying it from the landfill edge.', 'Road dust': 'High PM10 with a low PM2.5/PM10 ratio during the day, next to an unpaved shoulder and a construction site.', 'Traffic': 'NO₂ and CO rise with rush hour along the corridor; bus sensors show idling queues.', 'Regional smoke': 'City-wide rise with north-west wind; satellite fire points upwind in Punjab and Haryana.' };
+    const places = C.PL.map(p => Object.assign({}, p, { v: Math.round(p.v * f) }));
+    const need = places.filter(p => p.v > 250).length;
+    const ranked = places.filter(p => p.v >= 91).sort((a, b) => (PEOPLE[b.id] || [0])[0] * b.v - (PEOPLE[a.id] || [0])[0] * a.v).slice(0, 5).map((p, i) => ({ rank: i + 1, name: p.name, why: p.cause + ' · ≈ ' + ((PEOPLE[p.id] || [0])[0]).toLocaleString('en-IN') + ' people', v: p.v, color: C.COL[C.band(p.v)], verb: VERB[p.cause], pick: () => this.setState({ sel: p.id, sent: '' }) }));
+    const sp = places.find(p => p.id === st.sel);
+    const conf = { ghazipur: .74, mundka: .71, wazirpur: .63, anand: .82, shahdara: .69, ito: .77, okhla: .72, punjabi: .70, jahangirpuri: .66, rkpuram: .70, dwarka: .68 };
+    let d = {};
+    if (sp) { const pp = PEOPLE[sp.id] || [1000, 0], c = conf[sp.id] || .7, b = C.band(sp.v);
+      d = { place: sp.name, area: sp.area, headline: HEAD[sp.cause](sp.name), v: sp.v, band: C.NAMES[b], color: C.COL[b], cause: sp.cause.toLowerCase(), conf: c >= .72 ? 'High confidence' : c >= .6 ? 'Medium confidence' : 'Low confidence', confNum: c.toFixed(2),
+        people: `≈ ${pp[0].toLocaleString('en-IN')} people exposed for the next 4 hours` + (pp[1] ? `, ${pp[1]} school${pp[1] > 1 ? 's' : ''} within 2 km, assembly at 08:00.` : '.'),
+        btn: { 'Open burning': 'Send inspection team', 'Road dust': 'Send sprinkler T-12', 'Traffic': 'Issue traffic advisory', 'Regional smoke': 'Send school alerts' }[sp.cause], btnIcon: { 'Open burning': 'users', 'Road dust': 'truck', 'Traffic': 'megaphone', 'Regional smoke': 'bell' }[sp.cause],
+        trail: TRAIL[sp.cause], ph: (pp[0] * 4).toLocaleString('en-IN') }; }
+    const railDef = [['map', 'map', 'Map'], ['forecast', 'trending-up', 'Forecast'], ['plan', 'git-pull-request', 'Plans'], ['impact', 'badge-check', 'Impact'], ['fleet', 'truck', 'Fleet'], ['alerts', 'bell', 'Alerts']];
+    const built = ['map', 'plan', 'impact'];
+    const rail = railDef.map(([k, icon, label]) => { const ok = built.includes(k), on = scr === k; return { icon, label, title: ok ? label : label + ' · in the next pass', bg: on ? '#E8E3D6' : 'transparent', fg: ok ? '#1B1B1B' : '#8C877D', cursor: ok ? 'pointer' : 'default', go: () => ok && this.setState({ scr: k, demo: false, layersOpen: false }) }; });
+    const DS = [['See', "Delhi's worst air right now is at Mundka, Wazirpur and Ghazipur."], ['Why', "Ghazipur is smoke from burning, so water won't help."], ['Plan', 'The AI plan reaches 31% more people with the same 9 vehicles.'], ['Dispatch', 'The officer approves; drivers get routes in Hindi.'], ['Proof', 'Sprinkler T-12 cut PM10 by 18% for 90 minutes, measured, not guessed.']];
+    const dsteps = DS.map((x, i) => { const on = i === st.dstep, done = i < st.dstep; return { n: i + 1, label: x[0], go: () => this.goStep(i), bg: on ? '#1B1B1B' : 'transparent', fg: on ? '#FBFAF6' : '#1B1B1B', border: on ? '#1B1B1B' : done ? '#1B1B1B' : '#DDD8CC' }; });
+    const isMap = scr === 'map', isPlan = scr === 'plan';
+    const L = st.layers, layers = ['hotspots'];
+    if (isMap && L.schools) layers.push('schools'); if (isMap && L.routes) layers.push('routes', 'trucks');
+    if (isPlan) layers.push('routes', 'usual', 'trucks', 'schools');
+    const hh = st.hour, day = ['Tue', 'Wed', 'Thu', 'Fri'][Math.floor((14 + hh) / 24)], hr = String((14 + hh) % 24).padStart(2, '0');
+    const diffRaw = [['+', 'T-12', 'Anand Vihar ISBT road, 06:10 and 07:30 (road dust)'], ['−', 'T-12', 'Mayur Vihar Ph-1 arterial, usual route'], ['+', 'ASG-07', 'Anand Vihar ISBT gate, 06:45'], ['−', 'ASG-07', 'Karkardooma court, fixed post'], ['+', 'SW-03', 'Vivek Vihar kerbs before spraying, 05:45'], ['+', 'I-3', 'Ghazipur landfill edge, inspect the fire, 06:45'], ['+', 'Alerts', '3 schools near Anand Vihar, WhatsApp in Hindi and English']];
+    if (!st.audit) diffRaw.splice(5, 1, ['+', 'T-12', 'Ghazipur landfill edge, spray, 06:55']);
+    const diff = diffRaw.map(r => ({ sign: r[0], asset: r[1], text: r[2], bg: r[0] === '+' ? '#F1EEE6' : 'transparent', fg: r[0] === '+' ? '#1B1B1B' : '#55524C', deco: r[0] === '+' ? 'none' : 'line-through' }));
+    return {
+      railW: st.rail ? '200px' : '68px', railOpen: st.rail, railIcon: st.rail ? 'panel-left-close' : 'panel-left-open', toggleRail: () => this.setState({ rail: !st.rail }), rail,
+      demo: st.demo, notDemo: !st.demo, dsteps, dNum: st.dstep + 1, caption: st.demo ? DS[st.dstep][1] : '', captionBottom: isMap ? '150px' : '28px',
+      startDemo: () => this.goStep(0), exitDemo: () => this.setState({ demo: false }),
+      clock: `${day} ${hr}:00`, isMap, isPlan, isImpact: scr === 'impact',
+      sel: isMap ? st.sel : isPlan ? 'anand' : '', mapMode: st.change ? 'change' : 'now', mapLayers: layers.join(','), hour: isMap ? hh : 42,
+      mapCenter: isPlan ? '77.312,28.638' : sp ? `${sp.lon},${sp.lat}` : '77.18,28.64', mapZoom: isPlan ? '12.6' : sp ? '12.2' : '10.4',
+      handlePct: (hh / 72 * 100).toFixed(2) + '%', onHour: e => this.setState({ hour: +e.target.value }),
+      changeOn: st.change, notChange: !st.change, toggleChange: () => this.setState({ change: !st.change }), changeBg: st.change ? '#1B1B1B' : '#FBFAF6', changeFg: st.change ? '#FBFAF6' : '#1B1B1B', changeBorder: st.change ? '#1B1B1B' : '#DDD8CC',
+      layersOpen: st.layersOpen, toggleLayers: () => this.setState({ layersOpen: !st.layersOpen }),
+      layerList: [['schools', 'Schools'], ['routes', 'Fleet and routes']].map(([k, label]) => ({ label, on: !!L[k], toggle: () => this.setState({ layers: Object.assign({}, L, { [k]: !L[k] }) }) })),
+      listState: isMap && !sp, detailState: isMap && !!sp, listTitle: `${need} places need action before Thu 08:00`, ranked, d,
+      clearSel: () => this.setState({ sel: '', sent: '' }), goPlan: () => this.setState({ scr: 'plan' }),
+      sendAction: () => this.setState({ sent: sp ? `${d.btn.replace('Send ', '').replace('Issue ', '')} queued for officer approval.` : '' }), sentNote: st.sent,
+      planStatus: st.approved ? 'Approved' : 'Draft', auditOpen: !st.audit, auditDone: st.audit, applyAudit: () => this.setState({ audit: true }), diff,
+      notApproved: !st.approved, approved: st.approved, approve: () => this.setState({ approved: true, audit: true }), approveOp: st.audit ? '1' : '.6',
+      impactChart: scr === 'impact' ? this.chart() : null, chartRef: this.chartRef, impactPadB: st.demo ? '200px' : '48px',
+      impactFacts: [{ k: 'Effect', v: '−18%' }, { k: 'Likely range', v: '−24% to −11%' }, { k: 'Lasted', v: '90 min' }, { k: 'Water used', v: '1,850 L' }]
+    };
+  }
+}
+</script>
+</body>
+</html>
