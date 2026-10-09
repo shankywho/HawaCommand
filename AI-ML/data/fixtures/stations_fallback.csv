@@ -1,0 +1,26 @@
+id,name,latitude,longitude,verified
+del_anand_vihar,Anand Vihar DPCC,28.6476,77.3158,false
+del_punjabi_bagh,Punjabi Bagh DPCC,28.6740,77.1310,false
+del_rk_puram,R K Puram DPCC,28.5632,77.1869,false
+del_mandir_marg,Mandir Marg DPCC,28.6364,77.1989,false
+del_dwarka_sec8,Dwarka Sector 8 DPCC,28.5710,77.0719,false
+del_lodhi_road,Lodhi Road IITM,28.5883,77.2217,false
+del_chandni_chowk,Chandni Chowk IITM,28.6560,77.2300,false
+del_ito,ITO CPCB,28.6286,77.2410,false
+del_bawana,Bawana DPCC,28.7762,77.0511,false
+del_narela,Narela DPCC,28.8228,77.1019,false
+del_wazirpur,Wazirpur DPCC,28.6998,77.1655,false
+del_jahangirpuri,Jahangirpuri DPCC,28.7328,77.1706,false
+del_rohani,Rohini DPCC,28.7325,77.1199,false
+del_okhla,Okhla Phase 2 DPCC,28.5308,77.2713,false
+del_shadipur,Shadipur CPCB,28.6515,77.1581,false
+del_nehru_nagar,Nehru Nagar DPCC,28.5679,77.2512,false
+del_patparganj,Patparganj DPCC,28.6238,77.2872,false
+del_siri_fort,Siri Fort CPCB,28.5504,77.2159,false
+del_aya_nagar,Aya Nagar IMD,28.4707,77.1099,false
+del_pusa,Pusa DPCC,28.6396,77.1463,false
+del_crri_mathura,CRRI Mathura Road IMD,28.5512,77.2736,false
+del_vivek_vihar,Vivek Vihar DPCC,28.6723,77.3152,false
+del_ashok_vihar,Ashok Vihar DPCC,28.6954,77.1817,false
+del_sonia_vihar,Sonia Vihar DPCC,28.7105,77.2494,false
+del_alipur,Alipur DPCC,28.8153,77.1530,false

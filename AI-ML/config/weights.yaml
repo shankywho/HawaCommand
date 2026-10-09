@@ -1,0 +1,99 @@
+# Exposure Engine Parameters & Weights (F12)
+# E = max(0, C - C_safe) * Pop(cell, t) * V(cell) * dt
+
+thresholds:
+  c_safe_pm25: 60.0 # Indian National Ambient Air Quality Standard (24-hr) in ug/m3
+  c_safe_pm10: 100.0 # Standard in ug/m3
+  c_who_guideline_pm25: 15.0 # WHO guideline
+
+vulnerability_weights:
+  hospital: 3.0
+  school: 2.5
+  elderly_care: 2.8
+  slum_dense_settlement: 2.0
+  bus_terminal_market: 1.8
+  residential: 1.0
+  commercial_office: 0.8
+  open_green_park: 0.6
+  industrial_yard: 0.4
+
+diurnal_population_multipliers:
+  # Hour of day (0..23) -> multiplier on base static population
+  # Morning peak around schools and transit; evening peak around markets; night in residential
+  school:
+    0: 0.05
+    1: 0.05
+    2: 0.05
+    3: 0.05
+    4: 0.05
+    5: 0.10
+    6: 0.40
+    7: 1.80
+    8: 2.50
+    9: 2.50
+    10: 2.50
+    11: 2.40
+    12: 2.30
+    13: 2.00
+    14: 1.40
+    15: 0.60
+    16: 0.30
+    17: 0.15
+    18: 0.10
+    19: 0.05
+    20: 0.05
+    21: 0.05
+    22: 0.05
+    23: 0.05
+
+  market:
+    0: 0.10
+    1: 0.05
+    2: 0.05
+    3: 0.05
+    4: 0.10
+    5: 0.20
+    6: 0.40
+    7: 0.60
+    8: 0.80
+    9: 1.00
+    10: 1.20
+    11: 1.30
+    12: 1.20
+    13: 1.10
+    14: 1.10
+    15: 1.20
+    16: 1.50
+    17: 2.20
+    18: 2.80
+    19: 3.00
+    20: 2.60
+    21: 1.80
+    22: 1.00
+    23: 0.40
+
+  residential:
+    0: 1.40
+    1: 1.40
+    2: 1.40
+    3: 1.40
+    4: 1.35
+    5: 1.30
+    6: 1.15
+    7: 1.00
+    8: 0.80
+    9: 0.65
+    10: 0.60
+    11: 0.60
+    12: 0.65
+    13: 0.70
+    14: 0.70
+    15: 0.75
+    16: 0.80
+    17: 0.90
+    18: 1.05
+    19: 1.20
+    20: 1.30
+    21: 1.35
+    22: 1.40
+    23: 1.40

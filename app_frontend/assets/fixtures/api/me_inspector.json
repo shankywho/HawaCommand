@@ -1,0 +1,30 @@
+{
+  "id": "01927f40-2222-7aaa-8bbb-00000000e021",
+  "role": "inspector",
+  "roles": [
+    "inspector"
+  ],
+  "display_name": "S. Verma",
+  "email": null,
+  "phone_e164": "+919810022222",
+  "lang": "hi",
+  "wards": [
+    {
+      "ward_id": "ward-084",
+      "name": "Ward 084 · Karol Bagh"
+    }
+  ],
+  "asset_ids": [
+    "AST-TEAM-0003"
+  ],
+  "school": null,
+  "site": null,
+  "current_shift": null,
+  "features": {
+    "citizen_eyes": true,
+    "school_scheduler": true,
+    "open_data": true
+  },
+  "notification_prefs": {},
+  "is_simulated": true
+}

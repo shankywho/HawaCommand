@@ -1,0 +1,452 @@
+{
+  "type": "FeatureCollection",
+  "as_of": "2026-11-13T02:15:00Z",
+  "resolution_m": 1000,
+  "aqi_basis": "indicative_hourly",
+  "licence": {
+    "data": "CC-BY-4.0",
+    "osm": "ODbL-1.0",
+    "attribution": "HawaCommand; CPCB/DPCC; OpenAQ; © OpenStreetMap contributors"
+  },
+  "methods_url": "/open/v1/methods",
+  "advice": {
+    "alt_route": {
+      "en": "Take Pusa Rd instead of Shankar Rd until 10 AM.",
+      "hi": "सुबह 10 बजे तक शंकर रोड की जगह पूसा रोड से जाएँ।"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "g1k-021-037",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.174625,
+              28.648495
+            ],
+            [
+              77.184875,
+              28.648495
+            ],
+            [
+              77.184875,
+              28.657485
+            ],
+            [
+              77.174625,
+              28.657485
+            ],
+            [
+              77.174625,
+              28.648495
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-021-037",
+        "pm25": 118,
+        "pm10": 241,
+        "no2_ppb": 38,
+        "confidence": 0.62,
+        "aqi": 293,
+        "aqi_category": "poor",
+        "dominant_pollutant": "pm10",
+        "cause_label": "dust",
+        "cause_conf": 0.61,
+        "place_name": {
+          "en": "Anand Parbat",
+          "hi": "आनंद पर्वत"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-021-038",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.184875,
+              28.648495
+            ],
+            [
+              77.195125,
+              28.648495
+            ],
+            [
+              77.195125,
+              28.657485
+            ],
+            [
+              77.184875,
+              28.657485
+            ],
+            [
+              77.184875,
+              28.648495
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-021-038",
+        "pm25": 141,
+        "pm10": 262,
+        "no2_ppb": 41,
+        "confidence": 0.7,
+        "aqi": 316,
+        "aqi_category": "very_poor",
+        "dominant_pollutant": "pm25",
+        "cause_label": "burning",
+        "cause_conf": 0.66,
+        "place_name": {
+          "en": "Dev Nagar",
+          "hi": "देव नगर"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-021-039",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.195125,
+              28.648495
+            ],
+            [
+              77.205375,
+              28.648495
+            ],
+            [
+              77.205375,
+              28.657485
+            ],
+            [
+              77.195125,
+              28.657485
+            ],
+            [
+              77.195125,
+              28.648495
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-021-039",
+        "pm25": 126,
+        "pm10": 233,
+        "no2_ppb": 52,
+        "confidence": 0.58,
+        "aqi": 305,
+        "aqi_category": "very_poor",
+        "dominant_pollutant": "no2",
+        "cause_label": "traffic",
+        "cause_conf": 0.57,
+        "place_name": {
+          "en": "Jhandewalan",
+          "hi": "झंडेवालान"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-020-037",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.174625,
+              28.639505
+            ],
+            [
+              77.184875,
+              28.639505
+            ],
+            [
+              77.184875,
+              28.648495
+            ],
+            [
+              77.174625,
+              28.648495
+            ],
+            [
+              77.174625,
+              28.639505
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-020-037",
+        "pm25": 109,
+        "pm10": 288,
+        "no2_ppb": 36,
+        "confidence": 0.66,
+        "aqi": 262,
+        "aqi_category": "poor",
+        "dominant_pollutant": "pm10",
+        "cause_label": "dust",
+        "cause_conf": 0.74,
+        "place_name": {
+          "en": "Rajendra Place",
+          "hi": "राजेंद्र प्लेस"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-020-038",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.184875,
+              28.639505
+            ],
+            [
+              77.195125,
+              28.639505
+            ],
+            [
+              77.195125,
+              28.648495
+            ],
+            [
+              77.184875,
+              28.648495
+            ],
+            [
+              77.184875,
+              28.639505
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-020-038",
+        "pm25": 135,
+        "pm10": 248,
+        "no2_ppb": 44,
+        "confidence": 0.75,
+        "aqi": 312,
+        "aqi_category": "very_poor",
+        "dominant_pollutant": "pm25",
+        "cause_label": "burning",
+        "cause_conf": 0.72,
+        "place_name": {
+          "en": "Karol Bagh",
+          "hi": "करोल बाग़"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-020-039",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.195125,
+              28.639505
+            ],
+            [
+              77.205375,
+              28.639505
+            ],
+            [
+              77.205375,
+              28.648495
+            ],
+            [
+              77.195125,
+              28.648495
+            ],
+            [
+              77.195125,
+              28.639505
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-020-039",
+        "pm25": 122,
+        "pm10": 230,
+        "no2_ppb": 61,
+        "confidence": 0.71,
+        "aqi": 302,
+        "aqi_category": "very_poor",
+        "dominant_pollutant": "no2",
+        "cause_label": "traffic",
+        "cause_conf": 0.69,
+        "place_name": {
+          "en": "Pusa Rd",
+          "hi": "पूसा रोड"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-019-037",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.174625,
+              28.630515
+            ],
+            [
+              77.184875,
+              28.630515
+            ],
+            [
+              77.184875,
+              28.639505
+            ],
+            [
+              77.174625,
+              28.639505
+            ],
+            [
+              77.174625,
+              28.630515
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-019-037",
+        "pm25": 98,
+        "pm10": 205,
+        "no2_ppb": 33,
+        "confidence": 0.35,
+        "aqi": 225,
+        "aqi_category": "poor",
+        "dominant_pollutant": "pm10",
+        "cause_label": "dust",
+        "cause_conf": 0.48,
+        "place_name": {
+          "en": "Naraina",
+          "hi": "नारायणा"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-019-038",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.184875,
+              28.630515
+            ],
+            [
+              77.195125,
+              28.630515
+            ],
+            [
+              77.195125,
+              28.639505
+            ],
+            [
+              77.184875,
+              28.639505
+            ],
+            [
+              77.184875,
+              28.630515
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-019-038",
+        "pm25": 112,
+        "pm10": 219,
+        "no2_ppb": 47,
+        "confidence": 0.52,
+        "aqi": 273,
+        "aqi_category": "poor",
+        "dominant_pollutant": "pm25",
+        "cause_label": "regional_smoke",
+        "cause_conf": 0.55,
+        "place_name": {
+          "en": "Rajinder Nagar",
+          "hi": "राजिंदर नगर"
+        },
+        "is_simulated": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "g1k-019-039",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.195125,
+              28.630515
+            ],
+            [
+              77.205375,
+              28.630515
+            ],
+            [
+              77.205375,
+              28.639505
+            ],
+            [
+              77.195125,
+              28.639505
+            ],
+            [
+              77.195125,
+              28.630515
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "cell_id": "g1k-019-039",
+        "pm25": 88,
+        "pm10": 190,
+        "no2_ppb": 58,
+        "confidence": 0.44,
+        "aqi": 193,
+        "aqi_category": "moderate",
+        "dominant_pollutant": "no2",
+        "cause_label": "traffic",
+        "cause_conf": 0.51,
+        "place_name": {
+          "en": "Patel Nagar",
+          "hi": "पटेल नगर"
+        },
+        "is_simulated": true
+      }
+    }
+  ]
+}

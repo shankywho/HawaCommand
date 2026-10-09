@@ -1,0 +1,10 @@
+{
+  "type": "urn:hawa:problem:task_already_done",
+  "title": "Task already done",
+  "status": 409,
+  "detail": "Task 01932c4f-0b22-7d10-9a55-6c1e2f3a4b02 was completed by HawaTag.",
+  "instance": "/v1/tasks/01932c4f-0b22-7d10-9a55-6c1e2f3a4b02/status",
+  "code": "task_already_done",
+  "request_id": "01932c61-0f3e-7b2a-9c11-5d7e8f9a0b12",
+  "errors": []
+}

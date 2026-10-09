@@ -1,0 +1,45 @@
+{
+  "items": [
+    {
+      "id": "01932c95-1000-7c3e-9a10-7e8f9a0b1c66",
+      "client_report_id": "01932c94-ff00-7c3e-9a10-000000000c02",
+      "status": "verifying",
+      "created_at": "2026-11-13T03:02:00Z",
+      "ward_id": "ward-084",
+      "note": "Leaves burning near the park",
+      "thumbnail_url": "asset://assets/images/fixtures/report_burning.jpg",
+      "place_name": {
+        "en": "Rajinder Nagar",
+        "hi": "राजिंदर नगर"
+      },
+      "verification_label": null,
+      "inspection_status": null,
+      "outcome_text": null,
+      "outcome_text_hi": null,
+      "closed_at": null,
+      "source": "whatsapp",
+      "is_simulated": true
+    },
+    {
+      "id": "01932c90-3e00-7c3e-9a10-7e8f9a0b1c55",
+      "client_report_id": "01932c8f-7a00-7c3e-9a10-000000000c01",
+      "status": "closed",
+      "created_at": "2026-11-13T01:14:21Z",
+      "ward_id": "ward-084",
+      "note": "Garbage burning, lots of smoke",
+      "thumbnail_url": "asset://assets/images/fixtures/report_burning.jpg",
+      "place_name": {
+        "en": "Anand Parbat, near DTC depot",
+        "hi": "आनंद पर्वत, DTC डिपो के पास"
+      },
+      "verification_label": "burning",
+      "inspection_status": "closed_confirmed",
+      "outcome_text": "An inspector found and put out the fire. Thank you for reporting.",
+      "outcome_text_hi": "निरीक्षक ने आग ढूंढकर बुझा दी। रिपोर्ट करने के लिए धन्यवाद।",
+      "closed_at": "2026-11-13T02:10:00Z",
+      "source": "app",
+      "is_simulated": true
+    }
+  ],
+  "next_cursor": null
+}

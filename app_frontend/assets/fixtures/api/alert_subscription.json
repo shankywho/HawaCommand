@@ -1,0 +1,19 @@
+{
+  "home": {
+    "lat": 28.645,
+    "lon": 77.19
+  },
+  "place_name": {
+    "en": "Karol Bagh",
+    "hi": "करोल बाग़"
+  },
+  "radius_m": 1000,
+  "kinds": [
+    "pollutant_warning",
+    "grap_outlook"
+  ],
+  "quiet_hours": {
+    "start": "22:00",
+    "end": "06:00"
+  }
+}

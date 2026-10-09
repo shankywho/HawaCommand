@@ -1,0 +1,5044 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "HawaCommand API (field app surface)",
+    "version": "1.1.0-app",
+    "description": "Contract snapshot for app_frontend, written from docs/backend/API.md and the accepted field-app additions in docs/CONTRACTS.md §13. The running backend does not serve these routes yet; replace this file with the backend's exported /openapi.json (make gen-api) once it does."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "admin",
+          "officer",
+          "analyst",
+          "inspector",
+          "driver",
+          "school",
+          "site_manager",
+          "citizen"
+        ]
+      },
+      "TaskKind": {
+        "type": "string",
+        "enum": [
+          "spray",
+          "sweep",
+          "inspect",
+          "protect_alert"
+        ]
+      },
+      "TaskStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "dispatched",
+          "acknowledged",
+          "en_route",
+          "in_progress",
+          "done",
+          "verifying",
+          "verified",
+          "inconclusive",
+          "skipped",
+          "cancelled",
+          "missed",
+          "failed"
+        ]
+      },
+      "InterventionSource": {
+        "type": "string",
+        "enum": [
+          "hawatag",
+          "manual",
+          "gps_inferred"
+        ]
+      },
+      "ImpactMethod": {
+        "type": "string",
+        "enum": [
+          "synthetic_control",
+          "diff_in_diff",
+          "before_after_naive"
+        ]
+      },
+      "ImpactVerdict": {
+        "type": "string",
+        "enum": [
+          "effective",
+          "no_detectable_effect",
+          "inconclusive",
+          "adverse"
+        ]
+      },
+      "CauseLabel": {
+        "type": "string",
+        "enum": [
+          "dust",
+          "traffic",
+          "burning",
+          "regional_smoke",
+          "mixed",
+          "unknown"
+        ]
+      },
+      "Pollutant": {
+        "type": "string",
+        "enum": [
+          "pm1",
+          "pm25",
+          "pm10",
+          "no2",
+          "co",
+          "nh3",
+          "voc",
+          "co2"
+        ]
+      },
+      "AqiCategory": {
+        "type": "string",
+        "enum": [
+          "good",
+          "satisfactory",
+          "moderate",
+          "poor",
+          "very_poor",
+          "severe"
+        ]
+      },
+      "AssetType": {
+        "type": "string",
+        "enum": [
+          "sprinkler",
+          "anti_smog_gun",
+          "sweeper",
+          "inspection_team"
+        ]
+      },
+      "DeviceStatus": {
+        "type": "string",
+        "enum": [
+          "provisioned",
+          "active",
+          "degraded",
+          "offline",
+          "retired"
+        ]
+      },
+      "ShiftStatus": {
+        "type": "string",
+        "enum": [
+          "scheduled",
+          "active",
+          "ended"
+        ]
+      },
+      "SkipReason": {
+        "type": "string",
+        "enum": [
+          "road_blocked",
+          "vehicle_issue",
+          "water_empty",
+          "unsafe",
+          "access_denied",
+          "other"
+        ]
+      },
+      "InspectionStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "assigned",
+          "on_site",
+          "closed_confirmed",
+          "closed_not_found",
+          "closed_unreachable"
+        ]
+      },
+      "InspectionOutcome": {
+        "type": "string",
+        "enum": [
+          "closed_confirmed",
+          "closed_not_found",
+          "closed_unreachable"
+        ]
+      },
+      "InspectionOrigin": {
+        "type": "string",
+        "enum": [
+          "report",
+          "spike",
+          "hotspot",
+          "plan",
+          "manual"
+        ]
+      },
+      "AlertAudience": {
+        "type": "string",
+        "enum": [
+          "school",
+          "citizen",
+          "driver",
+          "inspector",
+          "officer",
+          "site_manager"
+        ]
+      },
+      "AlertKind": {
+        "type": "string",
+        "enum": [
+          "pollutant_warning",
+          "safe_window",
+          "route_assignment",
+          "inspection_target",
+          "grap_outlook",
+          "report_outcome",
+          "device_health",
+          "route_changed",
+          "task_done_auto"
+        ]
+      },
+      "AlertStatus": {
+        "type": "string",
+        "enum": [
+          "requested",
+          "queued",
+          "sent",
+          "delivered",
+          "failed",
+          "read"
+        ]
+      },
+      "AlertChannel": {
+        "type": "string",
+        "enum": [
+          "push",
+          "whatsapp",
+          "sms",
+          "email",
+          "in_app"
+        ]
+      },
+      "ReportStatus": {
+        "type": "string",
+        "enum": [
+          "submitted",
+          "verifying",
+          "verified",
+          "rejected",
+          "ticketed",
+          "closed"
+        ]
+      },
+      "ReportCategory": {
+        "type": "string",
+        "enum": [
+          "burning",
+          "dust",
+          "other"
+        ]
+      },
+      "ReportSource": {
+        "type": "string",
+        "enum": [
+          "app",
+          "whatsapp",
+          "web"
+        ]
+      },
+      "UploadPurpose": {
+        "type": "string",
+        "enum": [
+          "report_photo",
+          "inspection_photo",
+          "task_photo"
+        ]
+      },
+      "ClassroomAdvice": {
+        "type": "string",
+        "enum": [
+          "normal",
+          "seal",
+          "ventilate"
+        ]
+      },
+      "SafeWindowLabel": {
+        "type": "string",
+        "enum": [
+          "safe",
+          "borderline",
+          "avoid"
+        ]
+      },
+      "SiteGrade": {
+        "type": "string",
+        "enum": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      "SiteType": {
+        "type": "string",
+        "enum": [
+          "construction",
+          "industrial_unit",
+          "waste_site",
+          "other"
+        ]
+      },
+      "OtpChannel": {
+        "type": "string",
+        "enum": [
+          "sms",
+          "whatsapp"
+        ]
+      },
+      "PushPlatform": {
+        "type": "string",
+        "enum": [
+          "android",
+          "ios",
+          "web"
+        ]
+      },
+      "Lang": {
+        "type": "string",
+        "enum": [
+          "en",
+          "hi"
+        ]
+      },
+      "ProblemFieldError": {
+        "type": "object",
+        "properties": {
+          "pointer": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "pointer",
+          "code"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "request_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProblemFieldError"
+            },
+            "nullable": true
+          },
+          "current_version": {
+            "type": "integer",
+            "nullable": true
+          },
+          "allowed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "retry_after": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code"
+        ],
+        "description": "RFC 9457 problem+json (API.md §1.4)"
+      },
+      "GeoPoint": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "description": "GeoJSON Point, [lon, lat]"
+      },
+      "GeoLineString": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "GeoPolygon": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ]
+      },
+      "LocalizedText": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "string"
+          },
+          "hi": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "en"
+        ]
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "AuthUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRole"
+            },
+            "nullable": true
+          },
+          "wards": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "asset_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "school_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "site_id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "display_name",
+          "lang",
+          "is_simulated"
+        ]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUser"
+          },
+          "refresh_expires_in": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "refresh_token",
+          "user"
+        ]
+      },
+      "OtpRequestIn": {
+        "type": "object",
+        "properties": {
+          "phone_e164": {
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/OtpChannel"
+          },
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "app_signature": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "phone_e164",
+          "channel",
+          "lang"
+        ]
+      },
+      "OtpRequestOut": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer"
+          },
+          "resend_after": {
+            "type": "integer"
+          },
+          "request_id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "expires_in",
+          "resend_after"
+        ]
+      },
+      "OtpVerifyIn": {
+        "type": "object",
+        "properties": {
+          "phone_e164": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "device_label": {
+            "type": "string",
+            "nullable": true
+          },
+          "install_id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "phone_e164",
+          "code"
+        ]
+      },
+      "RefreshIn": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ]
+      },
+      "LogoutIn": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string"
+          },
+          "all_devices": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "required": [
+          "refresh_token"
+        ]
+      },
+      "SwitchRoleIn": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "WardRef": {
+        "type": "object",
+        "properties": {
+          "ward_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ward_id"
+        ]
+      },
+      "SchoolRef": {
+        "type": "object",
+        "properties": {
+          "school_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "name_hi": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "school_id",
+          "name"
+        ]
+      },
+      "SiteRef": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "site_id",
+          "name"
+        ]
+      },
+      "MeFeatures": {
+        "type": "object",
+        "properties": {
+          "citizen_eyes": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "school_scheduler": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "open_data": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "MeOut": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRole"
+            },
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone_e164": {
+            "type": "string",
+            "nullable": true
+          },
+          "wards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WardRef"
+            },
+            "nullable": true
+          },
+          "asset_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "school": {
+            "$ref": "#/components/schemas/SchoolRef"
+          },
+          "site": {
+            "$ref": "#/components/schemas/SiteRef"
+          },
+          "current_shift": {
+            "type": "string",
+            "nullable": true
+          },
+          "features": {
+            "$ref": "#/components/schemas/MeFeatures"
+          },
+          "notification_prefs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "display_name",
+          "lang",
+          "is_simulated"
+        ]
+      },
+      "MePatchIn": {
+        "type": "object",
+        "properties": {
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "notification_prefs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "PushTokenIn": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/PushPlatform"
+          },
+          "app_flavor": {
+            "type": "string",
+            "nullable": true
+          },
+          "app_version": {
+            "type": "string",
+            "nullable": true
+          },
+          "locale": {
+            "type": "string",
+            "nullable": true
+          },
+          "device_label": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "token",
+          "platform"
+        ]
+      },
+      "PushTokenOut": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/PushPlatform"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "platform"
+        ]
+      },
+      "LatLon": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "required": [
+          "lat",
+          "lon"
+        ]
+      },
+      "QuietHours": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ]
+      },
+      "AlertSubscription": {
+        "type": "object",
+        "properties": {
+          "radius_m": {
+            "type": "integer"
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertKind"
+            }
+          },
+          "home": {
+            "$ref": "#/components/schemas/LatLon"
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "quiet_hours": {
+            "$ref": "#/components/schemas/QuietHours"
+          }
+        },
+        "required": [
+          "radius_m",
+          "kinds"
+        ]
+      },
+      "TaskAsset": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "label": {
+            "type": "string"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "tag_device_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "tag_status": {
+            "$ref": "#/components/schemas/DeviceStatus"
+          },
+          "tag_last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "capacity_litres": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "label",
+          "is_simulated"
+        ]
+      },
+      "TaskShift": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ShiftStatus"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "start",
+          "end"
+        ]
+      },
+      "TaskRoute": {
+        "type": "object",
+        "properties": {
+          "route_id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/GeoLineString"
+          },
+          "plan_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
+          },
+          "distance_km": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "route_id",
+          "version",
+          "geometry"
+        ]
+      },
+      "ImpactSummary": {
+        "type": "object",
+        "properties": {
+          "pollutant": {
+            "$ref": "#/components/schemas/Pollutant"
+          },
+          "effect_pct": {
+            "type": "number",
+            "format": "double"
+          },
+          "ci_low": {
+            "type": "number",
+            "format": "double"
+          },
+          "ci_high": {
+            "type": "number",
+            "format": "double"
+          },
+          "method": {
+            "$ref": "#/components/schemas/ImpactMethod"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/ImpactVerdict"
+          },
+          "duration_min": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ci_level": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "pollutant",
+          "effect_pct",
+          "ci_low",
+          "ci_high",
+          "method",
+          "verdict"
+        ]
+      },
+      "TaskHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "at"
+        ]
+      },
+      "TaskItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TaskKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "sequence": {
+            "type": "integer"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "window_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "window_end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "plan_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cell_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "target_litres": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "segment_length_m": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "duration_min": {
+            "type": "integer",
+            "nullable": true
+          },
+          "arrival_radius_m": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "cause_label": {
+            "$ref": "#/components/schemas/CauseLabel"
+          },
+          "cause_conf": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "reason_text": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "completion_source": {
+            "$ref": "#/components/schemas/InterventionSource"
+          },
+          "intervention_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "litres": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "impact_summary": {
+            "$ref": "#/components/schemas/ImpactSummary"
+          },
+          "skip_reason": {
+            "$ref": "#/components/schemas/SkipReason"
+          },
+          "inspection_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "origin": {
+            "$ref": "#/components/schemas/InspectionOrigin"
+          },
+          "priority": {
+            "type": "integer",
+            "nullable": true
+          },
+          "hotspot_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "report_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "site_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "suspect_pin": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskHistoryEntry"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "sequence",
+          "location",
+          "place_name",
+          "window_start",
+          "window_end",
+          "version",
+          "updated_at",
+          "is_simulated"
+        ]
+      },
+      "TasksMineOut": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskItem"
+            }
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/TaskAsset"
+          },
+          "shift": {
+            "$ref": "#/components/schemas/TaskShift"
+          },
+          "route": {
+            "$ref": "#/components/schemas/TaskRoute"
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "date",
+          "items"
+        ]
+      },
+      "TaskAckIn": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "at"
+        ]
+      },
+      "TaskAckOut": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "acknowledged_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "task_id",
+          "status"
+        ]
+      },
+      "TaskStatusIn": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "client_ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "$ref": "#/components/schemas/InterventionSource"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/SkipReason"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "litres": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "s3_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "accuracy_m": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "client_ts"
+        ]
+      },
+      "TaskStatusOut": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "status_source": {
+            "$ref": "#/components/schemas/InterventionSource"
+          },
+          "intervention_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence_level": {
+            "type": "string",
+            "nullable": true
+          },
+          "verify_after": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "task_id",
+          "status"
+        ]
+      },
+      "ShiftActionIn": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          }
+        },
+        "required": [
+          "at"
+        ]
+      },
+      "ShiftOut": {
+        "type": "object",
+        "properties": {
+          "shift_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ShiftStatus"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "shift_id",
+          "status"
+        ]
+      },
+      "LocationPing": {
+        "type": "object",
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          },
+          "accuracy_m": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "speed_kmh": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ts",
+          "lat",
+          "lon"
+        ]
+      },
+      "LocationBatchIn": {
+        "type": "object",
+        "properties": {
+          "pings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationPing"
+            }
+          }
+        },
+        "required": [
+          "pings"
+        ]
+      },
+      "LocationBatchOut": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "accepted"
+        ]
+      },
+      "EvidenceSummary": {
+        "type": "object",
+        "properties": {
+          "spike_ratio": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "photo_label": {
+            "$ref": "#/components/schemas/CauseLabel"
+          },
+          "photo_conf": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "fire_points": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "InspectionListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InspectionStatus"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/InspectionOrigin"
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "target": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "ward_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cell_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "report_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "hotspot_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "task_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "site_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "cause_label": {
+            "$ref": "#/components/schemas/CauseLabel"
+          },
+          "cause_conf": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "evidence_summary": {
+            "$ref": "#/components/schemas/EvidenceSummary"
+          },
+          "assigned_team_asset_id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "origin",
+          "priority",
+          "target",
+          "created_at",
+          "is_simulated"
+        ]
+      },
+      "InspectionPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InspectionListItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "SeriesPoint": {
+        "type": "object",
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "required": [
+          "ts",
+          "value"
+        ]
+      },
+      "SpikeEvidence": {
+        "type": "object",
+        "properties": {
+          "pollutant": {
+            "$ref": "#/components/schemas/Pollutant"
+          },
+          "baseline": {
+            "type": "number",
+            "format": "double"
+          },
+          "peak": {
+            "type": "number",
+            "format": "double"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "device_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicle_label": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration_s": {
+            "type": "integer",
+            "nullable": true
+          },
+          "detected_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "pollutant",
+          "baseline",
+          "peak",
+          "series"
+        ]
+      },
+      "EvidencePhoto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "thumb_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "url",
+          "captured_at"
+        ]
+      },
+      "Reporter": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "InspectionDetailOut": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InspectionStatus"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/InspectionOrigin"
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "cause_label": {
+            "$ref": "#/components/schemas/CauseLabel"
+          },
+          "cause_conf": {
+            "type": "number",
+            "format": "double"
+          },
+          "suspect_pin": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidencePhoto"
+            }
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "task_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "report_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "hotspot_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "site_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "suspect_radius_m": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "back_trajectory": {
+            "$ref": "#/components/schemas/GeoLineString"
+          },
+          "spike": {
+            "$ref": "#/components/schemas/SpikeEvidence"
+          },
+          "reporter": {
+            "$ref": "#/components/schemas/Reporter"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reported_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "origin",
+          "priority",
+          "cause_label",
+          "cause_conf",
+          "suspect_pin",
+          "photos",
+          "is_simulated"
+        ]
+      },
+      "InspectionCloseIn": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/InspectionOutcome"
+          },
+          "evidence_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          }
+        },
+        "required": [
+          "outcome",
+          "evidence_keys",
+          "closed_at"
+        ]
+      },
+      "InspectionCloseOut": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InspectionStatus"
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "applied": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "OnSiteIn": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          }
+        },
+        "required": [
+          "at"
+        ]
+      },
+      "AlertItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/AlertAudience"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AlertKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AlertStatus"
+          },
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertChannel"
+            },
+            "nullable": true
+          },
+          "pollutant": {
+            "$ref": "#/components/schemas/Pollutant"
+          },
+          "ward_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cell_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "plan_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "task_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "report_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "school_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "deep_link": {
+            "type": "string",
+            "nullable": true
+          },
+          "origin": {
+            "type": "string",
+            "nullable": true
+          },
+          "args": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "read_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "acked_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "audience",
+          "kind",
+          "status",
+          "lang",
+          "title",
+          "body",
+          "created_at",
+          "is_simulated"
+        ]
+      },
+      "AlertPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "AlertAckIn": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "at"
+        ]
+      },
+      "AlertAckOut": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "acked_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "acked_at"
+        ]
+      },
+      "SchoolDevices": {
+        "type": "object",
+        "properties": {
+          "outdoor": {
+            "type": "string"
+          },
+          "indoor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "outdoor",
+          "indoor"
+        ]
+      },
+      "SchoolHours": {
+        "type": "object",
+        "properties": {
+          "day_start": {
+            "type": "string"
+          },
+          "day_end": {
+            "type": "string"
+          },
+          "assembly": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "day_start",
+          "day_end"
+        ]
+      },
+      "SchoolNow": {
+        "type": "object",
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "outdoor_pm25": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "indoor_pm25": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "indoor_co2_ppm": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "ratio_in_out": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "advice": {
+            "$ref": "#/components/schemas/ClassroomAdvice"
+          }
+        },
+        "required": [
+          "ts"
+        ]
+      },
+      "SafeWindow": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "label": {
+            "$ref": "#/components/schemas/SafeWindowLabel"
+          },
+          "pm25_p10": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "pm25_p50": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "pm25_p90": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "confidence": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "label"
+        ]
+      },
+      "SchoolToday": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "advice": {
+            "$ref": "#/components/schemas/ClassroomAdvice"
+          },
+          "safe_windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SafeWindow"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "SchoolMeOut": {
+        "type": "object",
+        "properties": {
+          "school_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ward_id": {
+            "type": "string"
+          },
+          "cell_id": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "name_hi": {
+            "type": "string",
+            "nullable": true
+          },
+          "forecast_cell_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "devices": {
+            "$ref": "#/components/schemas/SchoolDevices"
+          },
+          "hours": {
+            "$ref": "#/components/schemas/SchoolHours"
+          },
+          "now": {
+            "$ref": "#/components/schemas/SchoolNow"
+          },
+          "today": {
+            "$ref": "#/components/schemas/SchoolToday"
+          },
+          "whatsapp_opt_in": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "preferred_lang": {
+            "$ref": "#/components/schemas/Lang"
+          }
+        },
+        "required": [
+          "school_id",
+          "name",
+          "ward_id",
+          "cell_id",
+          "location",
+          "is_simulated"
+        ]
+      },
+      "QuantileValue": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "type": "number",
+            "format": "double"
+          },
+          "p10": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "p90": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "p50"
+        ]
+      },
+      "SafeWindowOut": {
+        "type": "object",
+        "properties": {
+          "school_id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_final": {
+            "type": "boolean"
+          },
+          "windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SafeWindow"
+            }
+          },
+          "advice": {
+            "$ref": "#/components/schemas/ClassroomAdvice"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "advice_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "advice_reason_hi": {
+            "type": "string",
+            "nullable": true
+          },
+          "assembly_pm25": {
+            "$ref": "#/components/schemas/QuantileValue"
+          },
+          "alert_required": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "model_version": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "school_id",
+          "date",
+          "issued_at",
+          "is_final",
+          "windows",
+          "advice",
+          "is_simulated"
+        ]
+      },
+      "IndoorOutdoorPoint": {
+        "type": "object",
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "outdoor_pm25": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "indoor_pm25": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "indoor_co2_ppm": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "ratio_in_out": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ts"
+        ]
+      },
+      "IndoorOutdoorSummary": {
+        "type": "object",
+        "properties": {
+          "mean_ratio_in_out": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "hours_indoor_above_60": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "alerts_sent": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "DeviceState": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DeviceStatus"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "device_id",
+          "status"
+        ]
+      },
+      "IndoorOutdoorDevices": {
+        "type": "object",
+        "properties": {
+          "outdoor": {
+            "$ref": "#/components/schemas/DeviceState"
+          },
+          "indoor": {
+            "$ref": "#/components/schemas/DeviceState"
+          }
+        },
+        "required": [
+          "outdoor",
+          "indoor"
+        ]
+      },
+      "IndoorOutdoorOut": {
+        "type": "object",
+        "properties": {
+          "school_id": {
+            "type": "string"
+          },
+          "interval": {
+            "type": "string"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndoorOutdoorPoint"
+            }
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/IndoorOutdoorSummary"
+          },
+          "devices": {
+            "$ref": "#/components/schemas/IndoorOutdoorDevices"
+          },
+          "advice": {
+            "$ref": "#/components/schemas/ClassroomAdvice"
+          },
+          "advice_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "advice_reason_hi": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "school_id",
+          "interval",
+          "series",
+          "is_simulated"
+        ]
+      },
+      "ForecastPoint": {
+        "type": "object",
+        "properties": {
+          "horizon_h": {
+            "type": "integer"
+          },
+          "valid_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "p50": {
+            "type": "number",
+            "format": "double"
+          },
+          "p10": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "p90": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "aqi_p50": {
+            "type": "integer",
+            "nullable": true
+          },
+          "grap_stage": {
+            "type": "integer",
+            "nullable": true
+          },
+          "p_stage_up": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "required": [
+          "horizon_h",
+          "valid_at",
+          "p50"
+        ]
+      },
+      "ForecastDaily": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "max_p50": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "max_p90": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "grap_stage": {
+            "type": "integer",
+            "nullable": true
+          },
+          "peak_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "ForecastCellOut": {
+        "type": "object",
+        "properties": {
+          "cell_id": {
+            "type": "string"
+          },
+          "pollutant": {
+            "$ref": "#/components/schemas/Pollutant"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ForecastPoint"
+            }
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "requested_cell_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "run_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "model_version": {
+            "type": "string",
+            "nullable": true
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ForecastDaily"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "cell_id",
+          "pollutant",
+          "issued_at",
+          "series",
+          "is_simulated"
+        ]
+      },
+      "GrapDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "stage": {
+            "type": "integer"
+          },
+          "probability": {
+            "type": "number",
+            "format": "double"
+          },
+          "stage_probs": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
+          },
+          "aqi_p10": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aqi_p50": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aqi_p90": {
+            "type": "integer",
+            "nullable": true
+          },
+          "peak_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "date",
+          "stage",
+          "probability"
+        ]
+      },
+      "GrapOutlookOut": {
+        "type": "object",
+        "properties": {
+          "ward_id": {
+            "type": "string"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GrapDay"
+            }
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "model_version": {
+            "type": "string",
+            "nullable": true
+          },
+          "checklist_stage": {
+            "type": "integer",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ward_id",
+          "issued_at",
+          "days",
+          "is_simulated"
+        ]
+      },
+      "OpenAirProperties": {
+        "type": "object",
+        "properties": {
+          "cell_id": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number",
+            "format": "double"
+          },
+          "aqi": {
+            "type": "integer"
+          },
+          "aqi_category": {
+            "$ref": "#/components/schemas/AqiCategory"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "pm25": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "pm10": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "no2_ppb": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "dominant_pollutant": {
+            "$ref": "#/components/schemas/Pollutant"
+          },
+          "cause_label": {
+            "$ref": "#/components/schemas/CauseLabel"
+          },
+          "cause_conf": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          }
+        },
+        "required": [
+          "cell_id",
+          "confidence",
+          "aqi",
+          "aqi_category",
+          "is_simulated"
+        ]
+      },
+      "OpenAirFeature": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/GeoPolygon"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/OpenAirProperties"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "geometry",
+          "properties"
+        ]
+      },
+      "Licence": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "osm": {
+            "type": "string",
+            "nullable": true
+          },
+          "attribution": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "OpenAirOut": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OpenAirFeature"
+            }
+          },
+          "resolution_m": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aqi_basis": {
+            "type": "string",
+            "nullable": true
+          },
+          "licence": {
+            "$ref": "#/components/schemas/Licence"
+          },
+          "methods_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "advice": {
+            "$ref": "#/components/schemas/CitizenAdvice"
+          }
+        },
+        "required": [
+          "type",
+          "as_of",
+          "features"
+        ]
+      },
+      "CitizenAdvice": {
+        "type": "object",
+        "properties": {
+          "alt_route": {
+            "$ref": "#/components/schemas/LocalizedText"
+          }
+        }
+      },
+      "PresignIn": {
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "$ref": "#/components/schemas/UploadPurpose"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "content_length": {
+            "type": "integer"
+          },
+          "sha256": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "content_type",
+          "content_length",
+          "sha256"
+        ]
+      },
+      "PresignOut": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "max_bytes": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "required": [
+          "key",
+          "url",
+          "method",
+          "expires_at"
+        ],
+        "description": "method POST → multipart form (fields first, then `file`); PUT → raw body with headers"
+      },
+      "ReportCreateIn": {
+        "type": "object",
+        "properties": {
+          "client_report_id": {
+            "type": "string"
+          },
+          "photo_key": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "accuracy_m": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ReportCategory"
+          }
+        },
+        "required": [
+          "client_report_id",
+          "photo_key",
+          "location",
+          "captured_at"
+        ]
+      },
+      "ReportCreateOut": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportStatus"
+          },
+          "client_report_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "ward_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cell_id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "report_id",
+          "status"
+        ]
+      },
+      "ReportListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "client_report_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "ward_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "thumbnail_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "verification_label": {
+            "$ref": "#/components/schemas/CauseLabel"
+          },
+          "inspection_status": {
+            "$ref": "#/components/schemas/InspectionStatus"
+          },
+          "outcome_text": {
+            "type": "string",
+            "nullable": true
+          },
+          "outcome_text_hi": {
+            "type": "string",
+            "nullable": true
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReportSource"
+          },
+          "is_simulated": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "created_at"
+        ]
+      },
+      "ReportPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportListItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ReportVerification": {
+        "type": "object",
+        "properties": {
+          "verified": {
+            "type": "boolean"
+          },
+          "label": {
+            "$ref": "#/components/schemas/CauseLabel"
+          },
+          "confidence": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "verified_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "model_version": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "verified"
+        ]
+      },
+      "ReportInspection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InspectionStatus"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "ReportTimelineEntry": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ReportStatus"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "status",
+          "at"
+        ]
+      },
+      "ReportDetailOut": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportStatus"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportTimelineEntry"
+            }
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "client_report_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReportSource"
+          },
+          "accuracy_m": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "ward_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cell_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "lang": {
+            "$ref": "#/components/schemas/Lang"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ReportCategory"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "photo_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "verification": {
+            "$ref": "#/components/schemas/ReportVerification"
+          },
+          "inspection": {
+            "$ref": "#/components/schemas/ReportInspection"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/InspectionOutcome"
+          },
+          "outcome_text": {
+            "type": "string",
+            "nullable": true
+          },
+          "outcome_text_hi": {
+            "type": "string",
+            "nullable": true
+          },
+          "rejection_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "rejection_reason_hi": {
+            "type": "string",
+            "nullable": true
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "location",
+          "created_at",
+          "timeline",
+          "is_simulated"
+        ]
+      },
+      "Pm10TrendPoint": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "pm10_p50": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "n_obs": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "SiteScoreComponent": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "label": {
+            "$ref": "#/components/schemas/LocalizedText"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "SiteMeOut": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SiteType"
+          },
+          "name": {
+            "type": "string"
+          },
+          "grade": {
+            "$ref": "#/components/schemas/SiteGrade"
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "ward_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "place_name": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "grade_since": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "score": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "violations": {
+            "type": "integer",
+            "nullable": true
+          },
+          "flags_30d": {
+            "type": "integer",
+            "nullable": true
+          },
+          "last_inspection_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "pm10_trend": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Pm10TrendPoint"
+            },
+            "nullable": true
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SiteScoreComponent"
+            },
+            "nullable": true
+          },
+          "tips": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedText"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "site_id",
+          "type",
+          "name",
+          "grade",
+          "is_simulated"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "ops_healthz",
+        "tags": [
+          "ops"
+        ],
+        "summary": "Liveness",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/otp/request": {
+      "post": {
+        "operationId": "auth_otp_request",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Request an OTP",
+        "responses": {
+          "202": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpRequestOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequestIn"
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/otp/verify": {
+      "post": {
+        "operationId": "auth_otp_verify",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Verify an OTP",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyIn"
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "auth_refresh",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Rotate tokens",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshIn"
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "auth_logout",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Revoke the refresh family",
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/switch-role": {
+      "post": {
+        "operationId": "auth_switch_role",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Reissue tokens for another role",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchRoleIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "me_get",
+        "tags": [
+          "me"
+        ],
+        "summary": "Current user",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "me_patch",
+        "tags": [
+          "me"
+        ],
+        "summary": "Update language / notification prefs (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MePatchIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/push-token": {
+      "put": {
+        "operationId": "me_put_push_token",
+        "tags": [
+          "me"
+        ],
+        "summary": "Register a push token",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushTokenOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushTokenIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/alert-subscription": {
+      "get": {
+        "operationId": "me_get_alert_subscription",
+        "tags": [
+          "me"
+        ],
+        "summary": "Citizen alert area (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertSubscription"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "me_put_alert_subscription",
+        "tags": [
+          "me"
+        ],
+        "summary": "Set citizen alert area (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertSubscription"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertSubscription"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tasks/mine": {
+      "get": {
+        "operationId": "tasks_mine",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Today's tasks for the caller",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TasksMineOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "description": "IST service date YYYY-MM-DD"
+          }
+        ]
+      }
+    },
+    "/v1/tasks/{id}": {
+      "get": {
+        "operationId": "tasks_get",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "One task",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskItem"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/tasks/{id}/ack": {
+      "post": {
+        "operationId": "tasks_ack",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Acknowledge a task",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskAckOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskAckIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tasks/{id}/status": {
+      "post": {
+        "operationId": "tasks_update_status",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Field status update",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskStatusIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/shifts/{id}/start": {
+      "post": {
+        "operationId": "shifts_start",
+        "tags": [
+          "shifts"
+        ],
+        "summary": "Start a shift (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftActionIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/shifts/{id}/end": {
+      "post": {
+        "operationId": "shifts_end",
+        "tags": [
+          "shifts"
+        ],
+        "summary": "End a shift (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftActionIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/shifts/{id}/locations": {
+      "post": {
+        "operationId": "shifts_locations",
+        "tags": [
+          "shifts"
+        ],
+        "summary": "Upload shift location pings (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationBatchOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationBatchIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/inspections": {
+      "get": {
+        "operationId": "inspections_list",
+        "tags": [
+          "inspections"
+        ],
+        "summary": "Inspections for the caller",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/inspections/{id}": {
+      "get": {
+        "operationId": "inspections_get",
+        "tags": [
+          "inspections"
+        ],
+        "summary": "Inspector evidence bundle (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionDetailOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/inspections/{id}/on-site": {
+      "post": {
+        "operationId": "inspections_on_site",
+        "tags": [
+          "inspections"
+        ],
+        "summary": "Mark on site (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionCloseOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSiteIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/inspections/{id}/close": {
+      "post": {
+        "operationId": "inspections_close",
+        "tags": [
+          "inspections"
+        ],
+        "summary": "Close with an outcome",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionCloseOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InspectionCloseIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/alerts": {
+      "get": {
+        "operationId": "alerts_list",
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Alerts addressed to the caller",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISO-8601 UTC timestamp"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/alerts/{id}": {
+      "get": {
+        "operationId": "alerts_get",
+        "tags": [
+          "alerts"
+        ],
+        "summary": "One alert",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertItem"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/alerts/{id}/ack": {
+      "post": {
+        "operationId": "alerts_ack",
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Acknowledge an alert (proposed)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertAckOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertAckIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/schools/me": {
+      "get": {
+        "operationId": "schools_me",
+        "tags": [
+          "schools"
+        ],
+        "summary": "The caller's school",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolMeOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/schools/{id}/safe-window": {
+      "get": {
+        "operationId": "schools_safe_window",
+        "tags": [
+          "schools"
+        ],
+        "summary": "Safe outdoor windows for a day",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SafeWindowOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "description": "IST service date YYYY-MM-DD"
+          }
+        ]
+      }
+    },
+    "/v1/schools/{id}/indoor-outdoor": {
+      "get": {
+        "operationId": "schools_indoor_outdoor",
+        "tags": [
+          "schools"
+        ],
+        "summary": "HawaPod-S pair readings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndoorOutdoorOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISO-8601 UTC timestamp"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISO-8601 UTC timestamp"
+          },
+          {
+            "name": "interval",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/forecast/{cell_id}": {
+      "get": {
+        "operationId": "forecast_get",
+        "tags": [
+          "forecast"
+        ],
+        "summary": "72 h forecast for a cell",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastCellOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "cell_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pollutant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/grap/outlook": {
+      "get": {
+        "operationId": "grap_outlook",
+        "tags": [
+          "grap"
+        ],
+        "summary": "GRAP outlook for a ward",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrapOutlookOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ward",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/open/v1/air": {
+      "get": {
+        "operationId": "open_air",
+        "tags": [
+          "open_data"
+        ],
+        "summary": "Coarse open air data",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAirOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "bbox",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_simulated",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "security": []
+      }
+    },
+    "/v1/uploads/presign": {
+      "post": {
+        "operationId": "uploads_presign",
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Presign an upload",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports": {
+      "post": {
+        "operationId": "reports_create",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Citizen Eyes report (JSON after presign)",
+        "responses": {
+          "202": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportCreateOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "UUIDv7 op id; stable across retries"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportCreateIn"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports/mine": {
+      "get": {
+        "operationId": "reports_mine",
+        "tags": [
+          "reports"
+        ],
+        "summary": "The caller's reports",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/reports/{id}": {
+      "get": {
+        "operationId": "reports_get",
+        "tags": [
+          "reports"
+        ],
+        "summary": "One report",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDetailOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/sites/me": {
+      "get": {
+        "operationId": "sites_me",
+        "tags": [
+          "sites"
+        ],
+        "summary": "The caller's site",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteMeOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

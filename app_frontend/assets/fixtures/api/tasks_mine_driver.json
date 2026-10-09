@@ -1,0 +1,348 @@
+{
+  "date": "2026-11-13",
+  "role": "driver",
+  "asset": {
+    "id": "AST-SPR-0012",
+    "type": "sprinkler",
+    "label": "Sprinkler 12",
+    "tag_device_id": "HTG-0031",
+    "tag_status": "active",
+    "tag_last_seen_at": "2026-11-13T00:10:02Z",
+    "capacity_litres": 12000,
+    "is_simulated": true
+  },
+  "shift": {
+    "id": "01932b90-0000-7aaa-8bbb-000000005012",
+    "status": "scheduled",
+    "start": "2026-11-13T00:30:00Z",
+    "end": "2026-11-13T05:30:00Z"
+  },
+  "route": {
+    "route_id": "0192a0c4-7e10-7c3e-9a10-0000000000a1",
+    "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+    "version": 3,
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          77.1765,
+          28.6562
+        ],
+        [
+          77.1843,
+          28.6531
+        ],
+        [
+          77.1905,
+          28.6512
+        ],
+        [
+          77.18795,
+          28.6451
+        ],
+        [
+          77.1838,
+          28.6402
+        ],
+        [
+          77.1813,
+          28.6384
+        ],
+        [
+          77.1772,
+          28.6378
+        ],
+        [
+          77.17875,
+          28.63955
+        ],
+        [
+          77.1787,
+          28.6425
+        ],
+        [
+          77.1853,
+          28.64265
+        ],
+        [
+          77.1903,
+          28.644
+        ],
+        [
+          77.19355,
+          28.6494
+        ],
+        [
+          77.1952,
+          28.656
+        ]
+      ]
+    },
+    "bbox": [
+      77.17,
+      28.63,
+      77.2,
+      28.66
+    ],
+    "distance_km": 14.6
+  },
+  "items": [
+    {
+      "id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b01",
+      "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+      "kind": "spray",
+      "status": "dispatched",
+      "sequence": 1,
+      "cell_id": "g500-042-077",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          77.1905,
+          28.6512
+        ]
+      },
+      "place_name": {
+        "en": "Ajmal Khan Rd, Karol Bagh",
+        "hi": "अजमल ख़ान रोड, करोल बाग़"
+      },
+      "window_start": "2026-11-13T00:40:00Z",
+      "window_end": "2026-11-13T01:10:00Z",
+      "instructions": {
+        "en": "Spray both kerbs from the market gate towards the metro.",
+        "hi": "मार्केट गेट से मेट्रो की ओर दोनों किनारों पर छिड़काव करें।"
+      },
+      "target_litres": 600,
+      "segment_length_m": 800,
+      "duration_min": null,
+      "arrival_radius_m": 150,
+      "cause_label": "dust",
+      "cause_conf": 0.78,
+      "reason_text": {
+        "en": "Road dust next to the market before the 08:00 peak.",
+        "hi": "08:00 के चरम से पहले मार्केट के पास सड़क की धूल।"
+      },
+      "completion_source": null,
+      "intervention_id": null,
+      "litres": null,
+      "impact_summary": null,
+      "skip_reason": null,
+      "version": 4,
+      "updated_at": "2026-11-13T00:02:11Z",
+      "is_simulated": true
+    },
+    {
+      "id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b02",
+      "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+      "kind": "spray",
+      "status": "dispatched",
+      "sequence": 2,
+      "cell_id": "g500-041-076",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          77.1838,
+          28.6402
+        ]
+      },
+      "place_name": {
+        "en": "Pusa Rd near Rajinder Nagar",
+        "hi": "पूसा रोड, राजिंदर नगर के पास"
+      },
+      "window_start": "2026-11-13T01:15:00Z",
+      "window_end": "2026-11-13T01:45:00Z",
+      "instructions": {
+        "en": "Spray the service lane on the north side.",
+        "hi": "उत्तर की ओर सर्विस लेन पर छिड़काव करें।"
+      },
+      "target_litres": 500,
+      "segment_length_m": 700,
+      "duration_min": null,
+      "arrival_radius_m": 150,
+      "cause_label": "dust",
+      "cause_conf": 0.72,
+      "reason_text": {
+        "en": "Dust from heavy trucks overnight; two schools within 400 m.",
+        "hi": "रात भर भारी ट्रकों से धूल; 400 मीटर में दो स्कूल।"
+      },
+      "completion_source": null,
+      "intervention_id": null,
+      "litres": null,
+      "impact_summary": null,
+      "skip_reason": null,
+      "version": 4,
+      "updated_at": "2026-11-13T00:02:11Z",
+      "is_simulated": true
+    },
+    {
+      "id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b03",
+      "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+      "kind": "spray",
+      "status": "dispatched",
+      "sequence": 3,
+      "cell_id": "g500-040-076",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          77.1772,
+          28.6378
+        ]
+      },
+      "place_name": {
+        "en": "Shankar Rd",
+        "hi": "शंकर रोड"
+      },
+      "window_start": "2026-11-13T01:50:00Z",
+      "window_end": "2026-11-13T02:20:00Z",
+      "instructions": {
+        "en": "Spray the stretch outside the bus depot.",
+        "hi": "बस डिपो के बाहर वाले हिस्से पर छिड़काव करें।"
+      },
+      "target_litres": 450,
+      "segment_length_m": 600,
+      "duration_min": null,
+      "arrival_radius_m": 150,
+      "cause_label": "dust",
+      "cause_conf": 0.66,
+      "reason_text": {
+        "en": "Construction debris on the road shoulder."
+      },
+      "completion_source": null,
+      "intervention_id": null,
+      "litres": null,
+      "impact_summary": null,
+      "skip_reason": null,
+      "version": 4,
+      "updated_at": "2026-11-13T00:02:11Z",
+      "is_simulated": true
+    },
+    {
+      "id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b04",
+      "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+      "kind": "spray",
+      "status": "dispatched",
+      "sequence": 4,
+      "cell_id": "g500-041-075",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          77.1787,
+          28.6425
+        ]
+      },
+      "place_name": {
+        "en": "Rajendra Place",
+        "hi": "राजेंद्र प्लेस"
+      },
+      "window_start": "2026-11-13T02:25:00Z",
+      "window_end": "2026-11-13T02:55:00Z",
+      "instructions": {
+        "en": "Spray around the metro exits and the taxi stand.",
+        "hi": "मेट्रो के निकास और टैक्सी स्टैंड के आसपास छिड़काव करें।"
+      },
+      "target_litres": 550,
+      "segment_length_m": 750,
+      "duration_min": null,
+      "arrival_radius_m": 150,
+      "cause_label": "dust",
+      "cause_conf": 0.81,
+      "reason_text": {
+        "en": "Highest PM10 in the ward this morning.",
+        "hi": "आज सुबह वार्ड में सबसे ज़्यादा PM10।"
+      },
+      "completion_source": null,
+      "intervention_id": null,
+      "litres": null,
+      "impact_summary": null,
+      "skip_reason": null,
+      "version": 4,
+      "updated_at": "2026-11-13T00:02:11Z",
+      "is_simulated": true
+    },
+    {
+      "id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b05",
+      "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+      "kind": "spray",
+      "status": "dispatched",
+      "sequence": 5,
+      "cell_id": "g500-041-077",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          77.1903,
+          28.644
+        ]
+      },
+      "place_name": {
+        "en": "Karol Bagh Metro Gate 2",
+        "hi": "करोल बाग़ मेट्रो गेट 2"
+      },
+      "window_start": "2026-11-13T03:00:00Z",
+      "window_end": "2026-11-13T03:30:00Z",
+      "instructions": {
+        "en": "Spray the pavement edge along the station.",
+        "hi": "स्टेशन के साथ फ़ुटपाथ के किनारे छिड़काव करें।"
+      },
+      "target_litres": 400,
+      "segment_length_m": 500,
+      "duration_min": null,
+      "arrival_radius_m": 150,
+      "cause_label": "dust",
+      "cause_conf": 0.69,
+      "reason_text": {
+        "en": "Footfall peak at the station between 09:00 and 10:00."
+      },
+      "completion_source": null,
+      "intervention_id": null,
+      "litres": null,
+      "impact_summary": null,
+      "skip_reason": null,
+      "version": 4,
+      "updated_at": "2026-11-13T00:02:11Z",
+      "is_simulated": true
+    },
+    {
+      "id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b06",
+      "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+      "kind": "spray",
+      "status": "dispatched",
+      "sequence": 6,
+      "cell_id": "g500-042-078",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          77.1952,
+          28.656
+        ]
+      },
+      "place_name": {
+        "en": "Dev Nagar school zone",
+        "hi": "देव नगर स्कूल क्षेत्र"
+      },
+      "window_start": "2026-11-13T03:35:00Z",
+      "window_end": "2026-11-13T04:05:00Z",
+      "instructions": {
+        "en": "Spray towards the school gate, both kerbs, 650 m.",
+        "hi": "स्कूल गेट की ओर दोनों किनारों पर 650 मीटर छिड़काव करें।"
+      },
+      "target_litres": 500,
+      "segment_length_m": 650,
+      "duration_min": null,
+      "arrival_radius_m": 150,
+      "cause_label": "dust",
+      "cause_conf": 0.74,
+      "reason_text": {
+        "en": "Road dust next to 3 schools before the lunch break.",
+        "hi": "दोपहर की छुट्टी से पहले 3 स्कूलों के पास सड़क की धूल।"
+      },
+      "completion_source": null,
+      "intervention_id": null,
+      "litres": null,
+      "impact_summary": null,
+      "skip_reason": null,
+      "version": 4,
+      "updated_at": "2026-11-13T00:02:11Z",
+      "is_simulated": true
+    }
+  ],
+  "server_time": "2026-11-13T00:05:00Z"
+}

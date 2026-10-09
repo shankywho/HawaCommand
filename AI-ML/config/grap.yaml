@@ -1,0 +1,64 @@
+# GRAP (Graded Response Action Plan) Stage Thresholds for Delhi NCR
+# Source: Commission for Air Quality Management (CAQM) / CPCB
+# Thresholds based on Delhi composite AQI or PM2.5 (ug/m3) / PM10 (ug/m3)
+
+stages:
+  stage_1:
+    name: "Poor"
+    aqi_min: 201
+    aqi_max: 300
+    pm25_min: 61
+    pm25_max: 120
+    pm10_min: 101
+    pm10_max: 250
+    lead_time_target_hours: 48
+    actions:
+      - "Enforce dust control at construction sites > 500 sq m"
+      - "Mechanized sweeping and water sprinkling on heavy traffic corridors"
+      - "Strict vigilance on open biomass and municipal solid waste burning"
+      - "Traffic management to prevent congestion at 13 identified hotspots"
+
+  stage_2:
+    name: "Very Poor"
+    aqi_min: 301
+    aqi_max: 400
+    pm25_min: 121
+    pm25_max: 250
+    pm10_min: 251
+    pm10_max: 350
+    lead_time_target_hours: 48
+    actions:
+      - "Daily water sprinkling along with dust suppressants on primary roads"
+      - "Intensify inspections on visibly polluting diesel commercial vehicles"
+      - "Strict ban on diesel generator sets except for essential services"
+      - "School advisory: suspend outdoor morning assemblies and sports"
+
+  stage_3:
+    name: "Severe"
+    aqi_min: 401
+    aqi_max: 450
+    pm25_min: 251
+    pm25_max: 380
+    pm10_min: 351
+    pm10_max: 430
+    lead_time_target_hours: 24
+    actions:
+      - "Complete ban on non-essential construction and demolition activities"
+      - "Ban on BS-III petrol and BS-IV diesel LMVs across Delhi-NCR"
+      - "Intensify anti-smog gun deployment at hotspots and vulnerable clusters"
+      - "Closure of primary schools (classes up to Class 5) or shift to hybrid"
+
+  stage_4:
+    name: "Severe Plus"
+    aqi_min: 451
+    aqi_max: 500
+    pm25_min: 381
+    pm25_max: 9999
+    pm10_min: 431
+    pm10_max: 9999
+    lead_time_target_hours: 24
+    actions:
+      - "Ban on entry of non-electric/non-CNG commercial trucks into Delhi"
+      - "Suspend physical classes for classes 6 to 9 and class 11"
+      - "50% work-from-home mandate for public and private offices"
+      - "Emergency deployment of total available misting and ASG fleet"

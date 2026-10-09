@@ -1,0 +1,31 @@
+{
+  "id": "01927f40-2222-7aaa-8bbb-00000000a501",
+  "role": "site_manager",
+  "roles": [
+    "site_manager"
+  ],
+  "display_name": "Site manager, SITE-0311",
+  "email": null,
+  "phone_e164": "+919810044444",
+  "lang": "en",
+  "wards": [
+    {
+      "ward_id": "ward-084",
+      "name": "Ward 084 · Karol Bagh"
+    }
+  ],
+  "asset_ids": [],
+  "school": null,
+  "site": {
+    "site_id": "SITE-0311",
+    "name": "Residential tower, Block C"
+  },
+  "current_shift": null,
+  "features": {
+    "citizen_eyes": true,
+    "school_scheduler": true,
+    "open_data": true
+  },
+  "notification_prefs": {},
+  "is_simulated": true
+}

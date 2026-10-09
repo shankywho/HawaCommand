@@ -1,0 +1,11 @@
+{
+  "injected_pct": -18.5,
+  "recovered_pct": -18.82,
+  "error": 0.3200000000000003,
+  "ci_low": -22.24,
+  "ci_high": -15.4,
+  "p_value": 0.0,
+  "is_significant": true,
+  "duration_minutes": 120,
+  "passed": true
+}

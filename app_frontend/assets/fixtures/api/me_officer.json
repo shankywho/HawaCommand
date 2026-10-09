@@ -1,0 +1,28 @@
+{
+  "id": "01927f40-1111-7aaa-8bbb-00000000a001",
+  "role": "officer",
+  "roles": [
+    "officer"
+  ],
+  "display_name": "A. Sharma",
+  "email": "a.sharma@mcd.example.in",
+  "phone_e164": null,
+  "lang": "en",
+  "wards": [
+    {
+      "ward_id": "ward-084",
+      "name": "Ward 084 · Karol Bagh"
+    }
+  ],
+  "asset_ids": [],
+  "school": null,
+  "site": null,
+  "current_shift": null,
+  "features": {
+    "citizen_eyes": true,
+    "school_scheduler": true,
+    "open_data": true
+  },
+  "notification_prefs": {},
+  "is_simulated": true
+}

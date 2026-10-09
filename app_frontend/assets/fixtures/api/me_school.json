@@ -1,0 +1,32 @@
+{
+  "id": "01927f40-2222-7aaa-8bbb-00000000f031",
+  "role": "school",
+  "roles": [
+    "school"
+  ],
+  "display_name": "Principal, Govt. Sr. Sec. School No. 2",
+  "email": null,
+  "phone_e164": "+919810033333",
+  "lang": "hi",
+  "wards": [
+    {
+      "ward_id": "ward-084",
+      "name": "Ward 084 · Karol Bagh"
+    }
+  ],
+  "asset_ids": [],
+  "school": {
+    "school_id": "SCH-07050112345",
+    "name": "Govt. Sr. Sec. School No. 2",
+    "name_hi": "राजकीय सर्वोदय विद्यालय नं. 2"
+  },
+  "site": null,
+  "current_shift": null,
+  "features": {
+    "citizen_eyes": true,
+    "school_scheduler": true,
+    "open_data": true
+  },
+  "notification_prefs": {},
+  "is_simulated": true
+}

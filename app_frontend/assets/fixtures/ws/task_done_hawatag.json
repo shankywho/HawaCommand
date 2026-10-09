@@ -1,0 +1,19 @@
+{
+  "channel": "tasks:me",
+  "type": "task.done",
+  "event_id": "01932d00-0000-7aaa-8bbb-000000000d11",
+  "seq": 12,
+  "ts": "2026-11-13T01:00:05Z",
+  "data": {
+    "task_id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b01",
+    "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+    "asset_id": "AST-SPR-0012",
+    "status": "done",
+    "source": "hawatag",
+    "litres": 612,
+    "intervention_id": "01932d10-4b21-7c3e-9a10-7e8f9a0b1c2d",
+    "stop_order": 1,
+    "version": 5,
+    "is_simulated": true
+  }
+}

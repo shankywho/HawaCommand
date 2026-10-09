@@ -1,0 +1,100 @@
+### HawaCommand AI-ML Engine Serving API Test Requests
+### Base URL
+@baseUrl = http://localhost:8000
+
+### 1. Health Check
+GET {{baseUrl}}/health
+Accept: application/json
+
+### 2. Digital Twin Vector Heatmap
+GET {{baseUrl}}/twin?limit=50
+Accept: application/json
+
+### 3. 72-Hour Quantile Forecast & GRAP Outlook
+GET {{baseUrl}}/forecast/G-052-054?pm25=245.0
+Accept: application/json
+
+### 4. Ranked Hotspots by Human Exposure
+GET {{baseUrl}}/hotspots?ward=all&limit=8&hour=8
+Accept: application/json
+
+### 5. Draft Exposure-First Dispatch Plan
+POST {{baseUrl}}/plans/draft
+Content-Type: application/json
+
+{
+  "ward": "all",
+  "limit_hotspots": 5,
+  "shift_hours": 4.0,
+  "assets": [
+    {
+      "id": "SPR-04",
+      "type": "sprinkler",
+      "depot_lat": 28.6476,
+      "depot_lon": 77.3000,
+      "capacity_litres": 10000
+    },
+    {
+      "id": "INSP-01",
+      "type": "inspection_team",
+      "depot_lat": 28.6139,
+      "depot_lon": 77.2090,
+      "capacity_litres": 0
+    }
+  ]
+}
+
+### 6. What-If Plan Simulation vs Baseline
+POST {{baseUrl}}/plans/PLAN-20261112-06/simulate
+Content-Type: application/json
+
+{}
+
+### 7. Causal Impact Verification
+POST {{baseUrl}}/interventions/INT-20261112-01/verify
+Content-Type: application/json
+
+### 8. Proactive Operational Insights & Bilingual Narratives
+GET {{baseUrl}}/insights
+Accept: application/json
+
+### 9. Telemetry Packet Ingest (Proposal §10.6 format)
+POST {{baseUrl}}/ingest/telemetry
+Content-Type: application/json
+
+{
+  "v": 1,
+  "dev": "HPM-1002",
+  "role": "M",
+  "seq": 1042,
+  "ts": "2026-11-12T06:15:00Z",
+  "gps": {
+    "lat": 28.6331,
+    "lon": 77.2194,
+    "spd": 22.4,
+    "hdop": 0.9
+  },
+  "pm": {
+    "pm1": 95.0,
+    "pm25": 165.0,
+    "pm10": 260.0
+  },
+  "gas": {
+    "no2_ppb": 42.0,
+    "co_ppb": 1350.0,
+    "so2_ppb": 9.0,
+    "voc_kohm": 41.0
+  },
+  "env": {
+    "t": 19.2,
+    "rh": 74.0,
+    "p": 1014.5
+  },
+  "flags": ["heater_on"],
+  "fw": "1.4.2",
+  "batt": 4.08
+}
+
+### 10. Intervention Effectiveness Library
+GET {{baseUrl}}/effectiveness-library
+Accept: application/json

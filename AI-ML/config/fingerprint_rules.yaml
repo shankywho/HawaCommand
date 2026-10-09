@@ -1,0 +1,67 @@
+# Source Attribution Fingerprinting Rules (F7)
+# Maps multi-pollutant co-signals, temporal diurnal patterns, and upwind fire data to likely causes
+
+sources:
+  road_dust:
+    label: "Road / Construction Dust"
+    primary_pollutant: "pm10"
+    ratio_pm25_to_pm10_max: 0.45
+    no2_threshold_ppb_max: 45.0
+    daytime_only: true
+    active_hours: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    required_action: "sprinkler"
+    alternative_action: "sweeper"
+    disallowed_actions: []
+    confidence_base: 0.75
+
+  traffic:
+    label: "Vehicular Traffic Exhaust"
+    primary_pollutant: "no2"
+    ratio_pm25_to_pm10_min: 0.40
+    ratio_pm25_to_pm10_max: 0.70
+    no2_threshold_ppb_min: 40.0
+    co_threshold_ppm_min: 1.5
+    rush_hours: [8, 9, 10, 11, 17, 18, 19, 20, 21]
+    required_action: "traffic_advisory"
+    alternative_action: "smoky_vehicle_check"
+    disallowed_actions: ["sprinkler"]
+    confidence_base: 0.70
+
+  open_burning:
+    label: "Local Biomass / Waste Burning"
+    primary_pollutant: "pm25"
+    ratio_pm25_to_pm10_min: 0.70
+    voc_spike_ratio_min: 1.5
+    active_hours: [19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7]
+    required_action: "inspection_team"
+    alternative_action: "citizen_alert"
+    disallowed_actions: ["sprinkler"] # Sprinklers ineffective on smoke plumes
+    confidence_base: 0.80
+
+  regional_smoke:
+    label: "Regional Agricultural Stubble Burning"
+    primary_pollutant: "pm25"
+    ratio_pm25_to_pm10_min: 0.75
+    wind_direction_min_deg: 270.0 # North-West to West
+    wind_direction_max_deg: 335.0
+    upwind_fire_count_min: 20
+    city_wide_pm25_elevated_min: 180.0
+    required_action: "protect_people"
+    alternative_action: "school_mask_advisory"
+    disallowed_actions: ["sprinkler", "anti_smog_gun"] # Fleets cannot clean regional air mass
+    confidence_base: 0.85
+
+  industrial:
+    label: "Industrial Emissions"
+    primary_pollutant: "so2"
+    so2_threshold_ppb_min: 25.0
+    ratio_pm25_to_pm10_min: 0.50
+    required_action: "industrial_inspection"
+    alternative_action: "power_proxy_check"
+    disallowed_actions: ["sprinkler"]
+    confidence_base: 0.70
+
+  unknown:
+    label: "Mixed / Unclassified Source"
+    confidence_base: 0.30
+    required_action: "monitor"

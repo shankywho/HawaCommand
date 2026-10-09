@@ -1,0 +1,17 @@
+name: hawa_api
+version: 1.0.0
+description: Generated HawaCommand API client (do not edit; make gen-api)
+homepage: homepage
+
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  dio: '^5.7.0'
+  json_annotation: '^4.9.0'
+
+dev_dependencies:
+  build_runner: any
+  json_serializable: '^6.9.3'
+  test: '^1.16.0'

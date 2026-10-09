@@ -1,0 +1,52 @@
+# app_frontend/analysis_options.yaml (docs/app/LINTING_AND_QUALITY.md §2)
+include: package:very_good_analysis/analysis_options.yaml
+
+formatter:
+  page_width: 100
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.drift.dart"
+    - "lib/app/l10n/gen/**"
+    - "lib/firebase/firebase_options_*.dart"
+    - "packages/hawa_api/**"
+    - "tool/mock_server/**"
+    - "build/**"
+    # Files from the previous prototype app (package `hawacommand_app`). They are not part of the
+    # docs/app structure and are not imported anywhere; delete them, then remove this block.
+    - "lib/app/router.dart"
+    - "lib/app/theme.dart"
+    - "lib/core/air.dart"
+    - "lib/core/api_client.dart"
+    - "lib/core/config.dart"
+    - "lib/core/geo.dart"
+    - "lib/core/i18n.dart"
+    - "lib/core/prefs.dart"
+    - "lib/features/auth/*.dart"
+    - "lib/features/citizen/**"
+    - "lib/features/driver/**"
+    - "lib/features/hub/**"
+    - "lib/features/school/*.dart"
+    - "lib/features/settings/settings_screen.dart"
+    - "lib/widgets/**"
+    # Legacy prototype tests (import the old `hawacommand_app` package); delete with the files above.
+    - "test/data_mapping_test.dart"
+    - "test/i18n_test.dart"
+  # custom_lint + riverpod_lint are not installed: no riverpod_lint release resolves on
+  # Flutter 3.44 / Dart 3.12 (3.1.9 needs Dart >= 3.13; 3.1.8 pins riverpod 3.4.2, whose `test`
+  # dependency conflicts with flutter_test's test_api). Re-add `plugins: [custom_lint]` when it does.
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    invalid_annotation_target: ignore
+
+linter:
+  rules:
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false
+    sort_pub_dependencies: false
+    require_trailing_commas: false

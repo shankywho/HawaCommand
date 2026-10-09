@@ -1,0 +1,44 @@
+# Indian National Air Quality Index (IND-AQI) Breakpoints
+# Source: Central Pollution Control Board (CPCB), Ministry of Environment, Forest and Climate Change (MoEFCC)
+# Linear interpolation: AQI = ((I_hi - I_lo) / (B_hi - B_lo)) * (C - B_lo) + I_lo
+
+aqi_ranges:
+  - { category: "Good", aqi_lo: 0, aqi_hi: 50, color: "#00b050" }
+  - { category: "Satisfactory", aqi_lo: 51, aqi_hi: 100, color: "#92d050" }
+  - { category: "Moderate", aqi_lo: 101, aqi_hi: 200, color: "#ffff00" }
+  - { category: "Poor", aqi_lo: 201, aqi_hi: 300, color: "#ff9900" }
+  - { category: "Very Poor", aqi_lo: 301, aqi_hi: 400, color: "#ff0000" }
+  - { category: "Severe", aqi_lo: 401, aqi_hi: 500, color: "#c00000" }
+
+pollutant_breakpoints:
+  pm25: # 24-hr avg in ug/m3
+    - { b_lo: 0, b_hi: 30, i_lo: 0, i_hi: 50 }
+    - { b_lo: 31, b_hi: 60, i_lo: 51, i_hi: 100 }
+    - { b_lo: 61, b_hi: 90, i_lo: 101, i_hi: 200 }
+    - { b_lo: 91, b_hi: 120, i_lo: 201, i_hi: 300 }
+    - { b_lo: 121, b_hi: 250, i_lo: 301, i_hi: 400 }
+    - { b_lo: 251, b_hi: 500, i_lo: 401, i_hi: 500 }
+
+  pm10: # 24-hr avg in ug/m3
+    - { b_lo: 0, b_hi: 50, i_lo: 0, i_hi: 50 }
+    - { b_lo: 51, b_hi: 100, i_lo: 51, i_hi: 100 }
+    - { b_lo: 101, b_hi: 250, i_lo: 101, i_hi: 200 }
+    - { b_lo: 251, b_hi: 350, i_lo: 201, i_hi: 300 }
+    - { b_lo: 351, b_hi: 430, i_lo: 301, i_hi: 400 }
+    - { b_lo: 431, b_hi: 600, i_lo: 401, i_hi: 500 }
+
+  no2: # 24-hr avg in ug/m3
+    - { b_lo: 0, b_hi: 40, i_lo: 0, i_hi: 50 }
+    - { b_lo: 41, b_hi: 80, i_lo: 51, i_hi: 100 }
+    - { b_lo: 81, b_hi: 180, i_lo: 101, i_hi: 200 }
+    - { b_lo: 181, b_hi: 280, i_lo: 201, i_hi: 300 }
+    - { b_lo: 281, b_hi: 400, i_lo: 301, i_hi: 400 }
+    - { b_lo: 401, b_hi: 1000, i_lo: 401, i_hi: 500 }
+
+  co: # 8-hr avg in mg/m3
+    - { b_lo: 0.0, b_hi: 1.0, i_lo: 0, i_hi: 50 }
+    - { b_lo: 1.1, b_hi: 2.0, i_lo: 51, i_hi: 100 }
+    - { b_lo: 2.1, b_hi: 10.0, i_lo: 101, i_hi: 200 }
+    - { b_lo: 10.1, b_hi: 17.0, i_lo: 201, i_hi: 300 }
+    - { b_lo: 17.1, b_hi: 34.0, i_lo: 301, i_hi: 400 }
+    - { b_lo: 34.1, b_hi: 50.0, i_lo: 401, i_hi: 500 }

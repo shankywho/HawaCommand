@@ -34,6 +34,14 @@ class MissedMachineReport(BaseModel):
 @router.post("/safe-route")
 async def calculate_safe_route(req: SafeRouteRequest):
     """Calculates fastest, cleanest, and balanced routes comparing travel time and inhaled toxic dose."""
+    try:
+        from ...core.intel_client import get_intel_client
+        intel = get_intel_client()
+        twin_df = intel._get_live_twin_df()
+        cur_pm = float(twin_df["pm25_est"].mean())
+        safe_route_optimizer.default_bg_pm25 = cur_pm
+    except Exception:
+        pass
     result = safe_route_optimizer.compute_route_alternatives(
         origin=(req.origin.lat, req.origin.lon),
         destination=(req.destination.lat, req.destination.lon),
@@ -49,6 +57,14 @@ async def get_safe_breath_window(
     persona: str = Query("general", description="Persona: asthma_elderly | children_school | runners_athletes | general"),
 ):
     """Provides 24-hour diurnal inversion forecast and identifies the optimal safe outdoor window."""
+    try:
+        from ...core.intel_client import get_intel_client
+        intel = get_intel_client()
+        twin_df = intel._get_live_twin_df()
+        cur_pm = float(twin_df["pm25_est"].mean())
+        safe_window_calculator.baseline_pm25 = cur_pm
+    except Exception:
+        pass
     result = safe_window_calculator.compute_daily_window(lat=lat, lon=lon, persona=persona)
     return result
 

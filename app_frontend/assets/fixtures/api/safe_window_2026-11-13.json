@@ -1,0 +1,47 @@
+{
+  "school_id": "SCH-07050112345",
+  "date": "2026-11-13",
+  "issued_at": "2026-11-12T16:30:00Z",
+  "is_final": true,
+  "windows": [
+    {
+      "start": "2026-11-13T01:30:00Z",
+      "end": "2026-11-13T04:30:00Z",
+      "label": "avoid",
+      "pm25_p10": 210.0,
+      "pm25_p50": 246.0,
+      "pm25_p90": 301.0,
+      "confidence": 0.71
+    },
+    {
+      "start": "2026-11-13T08:00:00Z",
+      "end": "2026-11-13T09:30:00Z",
+      "label": "safe",
+      "pm25_p10": 41.0,
+      "pm25_p50": 58.0,
+      "pm25_p90": 81.0,
+      "confidence": 0.62
+    },
+    {
+      "start": "2026-11-13T09:30:00Z",
+      "end": "2026-11-13T10:00:00Z",
+      "label": "borderline",
+      "pm25_p10": 52.0,
+      "pm25_p50": 66.0,
+      "pm25_p90": 94.0,
+      "confidence": 0.48
+    }
+  ],
+  "advice": "seal",
+  "advice_reason": "Outdoor PM2.5 above 200 until 10:00 IST; keep windows shut, ventilate after 12:00 when CO2 rises.",
+  "advice_reason_hi": "सुबह 10:00 तक बाहर PM2.5 200 से ऊपर; खिड़कियाँ बंद रखें, 12:00 के बाद CO2 बढ़ने पर हवा आने दें।",
+  "assembly_pm25": {
+    "p10": 210.0,
+    "p50": 262.0,
+    "p90": 330.0,
+    "at": "2026-11-13T02:30:00Z"
+  },
+  "alert_required": true,
+  "model_version": "safewindow@0.3.0+a1b2c3d",
+  "is_simulated": true
+}

@@ -1,0 +1,23 @@
+{
+  "id": "01927f40-3333-7aaa-8bbb-00000000c005",
+  "role": "citizen",
+  "roles": [
+    "citizen"
+  ],
+  "display_name": "Citizen",
+  "email": null,
+  "phone_e164": "+919810077777",
+  "lang": "hi",
+  "wards": [],
+  "asset_ids": [],
+  "school": null,
+  "site": null,
+  "current_shift": null,
+  "features": {
+    "citizen_eyes": true,
+    "school_scheduler": true,
+    "open_data": true
+  },
+  "notification_prefs": {},
+  "is_simulated": true
+}

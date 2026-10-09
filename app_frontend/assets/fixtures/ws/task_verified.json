@@ -1,0 +1,25 @@
+{
+  "channel": "tasks:me",
+  "type": "task.verified",
+  "event_id": "01932d00-0000-7aaa-8bbb-000000000d12",
+  "seq": 30,
+  "ts": "2026-11-13T03:30:00Z",
+  "data": {
+    "task_id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b01",
+    "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+    "asset_id": "AST-SPR-0012",
+    "status": "verified",
+    "version": 7,
+    "impact_summary": {
+      "pollutant": "pm10",
+      "effect_pct": -18.2,
+      "ci_low": -26.0,
+      "ci_high": -9.9,
+      "duration_min": 90,
+      "method": "synthetic_control",
+      "verdict": "effective",
+      "ci_level": 0.9
+    },
+    "is_simulated": true
+  }
+}

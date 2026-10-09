@@ -1,0 +1,9 @@
+generatorName: dart-dio
+additionalProperties:
+  pubName: hawa_api
+  pubAuthor: HawaCommand
+  pubDescription: Generated HawaCommand API client (do not edit; make gen-api)
+  serializationLibrary: json_serializable
+  enumUnknownDefaultCase: "true"
+  dateLibrary: core
+  skipCopyWith: "true"

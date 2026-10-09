@@ -1,0 +1,192 @@
+{
+  "id": "01932c70-5c00-7d3e-8a11-0b1c2d3e4f77",
+  "status": "assigned",
+  "task_id": null,
+  "report_id": "01932c90-3e00-7c3e-9a10-7e8f9a0b1c55",
+  "origin": "report",
+  "priority": 2,
+  "cause_label": "burning",
+  "cause_conf": 0.86,
+  "place_name": {
+    "en": "Anand Parbat, near DTC depot",
+    "hi": "आनंद पर्वत, DTC डिपो के पास"
+  },
+  "suspect_pin": {
+    "type": "Point",
+    "coordinates": [
+      77.1712,
+      28.669
+    ]
+  },
+  "suspect_radius_m": 120,
+  "back_trajectory": {
+    "type": "LineString",
+    "coordinates": [
+      [
+        77.179,
+        28.6655
+      ],
+      [
+        77.1765,
+        28.6667
+      ],
+      [
+        77.1738,
+        28.668
+      ],
+      [
+        77.1712,
+        28.669
+      ]
+    ]
+  },
+  "spike": {
+    "pollutant": "pm25",
+    "baseline": 81,
+    "peak": 262,
+    "device_id": "HPM-0142",
+    "vehicle_label": "Bus VEH-DTC-0457",
+    "duration_s": 20,
+    "detected_at": "2026-11-13T01:12:04Z",
+    "series": [
+      {
+        "ts": "2026-11-13T01:03:00Z",
+        "value": 84.0
+      },
+      {
+        "ts": "2026-11-13T01:03:30Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:04:00Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:04:30Z",
+        "value": 84.0
+      },
+      {
+        "ts": "2026-11-13T01:05:00Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:05:30Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:06:00Z",
+        "value": 84.0
+      },
+      {
+        "ts": "2026-11-13T01:06:30Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:07:00Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:07:30Z",
+        "value": 84.0
+      },
+      {
+        "ts": "2026-11-13T01:08:00Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:08:30Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:09:00Z",
+        "value": 84.0
+      },
+      {
+        "ts": "2026-11-13T01:09:30Z",
+        "value": 79.3
+      },
+      {
+        "ts": "2026-11-13T01:10:00Z",
+        "value": 82.3
+      },
+      {
+        "ts": "2026-11-13T01:10:30Z",
+        "value": 103.1
+      },
+      {
+        "ts": "2026-11-13T01:11:00Z",
+        "value": 145.6
+      },
+      {
+        "ts": "2026-11-13T01:11:30Z",
+        "value": 220.0
+      },
+      {
+        "ts": "2026-11-13T01:12:00Z",
+        "value": 265.0
+      },
+      {
+        "ts": "2026-11-13T01:12:30Z",
+        "value": 220.0
+      },
+      {
+        "ts": "2026-11-13T01:13:00Z",
+        "value": 145.6
+      },
+      {
+        "ts": "2026-11-13T01:13:30Z",
+        "value": 103.1
+      },
+      {
+        "ts": "2026-11-13T01:14:00Z",
+        "value": 82.3
+      },
+      {
+        "ts": "2026-11-13T01:14:30Z",
+        "value": 79.3
+      },
+      {
+        "ts": "2026-11-13T01:15:00Z",
+        "value": 84.0
+      },
+      {
+        "ts": "2026-11-13T01:15:30Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:16:00Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:16:30Z",
+        "value": 84.0
+      },
+      {
+        "ts": "2026-11-13T01:17:00Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:17:30Z",
+        "value": 79.0
+      },
+      {
+        "ts": "2026-11-13T01:18:00Z",
+        "value": 84.0
+      }
+    ]
+  },
+  "photos": [
+    {
+      "url": "asset://assets/images/fixtures/report_burning.jpg",
+      "thumb_url": "asset://assets/images/fixtures/report_burning.jpg",
+      "captured_at": "2026-11-13T01:14:00Z",
+      "expires_at": "2026-11-13T23:59:00Z"
+    }
+  ],
+  "reporter": {
+    "kind": "citizen"
+  },
+  "created_at": "2026-11-13T01:14:45Z",
+  "reported_at": "2026-11-13T01:14:21Z",
+  "is_simulated": true
+}

@@ -1,0 +1,73 @@
+{
+  "items": [
+    {
+      "id": "01932c70-5c00-7d3e-8a11-0b1c2d3e4f77",
+      "status": "assigned",
+      "origin": "report",
+      "priority": 2,
+      "target": {
+        "type": "Point",
+        "coordinates": [
+          77.1712,
+          28.669
+        ]
+      },
+      "ward_id": "ward-084",
+      "cell_id": "g500-044-074",
+      "report_id": "01932c90-3e00-7c3e-9a10-7e8f9a0b1c55",
+      "hotspot_id": "01932c5a-2f10-7b3e-8c44-5d6e7f8a9b01",
+      "task_id": null,
+      "site_id": null,
+      "place_name": {
+        "en": "Anand Parbat, near DTC depot",
+        "hi": "आनंद पर्वत, DTC डिपो के पास"
+      },
+      "cause_label": "burning",
+      "cause_conf": 0.86,
+      "evidence_summary": {
+        "spike_ratio": 3.2,
+        "photo_label": "burning",
+        "photo_conf": 0.91,
+        "fire_points": 0
+      },
+      "assigned_team_asset_id": "AST-TEAM-0003",
+      "created_at": "2026-11-13T01:14:45Z",
+      "is_simulated": true
+    },
+    {
+      "id": "01932c70-5c00-7d3e-8a11-0b1c2d3e4f88",
+      "status": "assigned",
+      "origin": "hotspot",
+      "priority": 3,
+      "target": {
+        "type": "Point",
+        "coordinates": [
+          77.1425,
+          28.6304
+        ]
+      },
+      "ward_id": "ward-084",
+      "cell_id": "g500-039-071",
+      "report_id": null,
+      "hotspot_id": "01932c5a-2f10-7b3e-8c44-5d6e7f8a9b02",
+      "task_id": "01932c71-0000-7d10-9a55-6c1e2f3a4b31",
+      "site_id": "SITE-0311",
+      "place_name": {
+        "en": "Site SITE-0311, Naraina",
+        "hi": "साइट SITE-0311, नारायणा"
+      },
+      "cause_label": "dust",
+      "cause_conf": 0.64,
+      "evidence_summary": {
+        "spike_ratio": 2.1,
+        "photo_label": null,
+        "photo_conf": null,
+        "fire_points": 0
+      },
+      "assigned_team_asset_id": "AST-TEAM-0003",
+      "created_at": "2026-11-13T00:05:00Z",
+      "is_simulated": true
+    }
+  ],
+  "next_cursor": null
+}

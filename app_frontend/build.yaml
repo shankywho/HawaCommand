@@ -1,0 +1,25 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          field_rename: snake
+          explicit_to_json: true
+          checked: true
+        generate_for:
+          - lib/**/domain/**.dart
+          - lib/core/**.dart
+      freezed:
+        generate_for:
+          - lib/**/domain/**.dart
+          - lib/core/**.dart
+          - lib/**/application/**.dart
+      riverpod_generator:
+        generate_for:
+          - lib/**.dart
+      drift_dev:
+        options:
+          named_parameters: true
+          store_date_time_values_as_text: false
+        generate_for:
+          - lib/core/storage/**.dart

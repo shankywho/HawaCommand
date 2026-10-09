@@ -1,0 +1,52 @@
+# HawaCommand AI-ML System Parameters
+
+grid:
+  delhi_bbox: [28.40, 76.84, 28.88, 77.35] # [min_lat, min_lon, max_lat, max_lon]
+  crs_metric: "EPSG:32643" # UTM Zone 43N (Delhi in metres)
+  crs_geographic: "EPSG:4326"
+  cell_size_map_m: 500
+  cell_size_plan_m: 1000
+
+forecasting:
+  horizons_hours: [1, 3, 6, 12, 24, 48, 72]
+  quantiles: [0.10, 0.50, 0.90]
+  features:
+    lags: [1, 2, 3, 6, 12, 24, 48]
+    rolling_windows: [3, 6, 12, 24]
+    weather_vars:
+      - "temperature_2m"
+      - "relative_humidity_2m"
+      - "wind_speed_10m"
+      - "wind_direction_10m"
+      - "surface_pressure"
+      - "precipitation"
+      - "boundary_layer_height"
+    fire_features:
+      - "fire_count_upwind_100km"
+      - "fire_count_upwind_300km"
+      - "fire_count_upwind_500km"
+      - "frp_upwind_sum"
+
+calibration:
+  ref_station_proximity_m: 200.0
+  max_speed_kmh: 30.0
+  trust_score_initial: 1.0
+  trust_decay_on_drift: 0.15
+  rh_threshold_heater: 70.0
+
+twin:
+  variogram_model: "spherical"
+  enable_advection: true
+  min_confidence: 0.20
+
+optimization:
+  default_shift_hours: 4.0
+  speed_kmh: 20.0
+  spray_water_rate_lpm: 120.0
+
+causal_verification:
+  pre_window_hours: 6
+  post_window_hours: 4
+  donor_pool_size: 15
+  placebo_replications: 50
+  alpha_ci: 0.05

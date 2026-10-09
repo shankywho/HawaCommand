@@ -1,0 +1,4 @@
+# Not generated. The generated pubspec declares sdk >=3.5, but json_serializable >= 6.10 emits
+# null-aware map elements (Dart 3.8+), which the 3.5 language version cannot parse.
+dependency_overrides:
+  json_serializable: ">=6.9.3 <6.10.0"

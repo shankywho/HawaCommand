@@ -1,0 +1,15 @@
+{
+  "HPM-TEST-CALIB": {
+    "dev_id": "HPM-TEST-CALIB",
+    "slope_a": 1.1,
+    "rh_coef_b": -0.11,
+    "offset_c": 10.0,
+    "trust_score": 0.92,
+    "version": 9,
+    "last_calibrated": "2026-09-29T10:46:38.735042+00:00",
+    "mae_before": 24.62,
+    "mae_after": 0.0,
+    "r2_after": 1.0,
+    "co_location_samples": 10
+  }
+}

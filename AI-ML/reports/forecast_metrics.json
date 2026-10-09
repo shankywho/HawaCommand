@@ -1,0 +1,72 @@
+{
+  "1h": {
+    "mae_p50": 45.75,
+    "rmse_p50": 68.56,
+    "mae_persistence": 53.41,
+    "skill_vs_persistence_pct": 14.3,
+    "coverage_p10_p90_pct": 77.8,
+    "pinball_p10": 9.11,
+    "pinball_p50": 22.88,
+    "pinball_p90": 12.18
+  },
+  "3h": {
+    "mae_p50": 46.81,
+    "rmse_p50": 69.13,
+    "mae_persistence": 58.19,
+    "skill_vs_persistence_pct": 19.6,
+    "coverage_p10_p90_pct": 82.1,
+    "pinball_p10": 9.24,
+    "pinball_p50": 23.41,
+    "pinball_p90": 12.98
+  },
+  "6h": {
+    "mae_p50": 48.58,
+    "rmse_p50": 71.56,
+    "mae_persistence": 66.83,
+    "skill_vs_persistence_pct": 27.3,
+    "coverage_p10_p90_pct": 85.8,
+    "pinball_p10": 9.91,
+    "pinball_p50": 24.29,
+    "pinball_p90": 13.39
+  },
+  "12h": {
+    "mae_p50": 54.8,
+    "rmse_p50": 79.79,
+    "mae_persistence": 61.0,
+    "skill_vs_persistence_pct": 10.2,
+    "coverage_p10_p90_pct": 81.1,
+    "pinball_p10": 10.88,
+    "pinball_p50": 27.4,
+    "pinball_p90": 17.04
+  },
+  "24h": {
+    "mae_p50": 63.55,
+    "rmse_p50": 88.28,
+    "mae_persistence": 72.6,
+    "skill_vs_persistence_pct": 12.5,
+    "coverage_p10_p90_pct": 77.9,
+    "pinball_p10": 11.49,
+    "pinball_p50": 31.77,
+    "pinball_p90": 19.05
+  },
+  "48h": {
+    "mae_p50": 71.27,
+    "rmse_p50": 98.68,
+    "mae_persistence": 91.0,
+    "skill_vs_persistence_pct": 21.7,
+    "coverage_p10_p90_pct": 74.3,
+    "pinball_p10": 12.65,
+    "pinball_p50": 35.64,
+    "pinball_p90": 21.95
+  },
+  "72h": {
+    "mae_p50": 73.78,
+    "rmse_p50": 103.47,
+    "mae_persistence": 95.22,
+    "skill_vs_persistence_pct": 22.5,
+    "coverage_p10_p90_pct": 75.5,
+    "pinball_p10": 12.83,
+    "pinball_p50": 36.89,
+    "pinball_p90": 22.52
+  }
+}

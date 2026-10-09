@@ -1,0 +1,39 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+**/*credentials*
+**/*secret*
+.cdsapirc
+
+# Large datasets & cache (manual CPCB CSVs, WorldPop raster, API cache)
+data/cache/
+data/external/
+data/raw/
+data/interim/
+data/processed/
+!data/fixtures/
+!data/README.md
+
+# Python virtualenvs and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

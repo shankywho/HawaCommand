@@ -1,0 +1,3336 @@
+{
+  "@@locale": "en",
+  "appTitle": "HawaCommand",
+  "@appTitle": {
+    "description": "App name"
+  },
+  "commonRetry": "Retry",
+  "@commonRetry": {
+    "description": "Retry button"
+  },
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Cancel button"
+  },
+  "commonContinue": "Continue",
+  "@commonContinue": {
+    "description": "Continue button"
+  },
+  "commonNotNow": "Not now",
+  "@commonNotNow": {
+    "description": "Dismiss without granting"
+  },
+  "commonClose": "Close",
+  "@commonClose": {
+    "description": "Close button"
+  },
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Save button"
+  },
+  "commonDone": "Done",
+  "@commonDone": {
+    "description": "Done button"
+  },
+  "commonOpen": "Open",
+  "@commonOpen": {
+    "description": "Open button"
+  },
+  "commonBack": "Back",
+  "@commonBack": {
+    "description": "Back button semantics"
+  },
+  "commonDetails": "Details",
+  "@commonDetails": {
+    "description": "Expander for technical error details"
+  },
+  "commonRequestId": "Request id: {id}",
+  "@commonRequestId": {
+    "description": "Support id of a failed request",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSomethingWrong": "Something went wrong",
+  "@commonSomethingWrong": {
+    "description": "Generic error title"
+  },
+  "commonSimulated": "Simulated",
+  "@commonSimulated": {
+    "description": "Badge on simulated data"
+  },
+  "commonIncludesSimulated": "Includes simulated data",
+  "@commonIncludesSimulated": {
+    "description": "Top chip on screens with simulated data"
+  },
+  "commonSimulatedSemantics": "Simulated data",
+  "@commonSimulatedSemantics": {
+    "description": "Screen reader label for the badge"
+  },
+  "commonIndicative": "indicative",
+  "@commonIndicative": {
+    "description": "AQI is indicative, not regulatory"
+  },
+  "commonUnknown": "Unknown",
+  "@commonUnknown": {
+    "description": "Unknown enum value"
+  },
+  "commonInEnglish": "(in English)",
+  "@commonInEnglish": {
+    "description": "Server text that has no Hindi version"
+  },
+  "commonOfflineBanner": "Offline: showing saved data from {time}",
+  "@commonOfflineBanner": {
+    "description": "Offline banner with cache time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOfflineNoTime": "Offline: showing saved data",
+  "@commonOfflineNoTime": {
+    "description": "Offline banner without a cache time"
+  },
+  "commonStaleBanner": "Last updated {time}",
+  "@commonStaleBanner": {
+    "description": "Stale data banner",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonErrorBanner": "Couldn't refresh. Showing saved data.",
+  "@commonErrorBanner": {
+    "description": "Refresh failed over cached data"
+  },
+  "commonSavedWillSend": "Saved, will send",
+  "@commonSavedWillSend": {
+    "description": "Pending outbox op marker"
+  },
+  "commonLoading": "Loading…",
+  "@commonLoading": {
+    "description": "Loading state"
+  },
+  "commonJustNow": "just now",
+  "@commonJustNow": {
+    "description": "Relative time under a minute"
+  },
+  "commonMinutesAgo": "{minutes} min ago",
+  "@commonMinutesAgo": {
+    "description": "Relative time in minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "commonHoursAgo": "{hours} h ago",
+  "@commonHoursAgo": {
+    "description": "Relative time in hours",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "commonRangeUnavailable": "range unavailable",
+  "@commonRangeUnavailable": {
+    "description": "Missing P10/P90"
+  },
+  "commonNoEstimate": "No estimate",
+  "@commonNoEstimate": {
+    "description": "Missing AQI category"
+  },
+  "commonShowTable": "Show as table",
+  "@commonShowTable": {
+    "description": "Chart → table toggle"
+  },
+  "commonShowChart": "Show as chart",
+  "@commonShowChart": {
+    "description": "Table → chart toggle"
+  },
+  "commonRecenter": "Recenter",
+  "@commonRecenter": {
+    "description": "Map recenter button"
+  },
+  "commonAlerts": "Alerts",
+  "@commonAlerts": {
+    "description": "Alerts bell tooltip"
+  },
+  "commonPendingCount": "{count} updates waiting to send",
+  "@commonPendingCount": {
+    "description": "Sync chip semantics",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOutdoorMode": "Outdoor mode (high contrast)",
+  "@commonOutdoorMode": {
+    "description": "Outdoor mode toggle"
+  },
+  "commonMapTilesMissing": "Map tiles not saved for this area",
+  "@commonMapTilesMissing": {
+    "description": "Offline map without tiles"
+  },
+  "commonMapNoKey": "Map background off: no map key in this build",
+  "@commonMapNoKey": {
+    "description": "No MapTiler key configured"
+  },
+  "commonOn": "On",
+  "@commonOn": {
+    "description": "Toggle on"
+  },
+  "commonOff": "Off",
+  "@commonOff": {
+    "description": "Toggle off"
+  },
+  "commonNavigate": "Navigate",
+  "@commonNavigate": {
+    "description": "Open Google Maps navigation"
+  },
+  "commonPullToRefresh": "Pull down to refresh",
+  "@commonPullToRefresh": {
+    "description": "Hint"
+  },
+  "commonUnits": "{value} {unit}",
+  "@commonUnits": {
+    "description": "Value with unit",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "failureNetwork": "No internet. Your changes are saved and will send later.",
+  "@failureNetwork": {
+    "description": "NetworkFailure"
+  },
+  "failureTimeout": "The server took too long. Try again.",
+  "@failureTimeout": {
+    "description": "TimeoutFailure"
+  },
+  "failureUnauthorized": "Please log in again.",
+  "@failureUnauthorized": {
+    "description": "UnauthorizedFailure"
+  },
+  "failureForbidden": "Your access changed.",
+  "@failureForbidden": {
+    "description": "ForbiddenFailure"
+  },
+  "failureNotFound": "This is no longer available.",
+  "@failureNotFound": {
+    "description": "NotFoundFailure"
+  },
+  "failureConflict": "This was changed by someone else. Refresh and try again.",
+  "@failureConflict": {
+    "description": "ConflictFailure"
+  },
+  "failureValidation": "Some details are not valid. Check and try again.",
+  "@failureValidation": {
+    "description": "ValidationFailure"
+  },
+  "failureRateLimited": "Too many tries. Try again in {minutes} min",
+  "@failureRateLimited": {
+    "description": "RateLimitedFailure",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "failureServer": "The server has a problem. We'll keep trying.",
+  "@failureServer": {
+    "description": "ServerFailure"
+  },
+  "failureUnknown": "Something went wrong.",
+  "@failureUnknown": {
+    "description": "UnknownFailure"
+  },
+  "failureMediaMissing": "Photo was lost. Retake it?",
+  "@failureMediaMissing": {
+    "description": "Photo file missing before upload"
+  },
+  "languageTitle": "Choose your language",
+  "@languageTitle": {
+    "description": "A2 title"
+  },
+  "languageHint": "You can change this later in Settings",
+  "@languageHint": {
+    "description": "A2 hint"
+  },
+  "languageHindi": "हिन्दी",
+  "@languageHindi": {
+    "description": "Hindi option, in its own script"
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "English option, in its own script"
+  },
+  "phoneTitle": "Enter your mobile number",
+  "@phoneTitle": {
+    "description": "A3 title"
+  },
+  "phoneHelper": "We'll send a 6-digit code by SMS",
+  "@phoneHelper": {
+    "description": "A3 helper"
+  },
+  "phoneFieldLabel": "Mobile number",
+  "@phoneFieldLabel": {
+    "description": "A3 field label"
+  },
+  "phoneSend": "Send code",
+  "@phoneSend": {
+    "description": "A3 button"
+  },
+  "phoneInvalid": "Enter a 10-digit mobile number",
+  "@phoneInvalid": {
+    "description": "A3 validation"
+  },
+  "phoneRateLimited": "Too many tries. Try again in {minutes} min",
+  "@phoneRateLimited": {
+    "description": "A3 rate limit",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "phoneOffline": "No internet. Connect to get your code",
+  "@phoneOffline": {
+    "description": "A3 offline"
+  },
+  "phonePrivacy": "Your number is never shown to other users",
+  "@phonePrivacy": {
+    "description": "A3 privacy line"
+  },
+  "phoneDemoTitle": "Demo mode: no real SMS is sent",
+  "@phoneDemoTitle": {
+    "description": "Fake-mode banner on A3"
+  },
+  "phoneDemoBody": "Code 123456. Driver 98100 12345 · Inspector 98100 22222 · School 98100 33333 · Site 98100 44444 · Driver + citizen 98100 55555 · Officer 98100 66666 · any other number is a citizen.",
+  "@phoneDemoBody": {
+    "description": "Fake-mode demo accounts"
+  },
+  "otpTitle": "Enter the code sent to {phone}",
+  "@otpTitle": {
+    "description": "A4 title",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpResendIn": "Resend code in {seconds} s",
+  "@otpResendIn": {
+    "description": "A4 countdown",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "otpResend": "Resend code",
+  "@otpResend": {
+    "description": "A4 resend"
+  },
+  "otpWrong": "Wrong code. {left} tries left",
+  "@otpWrong": {
+    "description": "A4 wrong",
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "otpExpired": "Code expired. Request a new one",
+  "@otpExpired": {
+    "description": "A4 expired"
+  },
+  "otpTooMany": "Too many wrong codes. Request a new one",
+  "@otpTooMany": {
+    "description": "A4 attempts exceeded"
+  },
+  "otpVerify": "Verify",
+  "@otpVerify": {
+    "description": "A4 button"
+  },
+  "otpChangeNumber": "Change number",
+  "@otpChangeNumber": {
+    "description": "A4 back link"
+  },
+  "otpDigit": "Digit {n} of 6",
+  "@otpDigit": {
+    "description": "OTP box semantics",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "roleTitle": "How will you use HawaCommand today?",
+  "@roleTitle": {
+    "description": "A5 title"
+  },
+  "roleDriver": "Driver / field team",
+  "@roleDriver": {
+    "description": "Role"
+  },
+  "roleInspector": "Inspector",
+  "@roleInspector": {
+    "description": "Role"
+  },
+  "roleSchool": "School principal",
+  "@roleSchool": {
+    "description": "Role"
+  },
+  "roleCitizen": "Citizen",
+  "@roleCitizen": {
+    "description": "Role"
+  },
+  "roleSiteManager": "Site manager",
+  "@roleSiteManager": {
+    "description": "Role"
+  },
+  "roleOfficer": "Officer",
+  "@roleOfficer": {
+    "description": "Web-only role"
+  },
+  "roleAdmin": "Admin",
+  "@roleAdmin": {
+    "description": "Web-only role"
+  },
+  "roleAnalyst": "Analyst",
+  "@roleAnalyst": {
+    "description": "Web-only role"
+  },
+  "roleHint": "You can switch later from More",
+  "@roleHint": {
+    "description": "A5 hint"
+  },
+  "roleSwitched": "Switched to {role}",
+  "@roleSwitched": {
+    "description": "Snackbar after a role switch",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "unsupportedRoleBody": "This app is for field teams, schools and citizens. Officers, please use the web console.",
+  "@unsupportedRoleBody": {
+    "description": "A6 body"
+  },
+  "sessionExpired": "Please log in again",
+  "@sessionExpired": {
+    "description": "Session expired"
+  },
+  "permNotifTitle": "Get your route and air alerts",
+  "@permNotifTitle": {
+    "description": "Notifications title"
+  },
+  "permNotifBodyDriver": "Your route arrives at 5:30 AM. We'll also tell you when a stop is done automatically.",
+  "@permNotifBodyDriver": {
+    "description": "Driver body"
+  },
+  "permNotifBodyInspector": "We'll tell you as soon as a new inspection target is assigned.",
+  "@permNotifBodyInspector": {
+    "description": "Inspector body"
+  },
+  "permNotifBodySchool": "We'll warn you the evening before bad air, with a safe time for outdoor activities.",
+  "@permNotifBodySchool": {
+    "description": "School body"
+  },
+  "permNotifBodyCitizen": "Get warnings for your area and updates on your reports.",
+  "@permNotifBodyCitizen": {
+    "description": "Citizen body"
+  },
+  "permNotifBodySite": "We'll warn you before bad-air days, when curbs on sites may apply.",
+  "@permNotifBodySite": {
+    "description": "Site manager body"
+  },
+  "permNotifFallback": "If notifications are off, we'll send your route by SMS.",
+  "@permNotifFallback": {
+    "description": "Notifications fallback"
+  },
+  "permLocTitle": "Location only during your shift",
+  "@permLocTitle": {
+    "description": "Field location title"
+  },
+  "permLocBodyField": "We use your location only between Start shift and End shift, to show your position on the route and confirm arrival at stops. You'll always see a notification while it's on.",
+  "@permLocBodyField": {
+    "description": "Field location body"
+  },
+  "permLocTitleCitizen": "Location for the air near you",
+  "@permLocTitleCitizen": {
+    "description": "Citizen location title"
+  },
+  "permLocBodyCitizen": "We use your approximate location to show the air near you, and your exact location only when you send a report.",
+  "@permLocBodyCitizen": {
+    "description": "Citizen location body"
+  },
+  "permLocTip": "Tip: choose \"While using the app\"",
+  "@permLocTip": {
+    "description": "Location tip"
+  },
+  "permCamTitle": "Take a photo as evidence",
+  "@permCamTitle": {
+    "description": "Camera title"
+  },
+  "permCamBody": "Photograph the fire or smoke, not people or number plates. We remove hidden photo data before sending and never show your number.",
+  "@permCamBody": {
+    "description": "Camera body"
+  },
+  "permDeniedForever": "This is off in phone Settings. Turn it on to continue.",
+  "@permDeniedForever": {
+    "description": "Permanently denied"
+  },
+  "permOpenSettings": "Open Settings",
+  "@permOpenSettings": {
+    "description": "Open OS settings"
+  },
+  "tabRoute": "Route",
+  "@tabRoute": {
+    "description": "Tab"
+  },
+  "tabMap": "Map",
+  "@tabMap": {
+    "description": "Tab"
+  },
+  "tabMore": "More",
+  "@tabMore": {
+    "description": "Tab"
+  },
+  "tabTargets": "Targets",
+  "@tabTargets": {
+    "description": "Tab"
+  },
+  "tabToday": "Today",
+  "@tabToday": {
+    "description": "Tab"
+  },
+  "tabAir": "Air",
+  "@tabAir": {
+    "description": "Tab"
+  },
+  "tabAlerts": "Alerts",
+  "@tabAlerts": {
+    "description": "Tab"
+  },
+  "tabReport": "Report",
+  "@tabReport": {
+    "description": "Tab"
+  },
+  "tabMyReports": "My reports",
+  "@tabMyReports": {
+    "description": "Tab"
+  },
+  "tabSite": "Site",
+  "@tabSite": {
+    "description": "Tab"
+  },
+  "moreProfile": "Profile",
+  "@moreProfile": {
+    "description": "More sheet"
+  },
+  "moreSettings": "Settings",
+  "@moreSettings": {
+    "description": "More sheet"
+  },
+  "morePending": "Pending uploads",
+  "@morePending": {
+    "description": "More sheet"
+  },
+  "moreSwitchRole": "Switch role",
+  "@moreSwitchRole": {
+    "description": "More sheet"
+  },
+  "moreLogout": "Log out",
+  "@moreLogout": {
+    "description": "More sheet"
+  },
+  "switchRoleShiftWarn": "Your shift is on. Switching role ends the shift and stops sharing location.",
+  "@switchRoleShiftWarn": {
+    "description": "Role switch during a shift"
+  },
+  "shiftResumePrompt": "Your shift is still on. Resume location sharing?",
+  "@shiftResumePrompt": {
+    "description": "After a restart mid-shift"
+  },
+  "shiftResume": "Resume",
+  "@shiftResume": {
+    "description": "Resume tracking"
+  },
+  "driverTitle": "Today's route",
+  "@driverTitle": {
+    "description": "D1 title"
+  },
+  "driverToday": "Today, {date}",
+  "@driverToday": {
+    "description": "D1 app bar date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "driverStartShift": "Start shift",
+  "@driverStartShift": {
+    "description": "D1"
+  },
+  "driverEndShift": "End shift",
+  "@driverEndShift": {
+    "description": "D1"
+  },
+  "driverShiftOn": "Shift on: location shared",
+  "@driverShiftOn": {
+    "description": "D1"
+  },
+  "driverShiftOff": "Shift off",
+  "@driverShiftOff": {
+    "description": "D1"
+  },
+  "driverShiftQueued": "Shift on (will sync when online)",
+  "@driverShiftQueued": {
+    "description": "D1 offline shift start"
+  },
+  "driverNextStop": "Next stop",
+  "@driverNextStop": {
+    "description": "D1"
+  },
+  "driverStopOf": "Stop {n} of {total}",
+  "@driverStopOf": {
+    "description": "D1/D3",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "driverArriveWindow": "Arrive {start} – {end}",
+  "@driverArriveWindow": {
+    "description": "D1/D3",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "driverDoSpray": "Spray about {litres} L along {metres} m",
+  "@driverDoSpray": {
+    "description": "What to do",
+    "placeholders": {
+      "litres": {
+        "type": "String"
+      },
+      "metres": {
+        "type": "String"
+      }
+    }
+  },
+  "driverDoSweep": "Sweep {metres} m of road",
+  "@driverDoSweep": {
+    "description": "What to do",
+    "placeholders": {
+      "metres": {
+        "type": "String"
+      }
+    }
+  },
+  "driverDoSmogGun": "Run the smog gun for {minutes} min",
+  "@driverDoSmogGun": {
+    "description": "What to do",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "driverDoInspect": "Inspect the suspected source",
+  "@driverDoInspect": {
+    "description": "What to do"
+  },
+  "driverTagOnline": "HawaTag online, seen {ago}",
+  "@driverTagOnline": {
+    "description": "D1 tag chip (ago = commonMinutesAgo etc.)",
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "driverTagOffline": "HawaTag offline since {time}",
+  "@driverTagOffline": {
+    "description": "Tag chip",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "driverTagUnknown": "HawaTag status unknown",
+  "@driverTagUnknown": {
+    "description": "Tag chip"
+  },
+  "driverTagBuffering": "HawaTag saves data and will confirm when back online",
+  "@driverTagBuffering": {
+    "description": "App and tag both offline"
+  },
+  "driverDoneByTag": "Done by HawaTag",
+  "@driverDoneByTag": {
+    "description": "Stop status"
+  },
+  "driverDoneByTagLitres": "Done by HawaTag, {litres} L",
+  "@driverDoneByTagLitres": {
+    "description": "Stop status with litres",
+    "placeholders": {
+      "litres": {
+        "type": "String"
+      }
+    }
+  },
+  "driverDoneManual": "Done manually (lower evidence)",
+  "@driverDoneManual": {
+    "description": "Stop status"
+  },
+  "driverDoneGps": "Done (from GPS)",
+  "@driverDoneGps": {
+    "description": "Stop status"
+  },
+  "driverEmpty": "No route today. We'll notify you when a route is assigned.",
+  "@driverEmpty": {
+    "description": "D1 empty"
+  },
+  "driverNoRouteYet": "No route for today yet",
+  "@driverNoRouteYet": {
+    "description": "Cached route is from another day"
+  },
+  "driverAllDone": "All stops done. Well done!",
+  "@driverAllDone": {
+    "description": "D1 all done"
+  },
+  "driverRouteChanged": "Route changed: {added} added, {removed} removed",
+  "@driverRouteChanged": {
+    "description": "Route diff banner",
+    "placeholders": {
+      "added": {
+        "type": "String"
+      },
+      "removed": {
+        "type": "String"
+      }
+    }
+  },
+  "driverSeeChanges": "See changes",
+  "@driverSeeChanges": {
+    "description": "Route diff banner action"
+  },
+  "driverWhatToDo": "What to do",
+  "@driverWhatToDo": {
+    "description": "D3 section"
+  },
+  "driverWhy": "Why: {cause} ({pct} %)",
+  "@driverWhy": {
+    "description": "D3 reason",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "driverArrived": "I've arrived",
+  "@driverArrived": {
+    "description": "D3 button"
+  },
+  "driverYoureHere": "You're here, start spraying",
+  "@driverYoureHere": {
+    "description": "Local arrived state"
+  },
+  "driverSpraying": "Spraying…",
+  "@driverSpraying": {
+    "description": "Server in_progress"
+  },
+  "driverWaitingTag": "Waiting for HawaTag to confirm spraying",
+  "@driverWaitingTag": {
+    "description": "D3 status"
+  },
+  "driverCantDo": "Can't do this stop",
+  "@driverCantDo": {
+    "description": "D3 skip link"
+  },
+  "driverMarkManual": "Mark done manually",
+  "@driverMarkManual": {
+    "description": "D3 manual done"
+  },
+  "driverStatus": "Status",
+  "@driverStatus": {
+    "description": "D3 section"
+  },
+  "driverVerified": "Verified: {pollutant} {effect} % for {minutes} min (range {low} to {high} %)",
+  "@driverVerified": {
+    "description": "Impact line",
+    "placeholders": {
+      "pollutant": {
+        "type": "String"
+      },
+      "effect": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "driverVerifying": "Checking the effect (2–4 h after spraying)",
+  "@driverVerifying": {
+    "description": "Verifying"
+  },
+  "driverInconclusive": "Inconclusive: the effect could not be measured",
+  "@driverInconclusive": {
+    "description": "Inconclusive"
+  },
+  "driverLowerEvidence": "Lower evidence",
+  "@driverLowerEvidence": {
+    "description": "Evidence label"
+  },
+  "driverMethod": "Method: {method}",
+  "@driverMethod": {
+    "description": "Impact method line",
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "driverSkipTitle": "Why can't you do this stop?",
+  "@driverSkipTitle": {
+    "description": "D4 title"
+  },
+  "driverSkipButton": "Skip stop",
+  "@driverSkipButton": {
+    "description": "D4 button"
+  },
+  "driverSkipNote": "Add a note (at least 3 letters)",
+  "@driverSkipNote": {
+    "description": "D4 note for other"
+  },
+  "skipRoadBlocked": "Road blocked",
+  "@skipRoadBlocked": {
+    "description": "SkipReason"
+  },
+  "skipVehicleIssue": "Vehicle problem",
+  "@skipVehicleIssue": {
+    "description": "SkipReason"
+  },
+  "skipWaterEmpty": "Water tank empty",
+  "@skipWaterEmpty": {
+    "description": "SkipReason"
+  },
+  "skipUnsafe": "Unsafe to work here",
+  "@skipUnsafe": {
+    "description": "SkipReason"
+  },
+  "skipAccessDenied": "Not allowed in",
+  "@skipAccessDenied": {
+    "description": "SkipReason"
+  },
+  "skipOther": "Other (add a note)",
+  "@skipOther": {
+    "description": "SkipReason"
+  },
+  "driverManualTitle": "HawaTag is offline",
+  "@driverManualTitle": {
+    "description": "D5 title"
+  },
+  "driverManualBody": "Only if you sprayed here. This is recorded as manual, with lower evidence.",
+  "@driverManualBody": {
+    "description": "D5 body"
+  },
+  "driverManualLitres": "Litres sprayed (optional)",
+  "@driverManualLitres": {
+    "description": "D5 field"
+  },
+  "driverManualPhoto": "Add photo (optional)",
+  "@driverManualPhoto": {
+    "description": "D5 photo"
+  },
+  "driverManualConfirm": "Yes, I sprayed here",
+  "@driverManualConfirm": {
+    "description": "D5 button"
+  },
+  "driverManualSendWithout": "Send without photo",
+  "@driverManualSendWithout": {
+    "description": "Photo lost"
+  },
+  "driverSummaryTitle": "Shift summary",
+  "@driverSummaryTitle": {
+    "description": "D6 title"
+  },
+  "driverSummaryCounts": "{done} done, {skipped} skipped, {pending} left",
+  "@driverSummaryCounts": {
+    "description": "D6 counts",
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "skipped": {
+        "type": "String"
+      },
+      "pending": {
+        "type": "String"
+      }
+    }
+  },
+  "driverSummaryLitres": "{litres} L sprayed (HawaTag)",
+  "@driverSummaryLitres": {
+    "description": "D6 litres",
+    "placeholders": {
+      "litres": {
+        "type": "String"
+      }
+    }
+  },
+  "driverSummaryVerified": "{n} verified so far",
+  "@driverSummaryVerified": {
+    "description": "D6 verified",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "driverSummaryEndConfirm": "End shift and stop sharing location",
+  "@driverSummaryEndConfirm": {
+    "description": "D6 button"
+  },
+  "driverSummaryUnsent": "{n} updates not sent yet. They will send when you're online.",
+  "@driverSummaryUnsent": {
+    "description": "D6 unsent",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "driverSummaryEnded": "Shift ended. Location sharing is off.",
+  "@driverSummaryEnded": {
+    "description": "D6 after end"
+  },
+  "driverEndShiftTitle": "End shift?",
+  "@driverEndShiftTitle": {
+    "description": "Confirm sheet title"
+  },
+  "driverEndShiftAuto": "All stops are done and your shift time is over. End shift?",
+  "@driverEndShiftAuto": {
+    "description": "Auto end prompt"
+  },
+  "driverShiftAutoEnded": "Your shift ended automatically 2 h after its scheduled end.",
+  "@driverShiftAutoEnded": {
+    "description": "Auto end notice"
+  },
+  "driverAutoDoneTitle": "Stop {n} done",
+  "@driverAutoDoneTitle": {
+    "description": "Auto-done overlay",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "driverAutoDoneBody": "HawaTag recorded {litres} L",
+  "@driverAutoDoneBody": {
+    "description": "Auto-done overlay",
+    "placeholders": {
+      "litres": {
+        "type": "String"
+      }
+    }
+  },
+  "driverMapTitle": "Map",
+  "@driverMapTitle": {
+    "description": "D2 title"
+  },
+  "driverMapNext": "Next: {n} {place}",
+  "@driverMapNext": {
+    "description": "D2 bottom card",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "driverGo": "Go",
+  "@driverGo": {
+    "description": "D2 navigate"
+  },
+  "driverLocationNeeded": "Location is needed to start a shift",
+  "@driverLocationNeeded": {
+    "description": "Start shift blocked"
+  },
+  "shiftNotificationTitle": "Shift on",
+  "@shiftNotificationTitle": {
+    "description": "Foreground service title"
+  },
+  "shiftNotificationBody": "Sharing location with the control room",
+  "@shiftNotificationBody": {
+    "description": "Foreground service body"
+  },
+  "conflictTagAlreadyDone": "HawaTag already confirmed this stop. Your manual entry wasn't needed.",
+  "@conflictTagAlreadyDone": {
+    "description": "Conflict banner"
+  },
+  "conflictSkipNotNeeded": "This stop was completed by HawaTag. Skip not needed.",
+  "@conflictSkipNotNeeded": {
+    "description": "Conflict banner"
+  },
+  "conflictStopRemoved": "The control room removed this stop from your route.",
+  "@conflictStopRemoved": {
+    "description": "Conflict banner"
+  },
+  "conflictCaseClosed": "This case was already closed. Your photos and notes were attached.",
+  "@conflictCaseClosed": {
+    "description": "Conflict banner"
+  },
+  "conflictDismiss": "Dismiss",
+  "@conflictDismiss": {
+    "description": "Conflict banner dismiss"
+  },
+  "inspectorTitle": "Inspection targets",
+  "@inspectorTitle": {
+    "description": "I1 title"
+  },
+  "inspectorLikely": "Likely {cause}",
+  "@inspectorLikely": {
+    "description": "I1/I3",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      }
+    }
+  },
+  "inspectorConfidence": "Confidence {level} ({pct} %)",
+  "@inspectorConfidence": {
+    "description": "I1/I3",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "inspectorFromReport": "From citizen report, {time}",
+  "@inspectorFromReport": {
+    "description": "Origin",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "inspectorFromHotspot": "From sensor hotspot",
+  "@inspectorFromHotspot": {
+    "description": "Origin"
+  },
+  "inspectorFromSpike": "From sensor spike",
+  "@inspectorFromSpike": {
+    "description": "Origin"
+  },
+  "inspectorFromPlan": "From today's plan",
+  "@inspectorFromPlan": {
+    "description": "Origin"
+  },
+  "inspectorFromManual": "Assigned by an officer",
+  "@inspectorFromManual": {
+    "description": "Origin"
+  },
+  "inspectorEmpty": "No targets right now",
+  "@inspectorEmpty": {
+    "description": "I1 empty"
+  },
+  "inspectorSuspect": "Suspected source",
+  "@inspectorSuspect": {
+    "description": "I3"
+  },
+  "inspectorNotProof": "Likely cause, not proof. Confirm on site.",
+  "@inspectorNotProof": {
+    "description": "I3"
+  },
+  "inspectorSpike": "Sensor spike: {pollutant} {peak} vs usual {baseline}",
+  "@inspectorSpike": {
+    "description": "I3",
+    "placeholders": {
+      "pollutant": {
+        "type": "String"
+      },
+      "peak": {
+        "type": "String"
+      },
+      "baseline": {
+        "type": "String"
+      }
+    }
+  },
+  "inspectorSpikeMeta": "{seconds} s spike, {source}",
+  "@inspectorSpikeMeta": {
+    "description": "I3",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "inspectorPhoto": "Citizen photo, {time}",
+  "@inspectorPhoto": {
+    "description": "I3",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "inspectorReporter": "Reported by a citizen",
+  "@inspectorReporter": {
+    "description": "I3/I5"
+  },
+  "inspectorTrajectory": "Wind path (back-trajectory)",
+  "@inspectorTrajectory": {
+    "description": "I3"
+  },
+  "inspectorArea": "Suspected area about {metres} m across",
+  "@inspectorArea": {
+    "description": "I3 uncertainty circle",
+    "placeholders": {
+      "metres": {
+        "type": "String"
+      }
+    }
+  },
+  "inspectorArrived": "Arrived",
+  "@inspectorArrived": {
+    "description": "I3 button"
+  },
+  "inspectorOnSite": "On site",
+  "@inspectorOnSite": {
+    "description": "I3 state"
+  },
+  "inspectorRecord": "Record outcome",
+  "@inspectorRecord": {
+    "description": "I3 button"
+  },
+  "inspectorPhotosLater": "Photos will load when online",
+  "@inspectorPhotosLater": {
+    "description": "I3 offline without cache"
+  },
+  "inspectorNoEvidence": "No sensor or photo evidence attached",
+  "@inspectorNoEvidence": {
+    "description": "I3 empty evidence"
+  },
+  "inspectorMapTitle": "Targets map",
+  "@inspectorMapTitle": {
+    "description": "I2 title"
+  },
+  "inspectorClosed": "Closed: {outcome}",
+  "@inspectorClosed": {
+    "description": "Closed target",
+    "placeholders": {
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomeTitle": "What did you find?",
+  "@outcomeTitle": {
+    "description": "I4 title"
+  },
+  "outcomeConfirmed": "Source confirmed",
+  "@outcomeConfirmed": {
+    "description": "I4 option"
+  },
+  "outcomeNotFound": "Nothing found",
+  "@outcomeNotFound": {
+    "description": "I4 option"
+  },
+  "outcomeUnreachable": "Could not reach the spot",
+  "@outcomeUnreachable": {
+    "description": "I4 option"
+  },
+  "outcomeAddPhotos": "Add photos",
+  "@outcomeAddPhotos": {
+    "description": "I4"
+  },
+  "outcomeNotes": "Notes",
+  "@outcomeNotes": {
+    "description": "I4"
+  },
+  "outcomeSave": "Save outcome",
+  "@outcomeSave": {
+    "description": "I4 button"
+  },
+  "outcomeSavedOffline": "Saved. Will send when online.",
+  "@outcomeSavedOffline": {
+    "description": "I4 offline"
+  },
+  "outcomeSent": "Sent",
+  "@outcomeSent": {
+    "description": "I4 sent"
+  },
+  "outcomeNeedPhoto": "Add at least one photo",
+  "@outcomeNeedPhoto": {
+    "description": "I4 validation"
+  },
+  "outcomeNeedNote": "Add a note",
+  "@outcomeNeedNote": {
+    "description": "I4 validation"
+  },
+  "outcomeRemovePhoto": "Remove photo",
+  "@outcomeRemovePhoto": {
+    "description": "I4 photo strip"
+  },
+  "photoViewerTitle": "Photo {n} of {total}",
+  "@photoViewerTitle": {
+    "description": "I5 title",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "photoTaken": "Taken {time}",
+  "@photoTaken": {
+    "description": "I5 caption",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolSafeTitle": "Safe outdoor time",
+  "@schoolSafeTitle": {
+    "description": "S1"
+  },
+  "schoolToday": "Today",
+  "@schoolToday": {
+    "description": "S1"
+  },
+  "schoolTomorrow": "Tomorrow",
+  "@schoolTomorrow": {
+    "description": "S1"
+  },
+  "schoolWindow": "{start} – {end} · confidence {level}",
+  "@schoolWindow": {
+    "description": "S1",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolNone": "No safe window. Keep activities indoors.",
+  "@schoolNone": {
+    "description": "S1"
+  },
+  "schoolBorderline": "Borderline: air may cross the limit near the end",
+  "@schoolBorderline": {
+    "description": "S1"
+  },
+  "schoolAssembly": "Morning assembly: hold indoors",
+  "@schoolAssembly": {
+    "description": "S1"
+  },
+  "schoolPm8": "PM2.5 at 8 AM: likely {p50} (range {p10} – {p90}) µg/m³",
+  "@schoolPm8": {
+    "description": "S1",
+    "placeholders": {
+      "p50": {
+        "type": "String"
+      },
+      "p10": {
+        "type": "String"
+      },
+      "p90": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolPm8NoRange": "PM2.5 at 8 AM: likely {p50} µg/m³ ({range})",
+  "@schoolPm8NoRange": {
+    "description": "S1 without P10/P90",
+    "placeholders": {
+      "p50": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolShut": "Keep windows shut",
+  "@schoolShut": {
+    "description": "ClassroomAdvice.seal"
+  },
+  "schoolShutWhy": "Outdoor air is much worse than indoor.",
+  "@schoolShutWhy": {
+    "description": "seal reason"
+  },
+  "schoolVentilate": "Ventilate now",
+  "@schoolVentilate": {
+    "description": "ClassroomAdvice.ventilate"
+  },
+  "schoolVentilateWhy": "CO₂ is high indoors and outdoor air is better right now. Open windows for a few minutes.",
+  "@schoolVentilateWhy": {
+    "description": "ventilate reason"
+  },
+  "schoolNormal": "No change needed",
+  "@schoolNormal": {
+    "description": "ClassroomAdvice.normal"
+  },
+  "schoolGrap": "GRAP Stage {roman} likely on {day} ({pct} %)",
+  "@schoolGrap": {
+    "description": "S1 GRAP line",
+    "placeholders": {
+      "roman": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolClassroomsNow": "Classrooms now",
+  "@schoolClassroomsNow": {
+    "description": "S1 section"
+  },
+  "schoolSeeIndoor": "See indoor vs outdoor",
+  "@schoolSeeIndoor": {
+    "description": "S1 link"
+  },
+  "schoolSeeForecast": "See 72-hour forecast",
+  "@schoolSeeForecast": {
+    "description": "S1 link"
+  },
+  "schoolDraft": "Draft. Final at 10 PM",
+  "@schoolDraft": {
+    "description": "Draft issue"
+  },
+  "schoolNoIssue": "No forecast issued yet for this day",
+  "@schoolNoIssue": {
+    "description": "No safe-window issue"
+  },
+  "schoolFinal": "Final forecast, issued {time}",
+  "@schoolFinal": {
+    "description": "S1: the safe-window issue is final",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolNoReadings": "No sensor readings yet",
+  "@schoolNoReadings": {
+    "description": "S2 empty state"
+  },
+  "schoolSafe": "Safe",
+  "@schoolSafe": {
+    "description": "Window label"
+  },
+  "schoolAvoid": "Avoid outdoor activity",
+  "@schoolAvoid": {
+    "description": "Window label"
+  },
+  "schoolAirTitle": "Indoor vs outdoor",
+  "@schoolAirTitle": {
+    "description": "S2 title"
+  },
+  "schoolOutdoor": "Outdoor PM2.5",
+  "@schoolOutdoor": {
+    "description": "S2"
+  },
+  "schoolIndoor": "Classroom PM2.5",
+  "@schoolIndoor": {
+    "description": "S2"
+  },
+  "schoolCo2": "Classroom CO₂",
+  "@schoolCo2": {
+    "description": "S2"
+  },
+  "schoolRatio": "Indoor is {ratio} % of outdoor",
+  "@schoolRatio": {
+    "description": "S2",
+    "placeholders": {
+      "ratio": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolSensorOffline": "Sensor offline since {time}",
+  "@schoolSensorOffline": {
+    "description": "S2",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "schoolLegendOutdoor": "Outdoor (solid line)",
+  "@schoolLegendOutdoor": {
+    "description": "S2 legend"
+  },
+  "schoolLegendIndoor": "Classroom (dashed line)",
+  "@schoolLegendIndoor": {
+    "description": "S2 legend"
+  },
+  "schoolForecastTitle": "72-hour forecast",
+  "@schoolForecastTitle": {
+    "description": "S3 title"
+  },
+  "schoolForecastLegend": "Likely value (line) and 80 % range (band)",
+  "@schoolForecastLegend": {
+    "description": "S3 legend"
+  },
+  "schoolForecastThreshold": "Alert level 250 µg/m³",
+  "@schoolForecastThreshold": {
+    "description": "S3 threshold"
+  },
+  "schoolForecastHours": "School hours (shaded)",
+  "@schoolForecastHours": {
+    "description": "S3 shading"
+  },
+  "schoolForecastSummary": "PM2.5 peaks near {peak} µg/m³ around {time}. Values are indicative.",
+  "@schoolForecastSummary": {
+    "description": "S3 chart summary",
+    "placeholders": {
+      "peak": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tableTime": "Time",
+  "@tableTime": {
+    "description": "Table header"
+  },
+  "airTitle": "Air near you",
+  "@airTitle": {
+    "description": "C1 title"
+  },
+  "airAqi": "AQI {value} · {category} · indicative",
+  "@airAqi": {
+    "description": "C1",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "airMain": "Main pollutant: {pollutant}",
+  "@airMain": {
+    "description": "C1",
+    "placeholders": {
+      "pollutant": {
+        "type": "String"
+      }
+    }
+  },
+  "airSource": "Likely source: {cause} ({pct} %)",
+  "@airSource": {
+    "description": "C1",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "airUpdated": "Updated {time}",
+  "@airUpdated": {
+    "description": "C1",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "airArea": "Area: {place}",
+  "@airArea": {
+    "description": "C1 area line",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "adviceFine": "Air is fine for outdoor activity",
+  "@adviceFine": {
+    "description": "Advice"
+  },
+  "adviceMask": "Wear a mask outdoors (N95 if you have one)",
+  "@adviceMask": {
+    "description": "Advice"
+  },
+  "adviceIndoors": "Stay indoors if you can; keep windows shut",
+  "@adviceIndoors": {
+    "description": "Advice"
+  },
+  "adviceAvoidRoad": "Avoid this road for now",
+  "@adviceAvoidRoad": {
+    "description": "Advice"
+  },
+  "adviceQuietStreets": "Walk or ride on quieter streets",
+  "@adviceQuietStreets": {
+    "description": "Advice"
+  },
+  "adviceCoverDust": "Cover nose and mouth near construction or dusty roads",
+  "@adviceCoverDust": {
+    "description": "Advice"
+  },
+  "adviceRough": "Few sensors nearby; treat this as a rough estimate",
+  "@adviceRough": {
+    "description": "Advice"
+  },
+  "airReport": "Report burning",
+  "@airReport": {
+    "description": "C1 button"
+  },
+  "airAlertsLine": "Alerts for my area: {state}",
+  "@airAlertsLine": {
+    "description": "C1 link",
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "airNoData": "No air data for your area yet",
+  "@airNoData": {
+    "description": "C1 empty"
+  },
+  "airPickArea": "Choose your area",
+  "@airPickArea": {
+    "description": "Manual area picker"
+  },
+  "airLocationDenied": "Location is off. Choose your area instead.",
+  "@airLocationDenied": {
+    "description": "C1 location denied"
+  },
+  "airChangeArea": "Change area",
+  "@airChangeArea": {
+    "description": "C1"
+  },
+  "airUseLocation": "Use my location",
+  "@airUseLocation": {
+    "description": "C1"
+  },
+  "subTitle": "Alerts for my area",
+  "@subTitle": {
+    "description": "C2 title"
+  },
+  "subArea": "Area: around {place} (about 1 km)",
+  "@subArea": {
+    "description": "C2",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "subUseCurrent": "Use my current location",
+  "@subUseCurrent": {
+    "description": "C2"
+  },
+  "subKindWarn": "Bad air warnings",
+  "@subKindWarn": {
+    "description": "C2"
+  },
+  "subKindGrap": "GRAP outlook",
+  "@subKindGrap": {
+    "description": "C2"
+  },
+  "subQuiet": "Quiet hours 10 PM – 6 AM",
+  "@subQuiet": {
+    "description": "C2"
+  },
+  "subSaved": "Saved",
+  "@subSaved": {
+    "description": "C2 saved"
+  },
+  "subNoArea": "No area chosen yet",
+  "@subNoArea": {
+    "description": "C2"
+  },
+  "routeTipTitle": "Cleaner route tip",
+  "@routeTipTitle": {
+    "description": "C8 title"
+  },
+  "routeTipEmpty": "No route tip right now",
+  "@routeTipEmpty": {
+    "description": "C8 empty"
+  },
+  "privacyTitle": "Before you report",
+  "@privacyTitle": {
+    "description": "C3"
+  },
+  "privacyB1": "Photograph the fire or smoke, not people or vehicle number plates.",
+  "@privacyB1": {
+    "description": "C3"
+  },
+  "privacyB2": "We send the photo, the time and your location. Hidden photo data is removed.",
+  "@privacyB2": {
+    "description": "C3"
+  },
+  "privacyB3": "Inspectors never see your name or number.",
+  "@privacyB3": {
+    "description": "C3"
+  },
+  "privacyB4": "Stay safe. Don't go close to the fire.",
+  "@privacyB4": {
+    "description": "C3"
+  },
+  "privacyOk": "I understand",
+  "@privacyOk": {
+    "description": "C3 button"
+  },
+  "captureTitle": "Report burning",
+  "@captureTitle": {
+    "description": "C4 title"
+  },
+  "captureTake": "Take photo",
+  "@captureTake": {
+    "description": "C4 button"
+  },
+  "captureLocating": "Getting your location…",
+  "@captureLocating": {
+    "description": "C4"
+  },
+  "captureRough": "Location is rough (±{m} m). Move to open sky if you can.",
+  "@captureRough": {
+    "description": "C4",
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "captureNoFix": "Couldn't get a fresh location; using your last known one.",
+  "@captureNoFix": {
+    "description": "C4 coarse"
+  },
+  "captureRecovered": "Your last photo was recovered",
+  "@captureRecovered": {
+    "description": "C4"
+  },
+  "captureNoCamera": "Camera unavailable",
+  "@captureNoCamera": {
+    "description": "C4"
+  },
+  "captureHint": "Point the camera at the fire or smoke",
+  "@captureHint": {
+    "description": "C4"
+  },
+  "reviewTitle": "Review report",
+  "@reviewTitle": {
+    "description": "C5 title"
+  },
+  "reviewWhat": "What is burning?",
+  "@reviewWhat": {
+    "description": "C5"
+  },
+  "catBurning": "Garbage or leaves",
+  "@catBurning": {
+    "description": "ReportCategory.burning"
+  },
+  "catDust": "Construction dust",
+  "@catDust": {
+    "description": "ReportCategory.dust"
+  },
+  "catOther": "Something else",
+  "@catOther": {
+    "description": "ReportCategory.other"
+  },
+  "reviewNote": "Add a note (optional)",
+  "@reviewNote": {
+    "description": "C5"
+  },
+  "reviewSend": "Send report",
+  "@reviewSend": {
+    "description": "C5 button"
+  },
+  "reviewSavedOffline": "Saved. Will send when you're online.",
+  "@reviewSavedOffline": {
+    "description": "C5 offline"
+  },
+  "reviewSent": "Sent. Thank you!",
+  "@reviewSent": {
+    "description": "C5 sent"
+  },
+  "reviewRateLimited": "You've sent many reports. Try again in {minutes} min",
+  "@reviewRateLimited": {
+    "description": "C5 rate limit",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewRetake": "Retake",
+  "@reviewRetake": {
+    "description": "C5"
+  },
+  "locPrecise": "±{m} m",
+  "@locPrecise": {
+    "description": "Location accuracy chip",
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  },
+  "locCoarse": "Location is rough",
+  "@locCoarse": {
+    "description": "Coarse location chip"
+  },
+  "myReportsTitle": "My reports",
+  "@myReportsTitle": {
+    "description": "C6 title"
+  },
+  "myReportsWaiting": "Waiting to send",
+  "@myReportsWaiting": {
+    "description": "C6 pill"
+  },
+  "myReportsEmpty": "No reports yet. Seen burning? Report it with a photo.",
+  "@myReportsEmpty": {
+    "description": "C6 empty"
+  },
+  "myReportsViaWhatsapp": "Sent via WhatsApp",
+  "@myReportsViaWhatsapp": {
+    "description": "C6 source"
+  },
+  "reportTitle": "Report, {date}",
+  "@reportTitle": {
+    "description": "C7 title",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reportStatusSubmitted": "Sent",
+  "@reportStatusSubmitted": {
+    "description": "ReportStatus.submitted"
+  },
+  "reportStatusVerifying": "Being checked",
+  "@reportStatusVerifying": {
+    "description": "ReportStatus.verifying"
+  },
+  "reportStatusVerified": "Confirmed by our system",
+  "@reportStatusVerified": {
+    "description": "ReportStatus.verified"
+  },
+  "reportStatusRejected": "Could not be confirmed",
+  "@reportStatusRejected": {
+    "description": "ReportStatus.rejected"
+  },
+  "reportStatusTicketed": "Inspector sent",
+  "@reportStatusTicketed": {
+    "description": "ReportStatus.ticketed"
+  },
+  "reportStatusClosed": "Closed",
+  "@reportStatusClosed": {
+    "description": "ReportStatus.closed"
+  },
+  "reportOutcome": "Outcome",
+  "@reportOutcome": {
+    "description": "C7 section"
+  },
+  "reportOutcomeConfirmed": "The inspector confirmed the source and acted on it.",
+  "@reportOutcomeConfirmed": {
+    "description": "closed_confirmed fallback"
+  },
+  "reportOutcomeNotFound": "The inspector found nothing at the spot.",
+  "@reportOutcomeNotFound": {
+    "description": "closed_not_found fallback"
+  },
+  "reportOutcomeUnreachable": "The inspector could not reach the spot.",
+  "@reportOutcomeUnreachable": {
+    "description": "closed_unreachable fallback"
+  },
+  "reportRejectedNeutral": "Our system could not confirm this photo. Thank you for reporting.",
+  "@reportRejectedNeutral": {
+    "description": "Rejected fallback"
+  },
+  "reportThanks": "Thank you for reporting.",
+  "@reportThanks": {
+    "description": "C7"
+  },
+  "siteTitle": "Your site grade",
+  "@siteTitle": {
+    "description": "M1 title"
+  },
+  "siteGrade": "Grade {g} since {date}",
+  "@siteGrade": {
+    "description": "M1",
+    "placeholders": {
+      "g": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "siteTrend": "PM10 trend, last 30 days (indicative)",
+  "@siteTrend": {
+    "description": "M1"
+  },
+  "siteIncentive": "Better grades face lighter curbs on bad-air days.",
+  "@siteIncentive": {
+    "description": "M1"
+  },
+  "siteNotLegal": "Indicative sensor data, not a legal finding.",
+  "@siteNotLegal": {
+    "description": "M1"
+  },
+  "siteTips": "How to improve your grade",
+  "@siteTips": {
+    "description": "M1 tips"
+  },
+  "siteLastInspection": "Last inspection {date}",
+  "@siteLastInspection": {
+    "description": "M1",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "siteViolations": "Confirmed violations (30 days): {n}",
+  "@siteViolations": {
+    "description": "M1",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "siteTrendSummary": "PM10 went from {first} to {last} µg/m³ over 30 days.",
+  "@siteTrendSummary": {
+    "description": "M1 chart summary",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "siteGradeLabel": "Grade {g}",
+  "@siteGradeLabel": {
+    "description": "M1 grade badge label (no date known)",
+    "placeholders": {
+      "g": {
+        "type": "String"
+      }
+    }
+  },
+  "siteGradeUnknown": "Grade not available yet",
+  "@siteGradeUnknown": {
+    "description": "M1 unknown grade"
+  },
+  "siteScore": "Score {score} out of 100",
+  "@siteScore": {
+    "description": "M1 compliance score",
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "siteFlags": "Pollution flags (30 days): {n}",
+  "@siteFlags": {
+    "description": "M1 flags in the last 30 days",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "siteNoInspection": "No inspection yet",
+  "@siteNoInspection": {
+    "description": "M1"
+  },
+  "siteNoTrend": "No PM10 readings in the last 30 days",
+  "@siteNoTrend": {
+    "description": "M1 empty chart"
+  },
+  "siteBreakdown": "What the grade is based on",
+  "@siteBreakdown": {
+    "description": "M1 score components heading"
+  },
+  "siteNone": "No site is linked to your account",
+  "@siteNone": {
+    "description": "M1 empty (404)"
+  },
+  "siteTypeConstruction": "Construction site",
+  "@siteTypeConstruction": {
+    "description": "SiteType label"
+  },
+  "siteTypeIndustrial": "Industrial unit",
+  "@siteTypeIndustrial": {
+    "description": "SiteType label"
+  },
+  "siteTypeWaste": "Waste site",
+  "@siteTypeWaste": {
+    "description": "SiteType label"
+  },
+  "siteTypeOther": "Other site",
+  "@siteTypeOther": {
+    "description": "SiteType label"
+  },
+  "alertsTitle": "Alerts",
+  "@alertsTitle": {
+    "description": "X1 title"
+  },
+  "alertsEmpty": "No alerts",
+  "@alertsEmpty": {
+    "description": "X1 empty"
+  },
+  "alertsNew": "New",
+  "@alertsNew": {
+    "description": "Unread marker"
+  },
+  "alertsExpired": "Expired",
+  "@alertsExpired": {
+    "description": "Expired alert"
+  },
+  "alertAck": "I've read this",
+  "@alertAck": {
+    "description": "X2 button"
+  },
+  "alertAcked": "Acknowledged at {time}",
+  "@alertAcked": {
+    "description": "X2 state",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "alertOpenRelated": "Open",
+  "@alertOpenRelated": {
+    "description": "X2 related link"
+  },
+  "alertReceived": "Received {time}",
+  "@alertReceived": {
+    "description": "X2 meta",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "X3 title"
+  },
+  "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "X3"
+  },
+  "settingsNotifications": "Notifications",
+  "@settingsNotifications": {
+    "description": "X3"
+  },
+  "settingsDisplay": "Display",
+  "@settingsDisplay": {
+    "description": "X3"
+  },
+  "displayAuto": "Automatic (outdoor for field roles)",
+  "@displayAuto": {
+    "description": "Display option"
+  },
+  "displayStandard": "Standard",
+  "@displayStandard": {
+    "description": "Display option"
+  },
+  "displayDark": "Dark",
+  "@displayDark": {
+    "description": "Display option"
+  },
+  "displayOutdoor": "Outdoor (high contrast)",
+  "@displayOutdoor": {
+    "description": "Display option"
+  },
+  "settingsCvd": "Colour-blind safe colours",
+  "@settingsCvd": {
+    "description": "X3"
+  },
+  "settingsDataSaver": "Data saver",
+  "@settingsDataSaver": {
+    "description": "X3"
+  },
+  "settingsDataSaverHint": "Smaller photos, no map downloads on mobile data",
+  "@settingsDataSaverHint": {
+    "description": "X3"
+  },
+  "settingsPending": "Pending uploads ({n})",
+  "@settingsPending": {
+    "description": "X3",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSwitchRole": "Switch role",
+  "@settingsSwitchRole": {
+    "description": "X3"
+  },
+  "settingsLicences": "Licences",
+  "@settingsLicences": {
+    "description": "X3"
+  },
+  "settingsVersion": "Version {version} ({flavor})",
+  "@settingsVersion": {
+    "description": "X3",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "flavor": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLogout": "Log out",
+  "@settingsLogout": {
+    "description": "X3"
+  },
+  "settingsLogoutWarn": "{n} updates are not sent yet. If you log out now they will be lost.",
+  "@settingsLogoutWarn": {
+    "description": "X3",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSendNow": "Send now",
+  "@settingsSendNow": {
+    "description": "X3"
+  },
+  "settingsLogoutAnyway": "Log out anyway",
+  "@settingsLogoutAnyway": {
+    "description": "X3"
+  },
+  "settingsDevTools": "Dev tools",
+  "@settingsDevTools": {
+    "description": "X3 dev row"
+  },
+  "settingsNotifRouteLocked": "Route notifications can't be turned off in the app. If they are off in phone settings, we send your route by SMS.",
+  "@settingsNotifRouteLocked": {
+    "description": "Notifications sub-screen"
+  },
+  "settingsNotifNone": "Your role has no notification choices.",
+  "@settingsNotifNone": {
+    "description": "Notifications sub-screen, role without toggles"
+  },
+  "notifKindPollutant": "Pollutant warnings",
+  "@notifKindPollutant": {
+    "description": "Notification kind"
+  },
+  "notifKindGrap": "GRAP outlook",
+  "@notifKindGrap": {
+    "description": "Notification kind"
+  },
+  "notifKindReports": "Report updates",
+  "@notifKindReports": {
+    "description": "Notification kind"
+  },
+  "notifKindSafeWindow": "Safe windows",
+  "@notifKindSafeWindow": {
+    "description": "Notification kind"
+  },
+  "notifKindRoute": "Route and stop updates",
+  "@notifKindRoute": {
+    "description": "Notification kind"
+  },
+  "syncTitle": "Pending uploads",
+  "@syncTitle": {
+    "description": "X4 title"
+  },
+  "syncAllSent": "All sent",
+  "@syncAllSent": {
+    "description": "X4 empty"
+  },
+  "syncWaiting": "Waiting for internet",
+  "@syncWaiting": {
+    "description": "X4 state"
+  },
+  "syncRetryingAt": "Retrying at {time}",
+  "@syncRetryingAt": {
+    "description": "X4 state",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncSending": "Sending…",
+  "@syncSending": {
+    "description": "X4 state"
+  },
+  "syncFailed": "Failed: {reason}",
+  "@syncFailed": {
+    "description": "X4 state",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "syncRetryNow": "Retry now",
+  "@syncRetryNow": {
+    "description": "X4 action"
+  },
+  "syncDiscard": "Discard",
+  "@syncDiscard": {
+    "description": "X4 action"
+  },
+  "syncDiscardConfirm": "Discard this update? It will not be sent.",
+  "@syncDiscardConfirm": {
+    "description": "X4 confirm"
+  },
+  "opTaskAck": "Stop {n} seen",
+  "@opTaskAck": {
+    "description": "Op label",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "opTaskStatus": "Stop {n} status",
+  "@opTaskStatus": {
+    "description": "Op label",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "opTaskGeneric": "Task update",
+  "@opTaskGeneric": {
+    "description": "Op label"
+  },
+  "opInspectionClose": "Inspection outcome",
+  "@opInspectionClose": {
+    "description": "Op label"
+  },
+  "opPhotoUpload": "Photo",
+  "@opPhotoUpload": {
+    "description": "Op label"
+  },
+  "opReportSubmit": "Report",
+  "@opReportSubmit": {
+    "description": "Op label"
+  },
+  "opAlertAck": "Alert read receipt",
+  "@opAlertAck": {
+    "description": "Op label"
+  },
+  "opShiftStart": "Shift start",
+  "@opShiftStart": {
+    "description": "Op label"
+  },
+  "opShiftEnd": "Shift end",
+  "@opShiftEnd": {
+    "description": "Op label"
+  },
+  "opLocationBatch": "Location update",
+  "@opLocationBatch": {
+    "description": "Op label"
+  },
+  "opPushToken": "Notification setup",
+  "@opPushToken": {
+    "description": "Op label"
+  },
+  "opProfileUpdate": "Profile update",
+  "@opProfileUpdate": {
+    "description": "Op label"
+  },
+  "profileTitle": "Profile",
+  "@profileTitle": {
+    "description": "X5"
+  },
+  "profileName": "Name",
+  "@profileName": {
+    "description": "X5"
+  },
+  "profilePhone": "Phone",
+  "@profilePhone": {
+    "description": "X5"
+  },
+  "profileRoles": "Roles",
+  "@profileRoles": {
+    "description": "X5"
+  },
+  "profileWard": "Ward",
+  "@profileWard": {
+    "description": "X5"
+  },
+  "profileVersion": "App version",
+  "@profileVersion": {
+    "description": "X5"
+  },
+  "profileInstallId": "Install id (for support)",
+  "@profileInstallId": {
+    "description": "X5"
+  },
+  "profileCopy": "Copy",
+  "@profileCopy": {
+    "description": "X5 copy install id"
+  },
+  "profileCopied": "Copied",
+  "@profileCopied": {
+    "description": "X5 snackbar"
+  },
+  "devTitle": "Dev tools",
+  "@devTitle": {
+    "description": "Dev tools title"
+  },
+  "devFakeMode": "Fake API mode",
+  "@devFakeMode": {
+    "description": "Dev tools"
+  },
+  "devSimulateSpray": "Simulate HawaTag spray (next stop)",
+  "@devSimulateSpray": {
+    "description": "Dev tools"
+  },
+  "devSimulateVerify": "Simulate verification (last done stop)",
+  "@devSimulateVerify": {
+    "description": "Dev tools"
+  },
+  "devSimulateRouteChange": "Simulate route change (remove last stop)",
+  "@devSimulateRouteChange": {
+    "description": "Dev tools"
+  },
+  "devTagOffline": "HawaTag offline",
+  "@devTagOffline": {
+    "description": "Dev tools"
+  },
+  "devTestPush": "Send test push",
+  "@devTestPush": {
+    "description": "Dev tools"
+  },
+  "devNewTarget": "New inspection target",
+  "@devNewTarget": {
+    "description": "Dev tools"
+  },
+  "devGoOffline": "Go offline (fake network)",
+  "@devGoOffline": {
+    "description": "Dev tools"
+  },
+  "devResetDb": "Reset local database",
+  "@devResetDb": {
+    "description": "Dev tools"
+  },
+  "devResetDone": "Local data cleared",
+  "@devResetDone": {
+    "description": "Dev tools"
+  },
+  "devSent": "Sent",
+  "@devSent": {
+    "description": "Dev tools"
+  },
+  "devOnlyFake": "Works in fake API mode only",
+  "@devOnlyFake": {
+    "description": "Dev tools"
+  },
+  "devNothingToDo": "Nothing to simulate right now",
+  "@devNothingToDo": {
+    "description": "Dev tools snackbar"
+  },
+  "devResetConfirm": "Delete all local data on this phone? You stay signed in.",
+  "@devResetConfirm": {
+    "description": "Dev tools reset confirm"
+  },
+  "pushRouteAssignmentTitle": "Today's route is ready",
+  "@pushRouteAssignmentTitle": {
+    "description": "Push"
+  },
+  "pushRouteAssignmentBody": "{count} stops, first at {time}. Tap to start.",
+  "@pushRouteAssignmentBody": {
+    "description": "Push",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pushRouteChangedTitle": "Your route changed",
+  "@pushRouteChangedTitle": {
+    "description": "Push"
+  },
+  "pushRouteChangedBody": "{added} added, {removed} removed. Check the new order.",
+  "@pushRouteChangedBody": {
+    "description": "Push",
+    "placeholders": {
+      "added": {
+        "type": "String"
+      },
+      "removed": {
+        "type": "String"
+      }
+    }
+  },
+  "pushTaskDoneTitle": "Stop {n} done",
+  "@pushTaskDoneTitle": {
+    "description": "Push",
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "pushTaskDoneBody": "HawaTag recorded {litres} L sprayed. Next: {next}.",
+  "@pushTaskDoneBody": {
+    "description": "Push",
+    "placeholders": {
+      "litres": {
+        "type": "String"
+      },
+      "next": {
+        "type": "String"
+      }
+    }
+  },
+  "pushInspectionTargetTitle": "New inspection target",
+  "@pushInspectionTargetTitle": {
+    "description": "Push"
+  },
+  "pushInspectionTargetBody": "Likely {cause} near {place}. Confidence {level}.",
+  "@pushInspectionTargetBody": {
+    "description": "Push",
+    "placeholders": {
+      "cause": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "pushSafeWindowTitle": "Safe outdoor time {day}: {start}–{end}",
+  "@pushSafeWindowTitle": {
+    "description": "Push",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "pushSafeWindowBody": "PM2.5 at 8 AM likely {p50} µg/m³ (range {p10}–{p90}). Hold assembly indoors.",
+  "@pushSafeWindowBody": {
+    "description": "Push",
+    "placeholders": {
+      "p50": {
+        "type": "String"
+      },
+      "p10": {
+        "type": "String"
+      },
+      "p90": {
+        "type": "String"
+      }
+    }
+  },
+  "pushSmokeTitle": "Smoke nearby: air {category}",
+  "@pushSmokeTitle": {
+    "description": "Push",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "pushSmokeBody": "Wear a mask outdoors and keep windows shut until {time}.",
+  "@pushSmokeBody": {
+    "description": "Push",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pushTrafficTitle": "Heavy traffic fumes on {road}",
+  "@pushTrafficTitle": {
+    "description": "Push",
+    "placeholders": {
+      "road": {
+        "type": "String"
+      }
+    }
+  },
+  "pushTrafficBody": "Avoid this road until {time}. {alt}",
+  "@pushTrafficBody": {
+    "description": "Push",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "alt": {
+        "type": "String"
+      }
+    }
+  },
+  "pushDustTitle": "Dusty air near {place}",
+  "@pushDustTitle": {
+    "description": "Push",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "pushDustBody": "Cover nose and mouth near construction until {time}.",
+  "@pushDustBody": {
+    "description": "Push",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pushGrapTitle": "GRAP Stage {roman} likely on {day}",
+  "@pushGrapTitle": {
+    "description": "Push",
+    "placeholders": {
+      "roman": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "pushGrapBody": "Probability {pct} %. Plan outdoor work early.",
+  "@pushGrapBody": {
+    "description": "Push",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "pushReportOutcomeTitle": "Your report: {status}",
+  "@pushReportOutcomeTitle": {
+    "description": "Push",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "pushReportOutcomeBody": "{outcome} Thank you for reporting.",
+  "@pushReportOutcomeBody": {
+    "description": "Push",
+    "placeholders": {
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "pushTagOfflineTitle": "HawaTag offline on {asset}",
+  "@pushTagOfflineTitle": {
+    "description": "Push",
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      }
+    }
+  },
+  "pushTagOfflineBody": "Stops won't complete automatically. After spraying, tap \"Mark done manually\".",
+  "@pushTagOfflineBody": {
+    "description": "Push"
+  },
+  "pushPodOfflineTitle": "Classroom sensor offline",
+  "@pushPodOfflineTitle": {
+    "description": "Push"
+  },
+  "pushPodOfflineBody": "Indoor readings paused since {time}.",
+  "@pushPodOfflineBody": {
+    "description": "Push",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pushSimulatedSuffix": " · Simulated",
+  "@pushSimulatedSuffix": {
+    "description": "Suffix for simulated pushes"
+  },
+  "channelRouteUpdates": "Route updates",
+  "@channelRouteUpdates": {
+    "description": "Android channel"
+  },
+  "channelAirAlerts": "Air alerts",
+  "@channelAirAlerts": {
+    "description": "Android channel"
+  },
+  "channelReports": "Report updates",
+  "@channelReports": {
+    "description": "Android channel"
+  },
+  "channelDeviceStatus": "Device status",
+  "@channelDeviceStatus": {
+    "description": "Android channel"
+  },
+  "channelShiftTracking": "Shift tracking",
+  "@channelShiftTracking": {
+    "description": "Android channel"
+  },
+  "aqiGood": "Good",
+  "@aqiGood": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "aqiSatisfactory": "Satisfactory",
+  "@aqiSatisfactory": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "aqiModerate": "Moderate",
+  "@aqiModerate": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "aqiPoor": "Poor",
+  "@aqiPoor": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "aqiVeryPoor": "Very poor",
+  "@aqiVeryPoor": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "aqiSevere": "Severe",
+  "@aqiSevere": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "causeDust": "Dust",
+  "@causeDust": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "causeTraffic": "Traffic",
+  "@causeTraffic": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "causeBurning": "Burning",
+  "@causeBurning": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "causeRegionalSmoke": "Regional smoke",
+  "@causeRegionalSmoke": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "causeMixed": "Mixed",
+  "@causeMixed": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "causeUnknown": "Unknown",
+  "@causeUnknown": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "kindSpray": "Spray",
+  "@kindSpray": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "kindSweep": "Sweep",
+  "@kindSweep": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "kindInspect": "Inspect",
+  "@kindInspect": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "kindProtectAlert": "Protect",
+  "@kindProtectAlert": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskPending": "Pending",
+  "@taskPending": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskDispatched": "Assigned",
+  "@taskDispatched": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskAcknowledged": "Seen",
+  "@taskAcknowledged": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskEnRoute": "On the way",
+  "@taskEnRoute": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskInProgress": "At stop",
+  "@taskInProgress": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskDone": "Done",
+  "@taskDone": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskVerifying": "Checking effect",
+  "@taskVerifying": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskVerified": "Verified",
+  "@taskVerified": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskInconclusive": "Inconclusive",
+  "@taskInconclusive": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskSkipped": "Skipped",
+  "@taskSkipped": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskCancelled": "Removed",
+  "@taskCancelled": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskMissed": "Missed",
+  "@taskMissed": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "taskFailed": "Failed",
+  "@taskFailed": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "confHigh": "High",
+  "@confHigh": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "confMedium": "Medium",
+  "@confMedium": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "confLow": "Low",
+  "@confLow": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "grap0": "None",
+  "@grap0": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "grap1": "Stage I · Poor",
+  "@grap1": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "grap2": "Stage II · Very poor",
+  "@grap2": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "grap3": "Stage III · Severe",
+  "@grap3": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "grap4": "Stage IV · Severe+",
+  "@grap4": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "sourceHawatag": "HawaTag",
+  "@sourceHawatag": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "sourceManual": "Manual (lower evidence)",
+  "@sourceManual": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "sourceGps": "From GPS",
+  "@sourceGps": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "verdictEffective": "Worked",
+  "@verdictEffective": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "verdictNoEffect": "No clear effect",
+  "@verdictNoEffect": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "verdictInconclusive": "Inconclusive",
+  "@verdictInconclusive": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "verdictAdverse": "Made it worse",
+  "@verdictAdverse": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "methodSynthetic": "Synthetic control",
+  "@methodSynthetic": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "methodDiffInDiff": "Difference-in-differences",
+  "@methodDiffInDiff": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "methodNaive": "Before/after (lower evidence)",
+  "@methodNaive": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "pollutantPm25": "PM2.5 (fine particles)",
+  "@pollutantPm25": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "pollutantPm10": "PM10 (dust particles)",
+  "@pollutantPm10": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "pollutantNo2": "NO₂ (vehicle gas)",
+  "@pollutantNo2": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "pollutantCo2": "CO₂",
+  "@pollutantCo2": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "pollutantOther": "Other pollutant",
+  "@pollutantOther": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "inspOpen": "Open",
+  "@inspOpen": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "inspAssigned": "Assigned",
+  "@inspAssigned": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "inspOnSite": "On site",
+  "@inspOnSite": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "inspClosedConfirmed": "Source confirmed",
+  "@inspClosedConfirmed": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "inspClosedNotFound": "Nothing found",
+  "@inspClosedNotFound": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "inspClosedUnreachable": "Could not reach",
+  "@inspClosedUnreachable": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindPollutantWarning": "Air warning",
+  "@alertKindPollutantWarning": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindSafeWindow": "Safe time",
+  "@alertKindSafeWindow": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindRouteAssignment": "Route",
+  "@alertKindRouteAssignment": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindInspectionTarget": "Inspection target",
+  "@alertKindInspectionTarget": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindGrapOutlook": "GRAP outlook",
+  "@alertKindGrapOutlook": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindReportOutcome": "Report update",
+  "@alertKindReportOutcome": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindDeviceHealth": "Device status",
+  "@alertKindDeviceHealth": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindRouteChanged": "Route changed",
+  "@alertKindRouteChanged": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "alertKindTaskDoneAuto": "Stop done",
+  "@alertKindTaskDoneAuto": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "gradeA": "A",
+  "@gradeA": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "gradeB": "B",
+  "@gradeB": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "gradeC": "C",
+  "@gradeC": {
+    "description": "Enum label (SCREENS §10)"
+  },
+  "airMapTitle": "Air map",
+  "@airMapTitle": {
+    "description": "Air map title"
+  },
+  "airMapMoreEntry": "Air map & clean routes",
+  "@airMapMoreEntry": {
+    "description": "More sheet entry"
+  },
+  "airMapSearchHint": "Where to? Find the cleanest route",
+  "@airMapSearchHint": {
+    "description": "Search bar"
+  },
+  "airMapLayerPollution": "Pollution",
+  "@airMapLayerPollution": {
+    "description": "Layer chip"
+  },
+  "airMapLayerHotspots": "Hotspots",
+  "@airMapLayerHotspots": {
+    "description": "Layer chip"
+  },
+  "airMapNow": "Now",
+  "@airMapNow": {
+    "description": "Time chip"
+  },
+  "airMapInHours": "+{hours} h",
+  "@airMapInHours": {
+    "description": "Time chip",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapForecastAt": "Forecast for {time} · indicative",
+  "@airMapForecastAt": {
+    "description": "Banner when a future hour is shown",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapLegend": "AQI (from PM2.5)",
+  "@airMapLegend": {
+    "description": "Legend title"
+  },
+  "airMapUpdated": "AI estimate · updated {time}",
+  "@airMapUpdated": {
+    "description": "Freshness line",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapCached": "Showing the saved map from {time}. HawaCommand is unreachable.",
+  "@airMapCached": {
+    "description": "Offline cache banner",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapLoading": "Loading the air map…",
+  "@airMapLoading": {
+    "description": "Loading"
+  },
+  "airMapLoadFailed": "Couldn't load the air map",
+  "@airMapLoadFailed": {
+    "description": "Error title"
+  },
+  "airMapCellTitle": "Air here",
+  "@airMapCellTitle": {
+    "description": "Cell sheet title"
+  },
+  "airMapCellPm": "PM2.5 {pm25} µg/m³ · PM10 {pm10} µg/m³",
+  "@airMapCellPm": {
+    "description": "Cell values",
+    "placeholders": {
+      "pm25": {
+        "type": "String"
+      },
+      "pm10": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapCellWard": "Area: {ward}",
+  "@airMapCellWard": {
+    "description": "Cell ward",
+    "placeholders": {
+      "ward": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapCellOutside": "This spot is outside the air model area",
+  "@airMapCellOutside": {
+    "description": "Tap outside grid"
+  },
+  "airMapDirectionsHere": "Directions to here",
+  "@airMapDirectionsHere": {
+    "description": "Cell/hotspot action"
+  },
+  "airMapHotspotTitle": "Pollution hotspot #{rank}",
+  "@airMapHotspotTitle": {
+    "description": "Hotspot sheet title",
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapHotspotExposure": "{count} person-hours of severe exposure expected",
+  "@airMapHotspotExposure": {
+    "description": "Hotspot exposure",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapHotspotSchools": "Schools nearby",
+  "@airMapHotspotSchools": {
+    "description": "Hotspot schools header"
+  },
+  "airMapHotspotSchool": "{name} · {km} km",
+  "@airMapHotspotSchool": {
+    "description": "School row",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapHotspotSuspect": "Suspected source about {km} km to the {bearing}",
+  "@airMapHotspotSuspect": {
+    "description": "Suspect pin",
+    "placeholders": {
+      "km": {
+        "type": "String"
+      },
+      "bearing": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapNext24h": "Next 24 hours (PM2.5, likely range)",
+  "@airMapNext24h": {
+    "description": "Forecast chart title"
+  },
+  "airMapCityNow": "Delhi right now",
+  "@airMapCityNow": {
+    "description": "Summary header"
+  },
+  "airMapCityPm": "City PM2.5 about {value} µg/m³",
+  "@airMapCityPm": {
+    "description": "City value",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapWorstAreas": "Worst areas right now",
+  "@airMapWorstAreas": {
+    "description": "Hotspot list header"
+  },
+  "airMapYourLocation": "Your location",
+  "@airMapYourLocation": {
+    "description": "Origin option"
+  },
+  "airMapChooseOnMap": "Choose on map",
+  "@airMapChooseOnMap": {
+    "description": "Pick on map"
+  },
+  "airMapFromHint": "Choose start",
+  "@airMapFromHint": {
+    "description": "Origin field"
+  },
+  "airMapToHint": "Choose destination",
+  "@airMapToHint": {
+    "description": "Destination field"
+  },
+  "airMapPickHint": "Move the map to put the pin on the place",
+  "@airMapPickHint": {
+    "description": "Pick mode hint"
+  },
+  "airMapPopular": "Popular places",
+  "@airMapPopular": {
+    "description": "Quick picks header"
+  },
+  "airMapNoResults": "No places found",
+  "@airMapNoResults": {
+    "description": "Search empty"
+  },
+  "airMapSearchOffline": "Place search needs internet. Showing popular places.",
+  "@airMapSearchOffline": {
+    "description": "Search offline"
+  },
+  "airMapModeWalk": "Walk",
+  "@airMapModeWalk": {
+    "description": "Travel mode"
+  },
+  "airMapModeCycle": "Cycle",
+  "@airMapModeCycle": {
+    "description": "Travel mode"
+  },
+  "airMapModeTwoWheeler": "Bike / auto",
+  "@airMapModeTwoWheeler": {
+    "description": "Travel mode"
+  },
+  "airMapModeCar": "Car",
+  "@airMapModeCar": {
+    "description": "Travel mode"
+  },
+  "airMapTagRecommended": "Recommended",
+  "@airMapTagRecommended": {
+    "description": "Route tag"
+  },
+  "airMapTagCleanest": "Cleanest air",
+  "@airMapTagCleanest": {
+    "description": "Route tag"
+  },
+  "airMapTagFastest": "Fastest",
+  "@airMapTagFastest": {
+    "description": "Route tag"
+  },
+  "airMapRouteSummary": "{minutes} min · {km} km",
+  "@airMapRouteSummary": {
+    "description": "Route time and distance",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapRouteAvg": "Avg PM2.5 {value} µg/m³",
+  "@airMapRouteAvg": {
+    "description": "Route average",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapRouteDose": "You'd breathe in about {dose} µg of PM2.5 ({low}–{high})",
+  "@airMapRouteDose": {
+    "description": "Route dose",
+    "placeholders": {
+      "dose": {
+        "type": "String"
+      },
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapRouteRedZone": "{minutes} min in very poor air",
+  "@airMapRouteRedZone": {
+    "description": "Route red-zone time",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapRouteNoRedZone": "No very poor stretches",
+  "@airMapRouteNoRedZone": {
+    "description": "Route red-zone none"
+  },
+  "airMapRouteSaving": "{pct} % less PM2.5 than the fastest route",
+  "@airMapRouteSaving": {
+    "description": "Route saving",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapRouteExtra": "+{minutes} min",
+  "@airMapRouteExtra": {
+    "description": "Extra time",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapRouteVia": "Detour suggested by the air model",
+  "@airMapRouteVia": {
+    "description": "Via route note"
+  },
+  "airMapRouteRough": "Part of this route is outside the air model; the estimate is rough",
+  "@airMapRouteRough": {
+    "description": "Low coverage"
+  },
+  "airMapPlanning": "Finding cleaner routes…",
+  "@airMapPlanning": {
+    "description": "Planning"
+  },
+  "airMapNoRoute": "No route found between these places",
+  "@airMapNoRoute": {
+    "description": "No route"
+  },
+  "airMapRoutingOffline": "Route search needs internet",
+  "@airMapRoutingOffline": {
+    "description": "Routing offline"
+  },
+  "airMapSamePlace": "Start and destination are the same",
+  "@airMapSamePlace": {
+    "description": "Same place"
+  },
+  "airMapLeaveTitle": "When to leave",
+  "@airMapLeaveTitle": {
+    "description": "Departure header"
+  },
+  "airMapLeaveBest": "Leave at {time} to breathe {pct} % less",
+  "@airMapLeaveBest": {
+    "description": "Best departure",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapLeaveNow": "Leaving now is the best in the next 6 hours",
+  "@airMapLeaveNow": {
+    "description": "Now is best"
+  },
+  "airMapLeaveAt": "Leaving at {time}",
+  "@airMapLeaveAt": {
+    "description": "Departure chip semantics",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapDepartNow": "Leave now",
+  "@airMapDepartNow": {
+    "description": "Departure chip"
+  },
+  "airMapDepartIn": "In {hours} h",
+  "@airMapDepartIn": {
+    "description": "Departure chip",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapStartNav": "Start in Google Maps",
+  "@airMapStartNav": {
+    "description": "Navigation hand-off"
+  },
+  "airMapNavFailed": "Couldn't open Google Maps",
+  "@airMapNavFailed": {
+    "description": "Navigation failure"
+  },
+  "airMapClearRoute": "Clear route",
+  "@airMapClearRoute": {
+    "description": "Clear"
+  },
+  "airMapPrivacy": "Start and end points go only to the route service, never to HawaCommand.",
+  "@airMapPrivacy": {
+    "description": "Routing privacy note"
+  },
+  "airMapModelNote": "Colours come from the AI air model (500 m grid) and ranked hotspots. Indicative, not an official reading.",
+  "@airMapModelNote": {
+    "description": "Model note"
+  },
+  "airMapLocationUnavailable": "Couldn't get your location",
+  "@airMapLocationUnavailable": {
+    "description": "Location failure"
+  },
+  "airMapDoseHelp": "Dose = PM2.5 along the way × how hard you breathe × time. Cars with windows shut let in less.",
+  "@airMapDoseHelp": {
+    "description": "Dose explainer"
+  },
+  "airMapRoutesCount": "{count} routes compared",
+  "@airMapRoutesCount": {
+    "description": "Routes header",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapDroppedPin": "Pinned place",
+  "@airMapDroppedPin": {
+    "description": "Map pick result name"
+  },
+  "airMapPickConfirm": "Use this place",
+  "@airMapPickConfirm": {
+    "description": "Map pick confirm"
+  },
+  "airMapSwap": "Swap start and destination",
+  "@airMapSwap": {
+    "description": "Swap button"
+  },
+  "airMapMyLocation": "Show my location",
+  "@airMapMyLocation": {
+    "description": "My location button"
+  },
+  "airMapRefresh": "Refresh air data",
+  "@airMapRefresh": {
+    "description": "Refresh button"
+  },
+  "airMapLikely": "likely {low}–{high} µg/m³",
+  "@airMapLikely": {
+    "description": "City forecast range",
+    "placeholders": {
+      "low": {
+        "type": "String"
+      },
+      "high": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapHotspotRow": "{ward} · {cause} ({pct} %)",
+  "@airMapHotspotRow": {
+    "description": "Hotspot list subtitle",
+    "placeholders": {
+      "ward": {
+        "type": "String"
+      },
+      "cause": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapSearchFrom": "Search start",
+  "@airMapSearchFrom": {
+    "description": "Search field hint (from)"
+  },
+  "airMapSearchTo": "Search destination",
+  "@airMapSearchTo": {
+    "description": "Search field hint (to)"
+  },
+  "airMapScaleRelative": "Compared across Delhi now",
+  "@airMapScaleRelative": {
+    "description": "Relative legend title"
+  },
+  "airMapCleaner": "Cleaner {value}",
+  "@airMapCleaner": {
+    "description": "Relative legend low end (µg/m³)",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapDirtier": "Dirtier {value}",
+  "@airMapDirtier": {
+    "description": "Relative legend high end (µg/m³)",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapScaleSwitch": "Tap to switch between city comparison and AQI colours",
+  "@airMapScaleSwitch": {
+    "description": "Legend tooltip"
+  },
+  "airMapHotspotCluster": "{count} hotspots here. Zoom in",
+  "@airMapHotspotCluster": {
+    "description": "Cluster semantics",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "airMapRouteCleaner": "{pct} % cleaner air on average than the fastest route",
+  "@airMapRouteCleaner": {
+    "description": "Route average saving",
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  }
+}

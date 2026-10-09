@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-13",
+  "role": "inspector",
+  "asset": {
+    "id": "AST-TEAM-0003",
+    "type": "inspection_team",
+    "label": "Inspection team 3",
+    "tag_device_id": null,
+    "tag_status": null,
+    "tag_last_seen_at": null,
+    "is_simulated": true
+  },
+  "shift": {
+    "id": "01932b90-0000-7aaa-8bbb-000000005103",
+    "status": "scheduled",
+    "start": "2026-11-13T00:30:00Z",
+    "end": "2026-11-13T08:30:00Z"
+  },
+  "route": null,
+  "items": [
+    {
+      "id": "01932c71-0000-7d10-9a55-6c1e2f3a4b31",
+      "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+      "kind": "inspect",
+      "status": "dispatched",
+      "sequence": 1,
+      "cell_id": "g500-039-071",
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          77.1425,
+          28.6304
+        ]
+      },
+      "place_name": {
+        "en": "Site SITE-0311, Naraina",
+        "hi": "साइट SITE-0311, नारायणा"
+      },
+      "window_start": "2026-11-13T03:30:00Z",
+      "window_end": "2026-11-13T05:30:00Z",
+      "instructions": {
+        "en": "Check dust control at the site gate and the debris pile.",
+        "hi": "साइट गेट और मलबे के ढेर पर धूल नियंत्रण जाँचें।"
+      },
+      "arrival_radius_m": 150,
+      "cause_label": "dust",
+      "cause_conf": 0.64,
+      "inspection_id": "01932c70-5c00-7d3e-8a11-0b1c2d3e4f88",
+      "origin": "hotspot",
+      "priority": 3,
+      "hotspot_id": "01932c5a-2f10-7b3e-8c44-5d6e7f8a9b02",
+      "report_id": null,
+      "site_id": "SITE-0311",
+      "suspect_pin": {
+        "type": "Point",
+        "coordinates": [
+          77.143,
+          28.6308
+        ]
+      },
+      "version": 1,
+      "updated_at": "2026-11-13T00:05:00Z",
+      "is_simulated": true
+    }
+  ],
+  "server_time": "2026-11-13T00:05:00Z"
+}

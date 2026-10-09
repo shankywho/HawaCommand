@@ -1,0 +1,51 @@
+{
+  "school_id": "SCH-07050112345",
+  "name": "Govt. Sr. Sec. School No. 2",
+  "name_hi": "राजकीय सर्वोदय विद्यालय नं. 2",
+  "ward_id": "ward-084",
+  "cell_id": "g500-041-077",
+  "forecast_cell_id": "g1k-020-038",
+  "location": {
+    "type": "Point",
+    "coordinates": [
+      77.18892,
+      28.64284
+    ]
+  },
+  "devices": {
+    "outdoor": "HPS-0007-O",
+    "indoor": "HPS-0007-I"
+  },
+  "hours": {
+    "day_start": "07:30",
+    "day_end": "13:30",
+    "assembly": "07:45",
+    "timezone": "Asia/Kolkata"
+  },
+  "now": {
+    "outdoor_pm25": 212.0,
+    "indoor_pm25": 74.0,
+    "indoor_co2_ppm": 1050,
+    "ratio_in_out": 0.35,
+    "ts": "2026-11-13T04:30:00Z",
+    "advice": "seal"
+  },
+  "today": {
+    "date": "2026-11-13",
+    "advice": "seal",
+    "safe_windows": [
+      {
+        "start": "2026-11-13T08:00:00Z",
+        "end": "2026-11-13T09:30:00Z",
+        "label": "safe",
+        "pm25_p10": 41.0,
+        "pm25_p50": 58.0,
+        "pm25_p90": 81.0,
+        "confidence": 0.62
+      }
+    ]
+  },
+  "whatsapp_opt_in": true,
+  "preferred_lang": "hi",
+  "is_simulated": true
+}

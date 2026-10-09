@@ -1,0 +1,8 @@
+{
+  "mae_kriging_gp": 37.82,
+  "rmse_kriging_gp": 38.44,
+  "mae_nearest_station_baseline": 7.4,
+  "mae_idw_baseline": 7.05,
+  "skill_vs_nearest_station_pct": -411.2,
+  "evaluated_stations_count": 3
+}

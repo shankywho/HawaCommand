@@ -1,0 +1,18 @@
+{
+  "channel": "alerts:me",
+  "type": "alert.requested",
+  "event_id": "01932d00-0000-7aaa-8bbb-000000000d21",
+  "seq": 3,
+  "ts": "2026-11-12T13:30:04Z",
+  "data": {
+    "alert_id": "01932c80-1a00-7d3e-8a11-0b1c2d3e4f12",
+    "audience": "school",
+    "kind": "safe_window",
+    "lang": "hi",
+    "title": "कल बाहर सुरक्षित समय: दोपहर 1:30–3:00",
+    "body": "सुबह 8 बजे PM2.5 संभावित 281 µg/m³ (दायरा 228–344)। प्रार्थना सभा अंदर करें।",
+    "deep_link": "hawa://schools/SCH-07050112345/safe-window?date=2026-11-14",
+    "expires_at": "2026-11-14T10:00:00Z",
+    "is_simulated": true
+  }
+}

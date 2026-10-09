@@ -1,0 +1,15 @@
+{
+  "channel": "tasks:me",
+  "type": "task.cancelled",
+  "event_id": "01932d00-0000-7aaa-8bbb-000000000d13",
+  "seq": 14,
+  "ts": "2026-11-13T02:30:00Z",
+  "data": {
+    "task_id": "01932c4f-0b22-7d10-9a55-6c1e2f3a4b06",
+    "plan_id": "01932c4e-5a10-7c3e-8f41-2b9d6e0a7c15",
+    "asset_id": "AST-SPR-0012",
+    "status": "cancelled",
+    "version": 5,
+    "is_simulated": true
+  }
+}
