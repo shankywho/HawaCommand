@@ -4,7 +4,7 @@ The FastAPI service that the web console and the Flutter app talk to. Today it i
 
 The event-driven, Postgres/Kafka/Redis design in [`docs/backend/`](../docs/backend/README.md) is the target; parts not built are labelled **Planned** there.
 
----
+--- 
 
 ## Implementation status
 
