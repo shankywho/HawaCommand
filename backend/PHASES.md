@@ -16,7 +16,7 @@ Any agent or human engineer working on or integrating with the backend must cons
 | **Phase 5** | **Ingest, Workers & Sagas** | MQTT/telemetry ingestion, packet dedupe, fleet simulator, dispatch saga choreography, verification runner | **COMPLETED** | [`docs/PHASE_5_WORKERS_AND_SIMULATOR.md`](docs/PHASE_5_WORKERS_AND_SIMULATOR.md) (All unit & saga tests passing) |
 | **Phase 6** | **Integration & Verification** | End-to-end integration pipeline test, cross-stack Zod contract validation (`frontend/scripts/verify_backend_contracts.ts`) on 14 endpoints | **PARTIAL** | Test run 2026-10-10: 64 passed, 1 failed (`tests/integration/test_end_to_end.py::test_full_mission_air_pipeline` expects simulated hotspots) |
 
-> **Status note (2026-10-10).** "Completed" above means the code for the phase exists and its unit tests pass. It does not mean the parts are wired together: the API does not use the database models, nothing publishes to or consumes from Kafka, Redis is not used, and the workers are not connected to MQTT. See [README.md](README.md#implementation-status) and [docs/backend/README.md](../docs/backend/README.md).
+> **Status note (2026-10-10).** "Completed" above means the code for the phase exists and its unit tests pass. It does not mean the parts are wired together: Alembic migrations (`backend/migrations/`) and a seed script (`src/hawa_backend/db/seed.py`) now exist, but the API does not use the database models, nothing publishes to or consumes from Kafka, Redis is not used, and the workers are not connected to MQTT. See [README.md](README.md#implementation-status) and [docs/backend/README.md](../docs/backend/README.md).
 
 ---
 

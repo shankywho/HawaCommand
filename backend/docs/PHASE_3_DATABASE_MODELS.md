@@ -1,6 +1,6 @@
 # Phase 3: Database & PostGIS Data Models
 
-> **Status (2026-10-10).** Partial: 23 SQLAlchemy tables, tested on SQLite. There are no Alembic migrations, no PostGIS geometry columns, and the API never opens a session. Overview: [backend/README.md](../README.md#implementation-status).
+> **Status (2026-10-10).** Partial: 23 SQLAlchemy tables, tested on SQLite. Alembic (`backend/alembic.ini`, `backend/migrations/`, revision `0001`) creates them on Postgres or SQLite, and `python -m hawa_backend.db.seed` loads demo data. There are no PostGIS geometry columns, and the API never opens a session. Overview: [backend/README.md](../README.md#implementation-status).
 
 
 ## Overview

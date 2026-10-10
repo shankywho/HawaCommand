@@ -1,7 +1,7 @@
 # Deployment
 
 > **Status (as built).**
-> - **Local run:** `uvicorn hawa_backend.api.app:app --port 8000`, started from `backend/` in a venv with `pip install -e contracts -e ".[dev]" -e ../AI-ML`. See [backend/README.md](../../backend/README.md#quick-start).
+> - **Local run:** from the repo root, `make install`, `make db-up` (optional), `make db-update`, `make db-seed`, `make aiml-api` (127.0.0.1:8100), `make backend` (0.0.0.0:8000), `make frontend` (3000). The root `Makefile` wraps `uv sync`, `uv run alembic upgrade head`, `uv run python -m hawa_backend.db.seed` and `uv run uvicorn ...`. See [backend/README.md](../../backend/README.md#quick-start).
 > - **Docker Compose:** `backend/docker-compose.yml` starts PostGIS 16, Redis 7 and Kafka 3.8 (KRaft) only; the API does not use them yet.
 > - **Not built (Planned):** a backend Dockerfile, a root compose file, CDK, CI/CD and the ECS/RDS/MSK deployment described below.
 > - **AWS:** the optional layer in `src/hawa_backend/aws/` is configured by `HAWA_AWS_ENABLED`, `HAWA_AWS_REGION`, `HAWA_AWS_ENDPOINT_URL`, `HAWA_AWS_FORECAST_STATE_MACHINE_ARN`, `HAWA_AWS_FORECAST_ENDPOINT`, `HAWA_AWS_DISPATCH_STATE_MACHINE_ARN`, `HAWA_AWS_CACHE_TABLE`, `HAWA_AWS_CACHE_TTL_SECONDS`, `HAWA_AWS_ALERTS_TOPIC_ARN` and `HAWA_AWS_SENSOR_STREAM`. The matching resources are in `infrastructure/cloudformation/hawa-integration.yaml`; see [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md).

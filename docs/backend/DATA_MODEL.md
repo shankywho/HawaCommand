@@ -4,7 +4,7 @@ The SQLAlchemy 2.0 models in `src/hawa_backend/db/`, table by table and column b
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [API](API.md) · [EVENTS](EVENTS.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md) §8
 
-> Status: **Partial**. 23 tables are declared and round-trip on SQLite in tests. There are no migrations, no PostGIS columns, no seed data, and no running code path opens a database session: every API response comes from AI-ML, fixtures or memory.
+> Status: **Partial**. 23 tables are declared and round-trip on SQLite in tests. Alembic revision `0001` (`backend/migrations/`) creates every table, and `python -m hawa_backend.db.seed` loads demo data; there are no PostGIS columns, and no API code path opens a database session: every API response comes from AI-ML, fixtures or memory.
 
 ---
 
@@ -18,7 +18,8 @@ Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [API](API.md)
 | FastAPI dependency `get_db()` | **Implemented**, unused | No route declares it |
 | Target database | Configured only | `HAWA_DATABASE_URL`, default `postgresql+asyncpg://hawa:hawa@localhost:5432/hawa`, matching the `postgis/postgis:16-3.4` container in `docker-compose.yml` |
 | Schema | — | Tables are created in the default schema (no `schema=` argument, so `public` on Postgres) |
-| Alembic migrations | **Planned** | No `alembic/` directory, no `alembic` dependency. Tables can only be created with `Base.metadata.create_all`. |
+| Alembic migrations | **Implemented** | `backend/alembic.ini`, `backend/migrations/env.py` (async, URL from `HAWA_DATABASE_URL` or `-x db_url=`), revision `migrations/versions/20261010_0001_initial_schema.py` (all 23 tables and indexes, generic SQLAlchemy types, works on Postgres and SQLite). Run `make db-update` or `uv run alembic upgrade head` from `backend/`. `alembic check` reports no drift. |
+| Seed data | **Implemented** | `src/hawa_backend/db/seed.py` (`make db-seed`): wards, schools, 25 reference stations, 10,600 grid cells, assets and HawaTag devices, plan `214` with tasks and review, one intervention and impact, 5 effectiveness priors, 2 alerts, 5 demo users. Idempotent by primary key. |
 | PostGIS / geometry | **Planned** | The container image has PostGIS, but no model uses a geometry type and `geoalchemy2` is not a dependency. Locations are `lat`/`lon` `FLOAT` columns. |
 | Partitioning, DB roles, grants, retention jobs | **Planned** | none |
 | Seed data / demo reset | **Planned** | none |

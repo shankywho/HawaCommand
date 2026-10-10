@@ -26,11 +26,11 @@ Status vocabulary used in every backend document: **Implemented** (works as desc
 | Structured JSON logging with PII masking | **Partial** | Formatter and masking helpers exist; nothing in `src/` uses `get_logger` | `core/logging.py` |
 | Optional AWS layer | **Implemented** | DynamoDB cache, Step Functions or SageMaker forecast, Step Functions dispatch on approve, SNS and Kinesis publishers (not called by any route); off unless `HAWA_AWS_ENABLED=true` | `src/hawa_backend/aws/` |
 | `hawa_contracts` package | **Implemented** | Enums, ids, units, packets, envelope, 26 topics, 12 consumer groups, Redis key builder, 24 event models | `backend/contracts/` |
-| SQLAlchemy models | **Partial** | 23 tables defined and tested on SQLite; no migrations; the API never opens a session | `src/hawa_backend/db/` |
+| SQLAlchemy models, migrations, seed | **Partial** | 23 tables; Alembic revision `0001` (`alembic.ini`, `migrations/`); idempotent seed (`db/seed.py`); verified on Postgres 16 and SQLite; the API never opens a session | `src/hawa_backend/db/`, `migrations/` |
 | Ingest, simulator, dispatch saga | **Partial** | Plain Python classes, unit-tested; not connected to MQTT, Kafka or the database | `src/hawa_backend/workers/` |
 | CLI `hawa` | **Partial** | `version`, `config`, `check` only | `src/hawa_backend/cli.py` |
 | Local infrastructure | **Implemented** | `docker-compose.yml` with PostGIS 16, Redis 7, Kafka 3.8 (KRaft); the backend does not connect to any of them yet | `backend/docker-compose.yml` |
-| Alembic migrations, PostGIS geometry | **Planned** | none | [DATA_MODEL.md](DATA_MODEL.md) §5 |
+| PostGIS geometry, partitions | **Planned** | none (Alembic itself is Implemented) | [DATA_MODEL.md](DATA_MODEL.md) |
 | Kafka producers and consumers, outbox relay | **Planned** | Topic names and event models only | [EVENTS.md](EVENTS.md) |
 | Redis caching, rate limits, idempotency, OTP store | **Planned** | Key builders only | [CACHING.md](CACHING.md) |
 | WebSocket `/v1/ws` | **Planned** | none | [API.md](API.md) §6 |
@@ -48,7 +48,7 @@ In one sentence: today the backend is a single FastAPI process that serves the w
 | [CONTEXT.md](CONTEXT.md) | Backend role per loop step (as built vs target), users and flows, honesty rule as implemented, non-functional targets, risks, non-goals | First |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | The one running process, module layering, the hotspot/forecast fallback chain, the circuit breaker, live station ingestion, plan flow, security and resilience as built, then the target process architecture | Before changing any code |
 | [STRUCTURE.md](STRUCTURE.md) | The real `backend/` tree with one line per file; tooling (pyproject, pytest, ruff, uv.lock) | When creating files |
-| [DATA_MODEL.md](DATA_MODEL.md) | The 23 SQLAlchemy tables column by column, what is not built (Alembic, PostGIS, partitions) | Before touching models |
+| [DATA_MODEL.md](DATA_MODEL.md) | The 23 SQLAlchemy tables column by column, migrations and seed, what is not built (PostGIS, partitions) | Before touching models |
 | [API.md](API.md) | Every registered route with parameters, real response examples, status codes and data source; errors, CORS, headers, auth; planned endpoints listed separately | Before touching routes or clients |
 | [EVENTS.md](EVENTS.md) | What the contracts declare (topics, groups, envelope, events) vs what is wired (nothing on Kafka; optional SNS/Kinesis helpers) | Before adding a producer or consumer |
 | [CACHING.md](CACHING.md) | What actually caches (in-process TTLs, DynamoDB, `lru_cache`) vs the planned Redis design | Before adding caching |
@@ -70,31 +70,23 @@ Phase-by-phase build notes live next to the code: [../../backend/PHASES.md](../.
 
 ## 4. Quick start (verified)
 
-Prerequisites: Python 3.11 or newer (`.python-version` pins 3.11; verification below ran on 3.12.3). Docker is optional: nothing in the running backend connects to Postgres, Redis or Kafka yet.
+Prerequisites: [uv](https://docs.astral.sh/uv/) (Python 3.11 from `.python-version`). Docker is optional: it is only needed for `make db-up` (Postgres); nothing in the running API connects to Postgres, Redis or Kafka yet.
+
+From the repo root (see the [root README](../../README.md#make-targets-run-from-the-repo-root)):
 
 ```bash
-cd backend
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -e contracts            # hawa-contracts
-pip install -e ".[dev,aws]"         # hawa-backend + test tools + boto3
-pip install -e ../AI-ML             # REQUIRED: api/routes/citizen.py imports hawa_ml at import time
-```
-
-The verification environment was built with exactly these three editable installs (backend `[dev,aws]`, contracts, AI-ML). Without the AI-ML package, `hawa_backend.api.app` cannot be imported (Known issue 1).
-
-Run the API (port 8000 by default; any free port works):
-
-```bash
-uvicorn hawa_backend.api.app:app --host 0.0.0.0 --port 8000 --reload
+make install       # cd backend && uv sync --extra dev   (backend + contracts + AI-ML + alembic)
+make db-up         # optional: Postgres via backend/docker-compose.yml
+make db-update     # cd backend && uv run alembic upgrade head
+make db-seed       # cd backend && uv run python -m hawa_backend.db.seed
+make aiml-api      # AI-ML engine on 127.0.0.1:8100 (HAWA_AIML_SERVICE_URL default)
+make backend       # uvicorn hawa_backend.api.app:app on 0.0.0.0:8000
 # OpenAPI UI: http://localhost:8000/docs   ReDoc: /redoc   schema: /openapi.json
 ```
 
-Optional: run the AI-ML service so the backend uses its HTTP path instead of the in-process fallback. The backend expects it on port 8100 (`HAWA_AIML_SERVICE_URL`), but AI-ML's own `make api` binds 8000, so pass the port explicitly:
+`backend/pyproject.toml` declares `hawa-contracts` (`./contracts`) and `hawa-ml[llm]` (`../AI-ML`) as editable path dependencies (`[tool.uv.sources]`), so `uv sync` produces one environment for both the backend and the AI-ML engine. Without uv: `python3 -m venv .venv && . .venv/bin/activate && pip install -e contracts -e "../AI-ML[llm]" -e ".[dev,aws]"`.
 
-```bash
-cd ../AI-ML && uvicorn hawa_ml.api.main:app --port 8100
-```
+The AI-ML engine is optional: without it the backend calls `hawa_ml` in process, then falls back to fixtures. AI-ML's own `make api` binds port 8000 (collides with the backend); use `make aiml-api` from the root.
 
 CLI:
 
@@ -108,7 +100,7 @@ hawa check             # [OK] Configuration validated successfully.
 Tests (from `backend/`; `pyproject.toml` already sets `pythonpath = ["src", "contracts"]` and both test paths):
 
 ```bash
-pytest -q -W ignore
+uv run pytest -q -W ignore
 ```
 
 Result on 2026-10-10: **65 tests, 64 passed, 1 failed** (`tests/integration/test_end_to_end.py::test_full_mission_air_pipeline`, Known issue 2). The suite needs no Docker; database tests use in-memory SQLite and AWS tests use moto.
@@ -137,7 +129,7 @@ Defects found while reconciling these documents with the code (verified 2026-10-
 
 ### 7.1 Build, packaging and tests
 
-1. **Undeclared AI-ML dependency.** `src/hawa_backend/api/routes/citizen.py:7-9` imports `hawa_ml` at module level, and `api/app.py:8-19` imports that router, but `pyproject.toml:7-20` does not declare `hawa-ml`. Without `pip install -e ../AI-ML`, the app cannot be imported, 4 test modules fail at collection (`tests/api/test_api.py`, `tests/api/test_all_routes_comprehensive.py`, `tests/integration/test_aiml_integration.py`, `tests/integration/test_end_to_end.py`) and the 2 tests in `tests/aws/test_aws_integration.py` that import the app inside the test fail.
+1. **AI-ML dependency (fixed).** `src/hawa_backend/api/routes/citizen.py:7-9` imports `hawa_ml` at module level. `pyproject.toml` now declares `hawa-ml[llm]` as an editable path dependency on `../AI-ML`, so `uv sync` installs it. A venv built by hand without `../AI-ML` still cannot import the app.
 2. **Failing end-to-end test.** `tests/integration/test_end_to_end.py:321` asserts `GET /v1/hotspots` returns `"simulated": true`. When the AI-ML HTTP service is not running and `hawa_ml` is installed (the normal test setup), `IntelClient.get_hotspots` takes the in-process path, which sets `"simulated": False` (`src/hawa_backend/core/intel_client.py:494`). The HTTP path (`:425`) and the fixture path (`:514`) set `True`. The test passes only when the AI-ML service is reachable or `hawa_ml` is absent.
 3. **Packaging.** `pyproject.toml` has no `[build-system]`, so `uv.lock:682` records `hawa-backend` as a virtual project: `uv sync` installs the dependencies but not `hawa_backend` or the `hawa` script (`pip install -e .` does work, with setuptools' default backend). `api/`, `api/routes/`, `core/`, `db/` and `workers/` have no `__init__.py` (implicit namespace packages).
 4. **Stale lock.** `uv.lock:704` locks `moto` with only the `dynamodb` extra while `pyproject.toml:30` asks for `moto[dynamodb,sns,kinesis]`; `uv lock --check` will report the lock as out of date.

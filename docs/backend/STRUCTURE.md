@@ -16,10 +16,15 @@ backend/
 ├── .gitkeep                          # empty placeholder from the initial scaffold
 ├── .python-version                   # 3.11
 ├── PHASES.md                         # phase roadmap and status
+├── alembic.ini                       # Alembic config: script_location=migrations, prepend_sys_path=src; URL from HAWA_DATABASE_URL
 ├── README.md                         # component quick start, status, known issues
 ├── docker-compose.yml                # local Postgres 16 + PostGIS 3.4, Redis 7, Kafka 3.8 (KRaft)
 ├── pyproject.toml                    # project hawa-backend 0.1.0, deps, extras [aws] [dev], script `hawa`, pytest config
-├── uv.lock                           # uv lockfile (63 packages; hawa-backend recorded as a virtual project)
+├── migrations/
+│   ├── env.py                        # async Alembic env; Base.metadata from hawa_backend.db.models; `-x db_url=` override
+│   ├── script.py.mako                # revision template
+│   └── versions/20261010_0001_initial_schema.py   # all 23 tables and indexes
+├── uv.lock                           # uv lockfile (includes alembic and hawa-ml[llm] from ../AI-ML)
 ├── docs/
 │   ├── PHASE_1_FOUNDATION.md         # contracts package
 │   ├── PHASE_2_CORE_RUNTIME.md       # settings, context, logging, errors, security, clock, CLI
@@ -90,7 +95,8 @@ backend/
 │       │   └── security.py           # PBKDF2 passwords, JWT create/verify, dev OTP, webhook HMAC
 │       ├── db/                       # (no __init__.py)
 │       │   ├── base.py               # Base with naming convention, TimestampMixin, SimulatedMixin
-│       │   ├── session.py            # async engine/sessionmaker singletons, get_db() dependency (unused)
+│       │   ├── session.py            # async engine/sessionmaker singletons, get_db() dependency (unused by routes)
+│       │   ├── seed.py               # idempotent demo-data seed: `python -m hawa_backend.db.seed` / `make db-seed`
 │       │   └── models/
 │       │       ├── __init__.py       # exports all 23 model classes
 │       │       ├── alert.py          # Alert, AlertDelivery
@@ -149,14 +155,16 @@ No import rules are enforced by tooling.
 | Runtime deps | `fastapi>=0.115.0`, `uvicorn>=0.30.0`, `pydantic>=2.8.0`, `pydantic-settings>=2.4.0`, `sqlalchemy>=2.0.30`, `asyncpg>=0.29.0`, `redis>=5.0.0`, `orjson>=3.10.0`, `httpx>=0.27.0`, `pyjwt>=2.8.0`, `greenlet>=3.0.0`, `hawa-contracts` |
 | Extra `aws` | `boto3>=1.34.0` |
 | Extra `dev` | `pytest>=8.0.0`, `pytest-asyncio>=0.23.0`, `aiosqlite>=0.20.0`, `moto[dynamodb,sns,kinesis]>=5.0.0`, `ruff>=0.5.0`, `mypy>=1.10.0` |
-| Not declared but required | `hawa-ml` (AI-ML package; `api/routes/citizen.py` imports it) |
+| Path dependencies (`[tool.uv.sources]`) | `hawa-contracts` (`./contracts`), `hawa-ml[llm]` (`../AI-ML`; `api/routes/citizen.py` and `core/intel_client.py` import it) |
+| Migrations | `alembic` (`alembic.ini`, `migrations/env.py`, `migrations/script.py.mako`, `migrations/versions/20261010_0001_initial_schema.py`) |
+| Seed | `src/hawa_backend/db/seed.py` (`python -m hawa_backend.db.seed`) |
 | Declared but unused at runtime | `asyncpg`, `redis`, `orjson`, `greenlet` (needed only once the DB is wired) |
 | Console script | `hawa = "hawa_backend.cli:main"` |
 | uv source | `hawa-contracts = { path = "contracts", editable = true }` |
 | Build backend | none declared (pip falls back to setuptools; uv treats the project as virtual) |
 | Contracts package | `contracts/pyproject.toml`: `hawa-contracts` 0.1.0, setuptools build backend, deps `pydantic>=2.8.0`, `orjson>=3.10.0` |
 
-`uv.lock` (lock format version 1, revision 5) pins, among others, fastapi 0.142.2, pydantic 2.13.5, SQLAlchemy 2.1.4, uvicorn 0.54.0, httpx 0.28.1, redis 8.1.0, boto3 1.43.109, moto 5.2.3, pytest 9.1.1. It records `moto` with only the `dynamodb` extra, so it is out of date relative to `pyproject.toml`. The verification virtualenv was installed with pip and resolved slightly newer versions (fastapi 0.143.0, pydantic 2.14.0, boto3 1.43.111).
+`uv.lock` (lock format version 1, revision 5) pins, among others, fastapi 0.142.2, pydantic 2.13.5, SQLAlchemy 2.1.4, uvicorn 0.54.0, httpx 0.28.1, redis 8.1.0, boto3 1.43.109, moto 5.2.3, pytest 9.1.1. It was regenerated on 2026-10-10 after adding `alembic` and `hawa-ml[llm]`. The verification virtualenv was installed with pip and resolved slightly newer versions (fastapi 0.143.0, pydantic 2.14.0, boto3 1.43.111).
 
 ### 3.2 pytest
 
@@ -179,6 +187,6 @@ No `[tool.ruff]`, `[tool.mypy]`, pre-commit configuration or Makefile exists. Re
 
 > Status: **Planned**. The blueprint's full tree (about 380 lines) is in git history: `git show a33e043:docs/backend/STRUCTURE.md`.
 
-The target adds, under `src/hawa_backend/`: `bootstrap.py` (DI container), `api/routers/`, `api/schemas/`, `api/deps.py`, `api/ws/` (WebSocket hub), `api/middleware/`; `services/` (use cases and state transitions); `db/repositories/`, `db/uow.py`, `db/spatial.py`; `events/` (producer, consumer base class, outbox, relay, serde, MSK auth); `cache/` (client, cached, rate limit, locks); `integrations/` (SMS, WhatsApp, FCM, S3, intel client, feeds, each behind a Protocol with fakes); one package per worker under `workers/` (`ingest`, `feeds`, `scheduler`, `dispatch`, `notifier`, `outbox_relay`, `mqtt_bridge`, `audit_writer`, `alert_engine`, `evidence_report`, `archiver`); plus `backend/alembic/`, `backend/simulator/` (`hawa-sim`), `backend/infra/` (CDK), `backend/config/` (GRAP actions, alert templates, reading weights), `backend/docker/` (Dockerfile, Mosquitto config), and repo-root `docker-compose.yml`, `.env.example` and `Makefile`.
+The target adds, under `src/hawa_backend/`: `bootstrap.py` (DI container), `api/routers/`, `api/schemas/`, `api/deps.py`, `api/ws/` (WebSocket hub), `api/middleware/`; `services/` (use cases and state transitions); `db/repositories/`, `db/uow.py`, `db/spatial.py`; `events/` (producer, consumer base class, outbox, relay, serde, MSK auth); `cache/` (client, cached, rate limit, locks); `integrations/` (SMS, WhatsApp, FCM, S3, intel client, feeds, each behind a Protocol with fakes); one package per worker under `workers/` (`ingest`, `feeds`, `scheduler`, `dispatch`, `notifier`, `outbox_relay`, `mqtt_bridge`, `audit_writer`, `alert_engine`, `evidence_report`, `archiver`); plus `backend/simulator/` (`hawa-sim`), `backend/infra/` (CDK), `backend/config/` (GRAP actions, alert templates, reading weights), `backend/docker/` (Dockerfile, Mosquitto config), and repo-root `docker-compose.yml` and `.env.example` (the repo-root `Makefile` and `backend/migrations/` already exist).
 
 Target tooling: a uv workspace (root + contracts + simulator), ruff with banned-import rules for layering, strict mypy, pytest markers `integration` (testcontainers) and `e2e`, pre-commit with gitleaks, and a typer-based `hawa` CLI (`api`, `worker <name>`, `kafka-init`, `seed`, `partitions`, `demo-reset`, `demo-check`, `scheduler trigger`).

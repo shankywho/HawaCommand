@@ -14,7 +14,7 @@ How to run the stack locally: [root README](../README.md#local-development-and-s
 ## 0. Cross-cutting (whoever gets there first)
 
 - [ ] Remove the hard-coded WAQI and OpenAQ tokens from `backend/src/hawa_backend/core/intel_client.py` (lines 200, 246), rotate both tokens, and read them through `core/config.py` settings.
-- [ ] Declare `hawa-ml` as a backend dependency (`backend/pyproject.toml`, path dependency on `../AI-ML`).
+- [x] Declare `hawa-ml` as a backend dependency (`backend/pyproject.toml`, path dependency on `../AI-ML`). Done, together with the root `Makefile` and Alembic.
 - [ ] Change `AI-ML/Makefile` `api` target to port 8100 and `test` to `python -m pytest`.
 - [ ] Make the AI-ML tests hermetic: stop them rewriting `AI-ML/data/fixtures/demo_scenario.json` and the three files in `AI-ML/data/internal/`.
 - [ ] Add CI (`.github/workflows/`) per folder: `python -m pytest` for AI-ML, `pytest` for backend, `pnpm typecheck && pnpm build` for web, `make lint test` for Flutter.
@@ -100,7 +100,7 @@ Run `python -m pytest -q` from AI-ML/ and restore AI-ML/data with git afterwards
 ### Task Checklist
 - [ ] Fix `delta_gain_pct` handling in `core/intel_client.py` (lines 933, 977) to read AI-ML's `comparison.gain_percentage`.
 - [ ] Make `/readyz` check real dependencies (`api/routes/health.py`).
-- [ ] Persist plans (currently an in-process dict in `api/routes/plans.py`) using the SQLAlchemy models in `db/models/`; add Alembic.
+- [ ] Persist plans (currently an in-process dict in `api/routes/plans.py`) using the SQLAlchemy models in `db/models/`. Alembic (`backend/migrations/`) and the seed script (`db/seed.py`) already exist; add a revision for any model change.
 - [ ] Add auth endpoints and enforce JWT with role scoping (`core/security.py` has the helpers).
 - [ ] Serve the field API the Flutter app expects (`app_frontend/openapi/openapi.json`): `/v1/auth/*`, `/v1/me`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`.
 - [ ] Raise `HawaException` subclasses from routes so clients get RFC 9457 bodies.
@@ -112,12 +112,13 @@ Run `python -m pytest -q` from AI-ML/ and restore AI-ML/data with git afterwards
 ```text
 You are the Senior Backend Engineer for HawaCommand, working in backend/.
 Read backend/README.md and docs/backend/README.md first. Install with
-`pip install -e contracts -e ".[dev]" -e ../AI-ML` and run tests with `pytest -q`.
+`make install` (repo root), migrate with `make db-update`, seed with `make db-seed`, and run tests with `uv run pytest -q` from backend/.
 
 1. In src/hawa_backend/core/intel_client.py, read WAQI_TOKEN and OPENAQ_API_KEY from settings
    (no hard-coded defaults) and fix the What-If response mapping (delta_gain_pct).
 2. In src/hawa_backend/api/routes/plans.py, persist plans with the SQLAlchemy models in
-   src/hawa_backend/db/models/plan.py; add Alembic migrations for all models.
+   src/hawa_backend/db/models/plan.py; add an Alembic revision (uv run alembic revision --autogenerate)
+   for any model change and keep `uv run alembic check` clean.
 3. Add /v1/auth/otp/request, /v1/auth/otp/verify and /v1/me using src/hawa_backend/core/security.py,
    and require a bearer token on /v1/plans/* writes.
 4. Make tests/integration/test_end_to_end.py pass and add tests for every new route.

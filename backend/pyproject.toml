@@ -16,7 +16,9 @@ dependencies = [
     "httpx>=0.27.0",
     "pyjwt>=2.8.0",
     "greenlet>=3.0.0",
+    "alembic>=1.13.0",
     "hawa-contracts",
+    "hawa-ml[llm]",
 ]
 
 [project.optional-dependencies]
@@ -37,6 +39,7 @@ hawa = "hawa_backend.cli:main"
 
 [tool.uv.sources]
 hawa-contracts = { path = "contracts", editable = true }
+hawa-ml = { path = "../AI-ML", editable = true }
 
 [tool.pytest.ini_options]
 minversion = "8.0"

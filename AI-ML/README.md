@@ -64,7 +64,9 @@ pip install -e ".[dev]"             # installs hawa_ml itself (required, see not
 
 Install `hawa_ml` in editable mode. `make setup` only installs `requirements.txt`, so its own import check, `make api`, `uvicorn` and `scripts/eval_metrics.py` fail with `ModuleNotFoundError: No module named 'hawa_ml'` until `pip install -e .` has been run (the package lives in `src/`). A non-editable install is not supported: `settings.BASE_DIR` is computed from the source location and `config/`, `models/`, `data/` and `agents/prompts/` are not packaged.
 
-Optional extras that are not declared anywhere: `boto3` (Bedrock LLM provider), `ortools` (detected but unused), `matplotlib` (`scripts/generate_report_assets.py`), `reportlab` (the two PDF scripts).
+Optional extra `llm` (`pip install -e ".[llm]"`): `groq`, `openai`, `boto3` for the Groq and Bedrock LLM providers. Not declared anywhere: `ortools` (detected but unused), `matplotlib` (`scripts/generate_report_assets.py`), `reportlab` (the two PDF scripts).
+
+To run the engine inside the backend's environment instead (one venv for both services), use `make install` and `make aiml-api` from the repo root: `backend/pyproject.toml` depends on `hawa-ml[llm]` as an editable path dependency.
 
 ### Dependencies
 
@@ -115,7 +117,7 @@ YAML configuration in `config/` (read at import time):
 uvicorn hawa_ml.api.main:app --host 127.0.0.1 --port 8100
 ```
 
-Port 8100 is what the backend expects (`HAWA_AIML_SERVICE_URL=http://localhost:8100` in `backend/.env.example`). `make api` and `python -m hawa_ml.api.main` use port 8000 with `--reload`, which collides with the backend API on 8000. OpenAPI docs: `http://localhost:8100/docs`. First import loads 21 forecaster boosters and the attribution booster, and builds `data/processed/grid_covariates_500m.parquet` if it is missing (about 2 s offline).
+Or from the repo root: `make aiml-api` (runs this command from `AI-ML/` in the backend's uv environment, on 127.0.0.1:8100). Port 8100 is what the backend expects (`HAWA_AIML_SERVICE_URL=http://localhost:8100` in `backend/.env.example`). `make api` and `python -m hawa_ml.api.main` use port 8000 with `--reload`, which collides with the backend API on 8000. OpenAPI docs: `http://localhost:8100/docs`. First import loads 21 forecaster boosters and the attribution booster, and builds `data/processed/grid_covariates_500m.parquet` if it is missing (about 2 s offline).
 
 ### 4.2 Make targets
 
@@ -280,7 +282,7 @@ The GP is worse than both baselines. The 10,600-cell coverage is a property of t
 | Backend citizen routes (`backend/src/hawa_backend/api/routes/citizen.py`) | In-process import at module load (lines 7-9) | `hawa_ml.exposure.routing.safe_route_optimizer`, `hawa_ml.forecasting.safe_window.safe_window_calculator`, `hawa_ml.simulation.audit.iot_auditor`, `FLEET_TELEMETRY` |
 | Backend integration tests | `from hawa_ml.api.main import app` over ASGI | `/health`, `/hotspots`, `/forecast/{id}`, `/interventions/{id}/verify` |
 
-These imports make the listed symbols a de-facto public Python API; see [CONTRACTS.md §4](CONTRACTS.md#4-in-process-python-api-used-by-the-backend). The backend must have `hawa_ml` importable (`pip install -e ../AI-ML`), although `backend/pyproject.toml` does not declare it. In-process calls read and write the same `AI-ML/data/` files as the API.
+These imports make the listed symbols a de-facto public Python API; see [CONTRACTS.md §4](CONTRACTS.md#4-in-process-python-api-used-by-the-backend). The backend declares `hawa-ml[llm]` as an editable path dependency (`backend/pyproject.toml`, `[tool.uv.sources]`), so `uv sync` in `backend/` installs it. In-process calls read and write the same `AI-ML/data/` files as the API.
 
 Mismatches found: the backend's What-If HTTP branch requires a `delta_gain_pct` key that AI-ML never returns, so the HTTP result is discarded and the in-process fallback reports its 42.0 default (`intel_client.py:933`, `:977`); `make api` uses port 8000, which collides with the backend; `docs/CONTRACTS.md` §7 describes `/internal/v1/simulate`, `/optimize`, `/exposure`, `/models` and `/alerts/draft` with bearer-token auth, none of which exist (the real `/internal/v1/*` is an unauthenticated mirror of the routes above); cell ids are `G-RRR-CCC`, not the `g500-RRR-CCC` / `C-2863-7721` forms used in the contracts and backend defaults.
 
@@ -302,7 +304,7 @@ Defects found while documenting. Nothing here has been fixed.
 10. **Report assets contradict the code.** `scripts/generate_report_assets.py` and `scripts/generate_ai_ml_report_pdf.py` hard-code their numbers and claim an OR-Tools CVRP engine, a 140,352-row training set, anisotropic advection, a calibrator MAE drop from 42.6 to 9.4, latency figures and endpoints (`/attribution`, `/exposure/hotspots`, `/causal/verify`) that do not exist in the code.
 11. **`make test` and `make setup` fail as written.** `Makefile:32` runs plain `pytest` (issue in §6); `make setup` never installs `hawa_ml`, so its check at `Makefile:15` fails.
 12. **Logging configuration misuse.** Every module calls `configure_logging("<module name>")`, but the parameter is a level (`src/hawa_ml/logging_conf.py:36-38`), so all modules share the `hawa_ml` logger at INFO and `LOG_LEVEL` is never applied.
-13. **Bedrock provider cannot load as declared.** `BedrockLLMClient` imports `boto3` (`src/hawa_ml/agents/llm_provider.py:53`), which is in neither `pyproject.toml` nor `requirements.txt`; the import error is caught and template text is returned. `groq` and `openai` are only in `requirements.txt`.
+13. **Bedrock provider needs the `llm` extra.** `BedrockLLMClient` imports `boto3` (`src/hawa_ml/agents/llm_provider.py:53`), which is only in the `llm` extra (`pip install -e ".[llm]"`, included by the backend's dependency `hawa-ml[llm]`) and not in `requirements.txt`; without it the import error is caught and template text is returned.
 14. **Effectiveness CI sign convention is mixed.** Priors store positive intervals for positive reductions (`src/hawa_ml/causal/effectiveness_library.py:41`); updates overwrite them with the verifier's negative intervals (`:161-162`) next to a positive `pm10_reduction_pct`.
 15. **Auditor approval text is hard-coded.** The approved-plan fallback always says the tasks match "road dust suppression" (`src/hawa_ml/agents/auditor_agent.py:72`), even when every task targets `unknown`.
 16. **Simulator details.** `SensorNoiseModel` seeds from Python `hash(dev_id)` (`src/hawa_ml/simulation/noise_models.py:17`), which changes per process, so device biases are not repeatable; ambient curves use the UTC hour as local time (`src/hawa_ml/simulation/device_sim.py:75-79`); `n_schools` and `n_sprinklers` are ignored (`device_sim.py:32`).

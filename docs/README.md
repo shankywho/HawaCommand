@@ -8,7 +8,7 @@ These docs started as a blueprint derived from [`HawaCommand_Proposal.pdf`](../H
 
 ## Run it
 
-Start the AI-ML engine on port 8100 (from `AI-ML/`), then the backend on port 8000 (from `backend/`), then the web console on port 3000 (from `frontend/`). Exact commands: [root README](../README.md#local-development-and-setup).
+From the repo root: `make install`, `make db-update`, `make db-seed`, then `make aiml-api` (port 8100), `make backend` (port 8000) and `make frontend` (port 3000). Details and variables: [root README](../README.md#make-targets-run-from-the-repo-root).
 
 | Component | Runbook (install, run, test, known issues) | Port |
 |---|---|---|
@@ -44,7 +44,7 @@ Then read the folder for your discipline. Every folder has the same backbone:
 Extra docs: [MODELS.md](aiml/MODELS.md) (every algorithm), [AGENTS.md](aiml/AGENTS.md) (multi-agent command room, full system prompts), [DATA_AND_TRAINING.md](aiml/DATA_AND_TRAINING.md) (data sources, features, MLflow, promotion gates).
 
 ### Backend → code in [`backend/`](../backend)
-[backend/README.md](backend/README.md): FastAPI service with an AI-ML bridge, live WAQI/OpenAQ stations and an optional AWS layer. PostgreSQL + PostGIS, Alembic, Redis, Kafka and logifyx are the Planned target.
+[backend/README.md](backend/README.md): FastAPI service with an AI-ML bridge, live WAQI/OpenAQ stations and an optional AWS layer. Alembic migrations and a seed script exist (`make db-update`, `make db-seed`); PostGIS geometry, Redis, Kafka and logifyx are the Planned target.
 Extra docs: [DATA_MODEL.md](backend/DATA_MODEL.md) (schema + Alembic), [API.md](backend/API.md) (REST + WebSocket + auth), [EVENTS.md](backend/EVENTS.md) (Kafka), [CACHING.md](backend/CACHING.md) (Redis), [LOGGING_AND_OBSERVABILITY.md](backend/LOGGING_AND_OBSERVABILITY.md) (logifyx, OpenTelemetry, metrics), [DEPLOYMENT.md](backend/DEPLOYMENT.md) (Docker Compose, AWS CDK, CI/CD).
 
 ### Web frontend → code in [`frontend/`](../frontend)

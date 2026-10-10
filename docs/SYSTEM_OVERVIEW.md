@@ -27,7 +27,8 @@ Three processes and two clients. No database, broker or cache is in the running 
 | Web console | `frontend/` | Partial | Landing page, 8 console pages, driver view; mock API when no backend URL ([frontend/README.md](../frontend/README.md)) |
 | Flutter app | `app_frontend/` | Partial | 5 role shells; air map, air near me, alerts and school forecast are live; field flows on the in-app fake backend ([app_frontend/README.md](../app_frontend/README.md)) |
 | Device fleet | `AI-ML/src/hawa_ml/simulation/` | Stub/Mock | Simulated HawaPod-M, HawaPod-S and HawaTag packets written to JSONL; no MQTT |
-| Postgres/PostGIS, Redis, Kafka, MQTT, WebSocket, scheduler, notifier | — | Planned | `backend/docker-compose.yml` starts PostGIS, Redis and Kafka, but nothing connects to them |
+| Database schema + seed | `backend/migrations/`, `backend/src/hawa_backend/db/seed.py` | Partial | `make db-update db-seed` creates and fills 23 tables on Postgres or SQLite; the API does not use them yet |
+| Redis, Kafka, MQTT, WebSocket, scheduler, notifier | — | Planned | `backend/docker-compose.yml` starts PostGIS, Redis and Kafka, but only Alembic and the seed script connect (to Postgres) |
 | Strands agents on Bedrock, MLflow, nightly trainer | — | Planned | Agents are plain classes; Bedrock is one optional LLM provider |
 | CI/CD, Dockerfiles, CDK | — | Planned | One CloudFormation template exists in `infrastructure/cloudformation/` |
 
@@ -351,11 +352,11 @@ HawaCommand/
 └── README.md
 ```
 
-There is no root `docker-compose.yml`, `.env.example` or `Makefile` (Planned); each component has its own.
+The root `Makefile` runs the stack: `make install`, `make db-up`, `make db-update`, `make db-seed`, `make aiml-api`, `make backend`, `make frontend` (see the [root README](../README.md#make-targets-run-from-the-repo-root)). There is no root `docker-compose.yml` or `.env.example`; `backend/docker-compose.yml` and per-component `.env.example` files are used instead.
 
-**Shared code rule.** `backend/contracts/` is an installable Python package `hawa_contracts` (enums, MQTT packet models, Kafka event envelopes and payloads). Today `AI-ML/` does not use it; instead the backend imports `hawa_ml` directly (in-process fallback and citizen routes), so the backend venv needs `pip install -e ../AI-ML`. The web console uses hand-written zod schemas (`frontend/src/contracts/`, alias `@hawa/contracts`) checked by `frontend/scripts/verify_backend_contracts.ts`. The Flutter app's Dart client (`app_frontend/packages/hawa_api`) is generated with `openapi-generator` from a committed spec, `app_frontend/openapi/openapi.json`, which describes the planned field API rather than what the backend serves today.
+**Shared code rule.** `backend/contracts/` is an installable Python package `hawa_contracts` (enums, MQTT packet models, Kafka event envelopes and payloads). Today `AI-ML/` does not use it; instead the backend imports `hawa_ml` directly (in-process fallback and citizen routes) and declares it as an editable path dependency (`hawa-ml[llm]` in `backend/pyproject.toml`), so `uv sync` in `backend/` builds one environment for both services. The web console uses hand-written zod schemas (`frontend/src/contracts/`, alias `@hawa/contracts`) checked by `frontend/scripts/verify_backend_contracts.ts`. The Flutter app's Dart client (`app_frontend/packages/hawa_api`) is generated with `openapi-generator` from a committed spec, `app_frontend/openapi/openapi.json`, which describes the planned field API rather than what the backend serves today.
 
-**Schema rule (Planned: no Alembic migrations exist yet).** Alembic in `backend/` is the **only** thing that changes the database schema. AI-ML writes only to the tables it owns (listed in [CONTRACTS.md §8](CONTRACTS.md#8-database-table-ownership)) and has a contract test that reflects the live schema.
+**Schema rule.** Alembic in `backend/` (`alembic.ini`, `migrations/`, revision `0001`) is the **only** thing that changes the database schema. AI-ML writes only to the tables it owns (listed in [CONTRACTS.md §8](CONTRACTS.md#8-database-table-ownership)) and has a contract test that reflects the live schema.
 
 ---
 
@@ -381,7 +382,7 @@ Everything in §9.4 (drive-by calibration, GP twin, fingerprint table, exposure 
 
 ## 9. Environments and deployment
 
-> Status: today only a manual `local` setup exists: three processes started by hand (AI-ML :8100, backend :8000, web :3000), see the [root README](../README.md#local-development-and-setup). The table below is the target.
+> Status: today only a `local` setup exists: `make install db-update db-seed`, then `make aiml-api` (:8100), `make backend` (:8000) and `make frontend` (:3000), see the [root README](../README.md#local-development-and-setup). The table below is the target.
 
 | Environment | How it runs | Data |
 |---|---|---|

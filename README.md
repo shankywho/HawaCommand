@@ -54,7 +54,8 @@ Status words used in every doc: **Implemented**, **Partial** (works, with a name
 | Causal verification | Partial | Algorithm works; API always replays the seeded injected-effect test |
 | Agents (Forecaster, Planner, Auditor, Communicator) | Partial | Plain Python classes; Groq or Bedrock only rephrases, templates when no key; no Strands SDK |
 | Backend API (`backend/`, port 8000) | Partial | 33 operations on 31 paths; plans live in memory; devices, alerts and driver route are fixtures; no auth enforced |
-| Database, Kafka, Redis, WebSocket | Planned | SQLAlchemy models (23 tables) and contracts exist; nothing is connected |
+| Database schema and seed | Partial | 23 SQLAlchemy tables, Alembic migration `0001`, idempotent seed (`make db-update db-seed`); the API does not read or write the database yet |
+| Kafka, Redis, WebSocket | Planned | Contracts exist; nothing is connected |
 | Optional AWS layer | Implemented (off by default) | DynamoDB cache, Step Functions, SageMaker, SNS, Kinesis behind `HAWA_AWS_ENABLED=true` |
 | Web console (`frontend/`, port 3000) | Partial | Next.js 15 + MapLibre; runs on built-in mocks when `NEXT_PUBLIC_API_URL` is empty |
 | Flutter app (`app_frontend/`) | Partial | Air map, air-near-me and school forecast call the backend; auth, tasks, inspections and reports use the in-app fake backend |
@@ -74,6 +75,7 @@ HawaCommand/
 |-- frontend/                  # Next.js 15 officer console, landing page, driver view
 |-- app_frontend/              # Flutter app (driver, inspector, school, citizen, site manager)
 |-- docs/                      # System overview, contracts, per-discipline docs, AWS runbooks
+|-- Makefile                   # install, db-up, db-update, db-seed, aiml-api, backend, frontend
 |-- infrastructure/
 |   `-- cloudformation/        # hawa-integration.yaml (DynamoDB cache table, SNS topic, Kinesis stream, IAM policy)
 |-- HawaCommand_Proposal.pdf   # Original proposal (v3)
@@ -87,66 +89,68 @@ HawaCommand/
 
 ### Prerequisites
 
-- Python 3.11 or newer (3.12 tested)
+- [uv](https://docs.astral.sh/uv/) (installs Python 3.11 from `backend/.python-version` if needed)
 - Node.js 20 or newer and pnpm
+- Docker, only if you want the bundled Postgres (`make db-up`)
 - Flutter 3.44.0 (pinned in `app_frontend/.fvmrc`; use `fvm`)
 
-Postgres, Redis and Kafka are **not** needed to run the backend today.
+One Python environment, `backend/.venv`, runs both the backend and the AI-ML engine: `backend/pyproject.toml` depends on `hawa-ml` (`../AI-ML`) as an editable path dependency, and `backend/uv.lock` pins everything.
 
-### Step 1: Start the AI-ML engine (port 8100), from `AI-ML/`
+### Make targets (run from the repo root)
 
-```bash
-cd AI-ML
-python3 -m venv .venv
-source .venv/bin/activate              # Windows PowerShell: .\.venv\Scripts\Activate.ps1
-pip install -e ".[dev]" -r requirements.txt
+| Command | What it runs | Port |
+|---|---|---|
+| `make install` | `uv sync --extra dev` in `backend/` (backend + AI-ML + contracts), `pnpm install --frozen-lockfile` in `frontend/` | — |
+| `make db-up` | `docker compose up -d postgres` (PostGIS 16, user/password/db `hawa`) | 5432 |
+| `make db-update` | `uv run alembic upgrade head` in `backend/` | — |
+| `make db-seed` | `uv run python -m hawa_backend.db.seed` in `backend/` (idempotent) | — |
+| `make aiml-api` | `uvicorn hawa_ml.api.main:app` from `AI-ML/` in the backend env | 127.0.0.1:8100 |
+| `make backend` | `uvicorn hawa_backend.api.app:app` from `backend/` | 0.0.0.0:8000 |
+| `make frontend` | `pnpm install`, `pnpm build`, `pnpm start` in `frontend/` | 3000 |
 
-uvicorn hawa_ml.api.main:app --host 127.0.0.1 --port 8100 --reload
-```
+Variables you can override: `AIML_HOST`, `AIML_PORT`, `BACKEND_HOST`, `BACKEND_PORT`, `API_URL` (backend URL baked into the web build as `NEXT_PUBLIC_API_URL`), `HAWA_DATABASE_URL`, `UV`, `PNPM`.
 
-Check: `curl http://127.0.0.1:8100/health` returns `{"status":"healthy",...}`.
-
-Use port 8100. `make api` starts the engine on port 8000, which collides with the backend.
-
-All keys in `AI-ML/.env` are optional (`cp .env.example .env`). Without them the agents use template text and ingestion uses fixtures or synthetic data. Set `OFFLINE_MODE=true` to avoid all network calls.
-
-### Step 2: Start the backend (port 8000), from `backend/`
-
-Open a new terminal:
+### First run
 
 ```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate              # Windows PowerShell: .\.venv\Scripts\Activate.ps1
-pip install -e contracts -e ".[dev]" -e ../AI-ML
-cp .env.example .env                   # optional
-
-uvicorn hawa_backend.api.app:app --host 127.0.0.1 --port 8000 --reload
+make install
+make db-up            # or point HAWA_DATABASE_URL at an existing Postgres
+make db-update
+make db-seed
 ```
 
-Check: `curl http://127.0.0.1:8000/healthz` returns `{"status":"ok"}`. Interactive docs: `http://127.0.0.1:8000/docs`.
-
-- `-e ../AI-ML` is required. `api/routes/citizen.py` imports `hawa_ml` at module load, and `backend/pyproject.toml` does not declare it, so without it the app fails to start.
-- Start it from `backend/`. Settings read `.env` from the current directory.
-- The backend reaches AI-ML at `HAWA_AIML_SERVICE_URL` (default `http://localhost:8100`). If AI-ML is down, it falls back to calling `hawa_ml` in process, then to fixtures.
-- `WAQI_TOKEN` and `OPENAQ_API_KEY` are read with `os.environ`, not from `.env`. Export them in the shell if you want your own tokens (the code has built-in defaults, see Known issues).
-
-### Step 3: Start the web console (port 3000), from `frontend/`
+Then in three terminals (or tmux panes):
 
 ```bash
-cd frontend
-pnpm install
-echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local   # leave unset to use built-in mock data
-pnpm dev
+make aiml-api                                   # 1. AI-ML engine on 127.0.0.1:8100
+make backend                                    # 2. backend on 0.0.0.0:8000
+make frontend API_URL=http://localhost:8000     # 3. web console on :3000
 ```
 
-- Landing page: `http://localhost:3000`
-- Officer console: `http://localhost:3000/map` (also `/forecast`, `/plans`, `/what-if`, `/impact`, `/fleet`, `/alerts`)
-- Driver view: `http://localhost:3000/route`
+Checks: `curl http://127.0.0.1:8100/health` returns `{"status":"healthy",...}`; `curl http://127.0.0.1:8000/healthz` returns `{"status":"ok"}`; backend OpenAPI UI at `http://127.0.0.1:8000/docs`.
 
-Other variables in `frontend/.env.example`: `NEXT_PUBLIC_MAP_STYLE`, `NEXT_PUBLIC_COGNITO_USER_POOL_ID`, `NEXT_PUBLIC_COGNITO_CLIENT_ID`.
+- **Database.** `HAWA_DATABASE_URL` defaults to `postgresql+asyncpg://hawa:hawa@localhost:5432/hawa` (set it in `backend/.env` or on the command line). For a quick demo without Postgres: `make db-update db-seed HAWA_DATABASE_URL=sqlite+aiosqlite:///./hawa.db` (relative to `backend/`; `aiosqlite` comes with `make install`). The API does not read the database yet (plans are in memory, other routes use AI-ML or fixtures); the schema and seed data are there for the persistence work.
+- **On a server.** Keep the AI-ML engine on `127.0.0.1` (only the backend calls it; it has no auth and some GET routes write files). Build the web console with the public backend URL: `make frontend API_URL=http://<server-ip>:8000`. `NEXT_PUBLIC_API_URL` is baked in at build time.
+- **AI-ML keys** (all optional) live in `AI-ML/.env` (`cp AI-ML/.env.example AI-ML/.env`): `GROQ_API_KEY` or `LLM_PROVIDER=bedrock` for agent text, `OPENAQ_API_KEY`, `NASA_FIRMS_MAP_KEY`, `OFFLINE_MODE=true` to avoid all network calls. The `llm` extra (groq, openai, boto3) is installed through the backend env.
+- **Backend settings** live in `backend/.env` (`cp backend/.env.example backend/.env`), read from `backend/` (the Make targets `cd` there). `WAQI_TOKEN` and `OPENAQ_API_KEY` for live stations are read with `os.environ`, not from `.env`: export them in the shell before `make backend`.
+- The AI-ML package also has its own `make` targets (`cd AI-ML && make help`); its `make api` uses port 8000, which collides with the backend, so use `make aiml-api` from the root instead.
 
-### Step 4: Run the Flutter app, from `app_frontend/`
+### Without Make
+
+```bash
+# Python env (from backend/)
+cd backend && uv sync --extra dev
+# or with pip: python3 -m venv .venv && . .venv/bin/activate && pip install -e contracts -e "../AI-ML[llm]" -e ".[dev]"
+
+uv run alembic upgrade head                          # from backend/
+uv run python -m hawa_backend.db.seed                # from backend/
+uv run uvicorn hawa_backend.api.app:app --host 0.0.0.0 --port 8000          # from backend/
+cd ../AI-ML && uv run --project ../backend uvicorn hawa_ml.api.main:app --host 127.0.0.1 --port 8100
+
+cd ../frontend && pnpm install && pnpm build && pnpm start                   # NEXT_PUBLIC_API_URL in .env.local
+```
+
+### Flutter app (from `app_frontend/`)
 
 ```bash
 cd app_frontend
@@ -213,7 +217,7 @@ Full request and response shapes: [docs/backend/API.md](docs/backend/API.md). AI
 | Component | Command (run from the component folder) | Last result (2026-10-10) |
 |---|---|---|
 | AI-ML | `python -m pytest -q` (plain `pytest` / `make test` fails to collect `tests/test_phase7_api_pipelines.py`) | 37 passed, 1 failed on a clean checkout (needs `data/processed/stations_hourly.parquet`); 38 passed after `make data && make train` |
-| Backend | `pytest -q` (venv with `-e ../AI-ML`) | 64 passed, 1 failed (`tests/integration/test_end_to_end.py::test_full_mission_air_pipeline` expects `/v1/hotspots` to be simulated) |
+| Backend | `uv run pytest -q` (from `backend/`) | 64 passed, 1 failed (`tests/integration/test_end_to_end.py::test_full_mission_air_pipeline` expects `/v1/hotspots` to be simulated) |
 | Web | `pnpm typecheck`, `pnpm build` | Both pass; `pnpm lint` fails because no ESLint config is committed (it opens the interactive setup) |
 | Flutter | `make lint`, `make test` | Not run (no Flutter SDK on the reviewing machine); two legacy tests import the old package name and will not compile |
 
@@ -226,12 +230,11 @@ The AI-ML suite is not hermetic: it rewrites four tracked JSON files under `AI-M
 Per-component lists with file and line references are in each README.
 
 1. `backend/src/hawa_backend/core/intel_client.py:200` and `:246` contain WAQI and OpenAQ API tokens as hard-coded defaults. Rotate them and remove the defaults.
-2. The backend imports `hawa_ml` but does not declare it as a dependency (`backend/pyproject.toml`).
-3. `AI-ML/Makefile` serves the engine on port 8000, the backend's port; the backend expects 8100.
-4. The backend's What-If HTTP branch looks for a `delta_gain_pct` key that AI-ML never returns, so it always falls back (`intel_client.py:933`).
-5. No route enforces authentication; CORS allows every origin on both Python services.
-6. The Flutter app's field endpoints (`/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`) are not served by the backend.
-7. The committed PDF report and figures hard-code numbers that the code does not produce (for example an OR-Tools CVRP engine and 99.91 % attribution accuracy measured in-sample against rule-generated labels).
+2. `AI-ML/Makefile` serves the engine on port 8000, the backend's port; the backend expects 8100.
+3. The backend's What-If HTTP branch looks for a `delta_gain_pct` key that AI-ML never returns, so it always falls back (`intel_client.py:933`).
+4. No route enforces authentication; CORS allows every origin on both Python services.
+5. The Flutter app's field endpoints (`/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`) are not served by the backend.
+6. The committed PDF report and figures hard-code numbers that the code does not produce (for example an OR-Tools CVRP engine and 99.91 % attribution accuracy measured in-sample against rule-generated labels).
 
 ---
 
