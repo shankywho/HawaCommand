@@ -104,8 +104,8 @@ One Python environment, `backend/.venv`, runs both the backend and the AI-ML eng
 | `make db-up` | `docker compose up -d postgres` (PostGIS 16, user/password/db `hawa`) | 5432 |
 | `make db-update` | `uv run alembic upgrade head` in `backend/` | — |
 | `make db-seed` | `uv run python -m hawa_backend.db.seed` in `backend/` (idempotent) | — |
-| `make aiml-data` | `python -m hawa_ml.twin.grid` in `AI-ML/`: builds `data/processed/grid_covariates_{500m,1000m}.parquet` once | — |
-| `make aiml-api` | `uvicorn hawa_ml.api.main:app` from `AI-ML/` in the backend env. Startup is silent for 10-60 s (library imports, model loading, and on first run the grid build); wait for `Uvicorn running on ...`. Ctrl+C during that window prints only `Aborted!` | 127.0.0.1:8100 |
+| `make aiml-data` | `python -m hawa_ml.twin.grid` in `AI-ML/` (active virtualenv): builds `data/processed/grid_covariates_{500m,1000m}.parquet` once | — |
+| `make aiml-api` | `uvicorn hawa_ml.api.main:app --host 0.0.0.0 --port 8100 --reload` from `AI-ML/`, using the active virtualenv (activate `backend/.venv` first). The first start builds `data/processed/` and can take a minute; wait for `Application startup complete` | 0.0.0.0:8100 |
 | `make backend` | `uvicorn hawa_backend.api.app:app` from `backend/` | 0.0.0.0:8000 |
 | `make frontend` | `pnpm install`, `pnpm build`, `pnpm start` in `frontend/` | 3000 |
 
@@ -123,7 +123,7 @@ make db-seed
 Then in three terminals (or tmux panes):
 
 ```bash
-make aiml-api                                   # 1. AI-ML engine on 127.0.0.1:8100
+source backend/.venv/bin/activate && make aiml-api   # 1. AI-ML engine on 0.0.0.0:8100
 make backend                                    # 2. backend on 0.0.0.0:8000
 make frontend API_URL=http://localhost:8000     # 3. web console on :3000
 ```
@@ -131,7 +131,7 @@ make frontend API_URL=http://localhost:8000     # 3. web console on :3000
 Checks: `curl http://127.0.0.1:8100/health` returns `{"status":"healthy",...}`; `curl http://127.0.0.1:8000/healthz` returns `{"status":"ok"}`; backend OpenAPI UI at `http://127.0.0.1:8000/docs`.
 
 - **Database.** `HAWA_DATABASE_URL` defaults to `postgresql+asyncpg://hawa:hawa@localhost:5432/hawa` (set it in `backend/.env` or on the command line). For a quick demo without Postgres: `make db-update db-seed HAWA_DATABASE_URL=sqlite+aiosqlite:///./hawa.db` (relative to `backend/`; `aiosqlite` comes with `make install`). The API does not read the database yet (plans are in memory, other routes use AI-ML or fixtures); the schema and seed data are there for the persistence work.
-- **On a server.** Keep the AI-ML engine on `127.0.0.1` (only the backend calls it; it has no auth and some GET routes write files). Build the web console with the public backend URL: `make frontend API_URL=http://<server-ip>:8000`. `NEXT_PUBLIC_API_URL` is baked in at build time.
+- **On a server.** `make aiml-api` listens on `0.0.0.0:8100`. Do not open port 8100 in the security group: only the backend calls the engine, and it has no auth and some GET routes write files. To bind it to localhost instead: `make aiml-api AIML_HOST=127.0.0.1`. Build the web console with the public backend URL: `make frontend API_URL=http://<server-ip>:8000`. `NEXT_PUBLIC_API_URL` is baked in at build time.
 - **AI-ML keys** (all optional) live in `AI-ML/.env` (`cp AI-ML/.env.example AI-ML/.env`): `GROQ_API_KEY` or `LLM_PROVIDER=bedrock` for agent text, `OPENAQ_API_KEY`, `NASA_FIRMS_MAP_KEY`, `OFFLINE_MODE=true` to avoid all network calls. The `llm` extra (groq, openai, boto3) is installed through the backend env.
 - **Backend settings** live in `backend/.env` (`cp backend/.env.example backend/.env`), read from `backend/` (the Make targets `cd` there). `WAQI_TOKEN` and `OPENAQ_API_KEY` for live stations are read with `os.environ`, not from `.env`: export them in the shell before `make backend`.
 - The AI-ML package also has its own `make` targets (`cd AI-ML && make help`); its `make api` uses port 8000, which collides with the backend, so use `make aiml-api` from the root instead.

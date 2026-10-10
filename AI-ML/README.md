@@ -117,7 +117,7 @@ YAML configuration in `config/` (read at import time):
 uvicorn hawa_ml.api.main:app --host 127.0.0.1 --port 8100
 ```
 
-Or from the repo root: `make aiml-api` (runs this command from `AI-ML/` in the backend's uv environment, on 127.0.0.1:8100). Port 8100 is what the backend expects (`HAWA_AIML_SERVICE_URL=http://localhost:8100` in `backend/.env.example`). `make api` and `python -m hawa_ml.api.main` use port 8000 with `--reload`, which collides with the backend API on 8000. OpenAPI docs: `http://localhost:8100/docs`. First import loads 21 forecaster boosters and the attribution booster, and builds `data/processed/grid_covariates_500m.parquet` if it is missing (about 2 s offline).
+Or from the repo root: `make aiml-api`, which runs `uvicorn hawa_ml.api.main:app --host 0.0.0.0 --port 8100 --reload` from `AI-ML/` with the active virtualenv. Port 8100 is what the backend expects (`HAWA_AIML_SERVICE_URL=http://localhost:8100` in `backend/.env.example`). `make api` and `python -m hawa_ml.api.main` use port 8000 with `--reload`, which collides with the backend API on 8000. OpenAPI docs: `http://localhost:8100/docs`. First import loads 21 forecaster boosters and the attribution booster, and builds `data/processed/grid_covariates_500m.parquet` if it is missing (about 2 s offline).
 
 ### 4.2 Make targets
 

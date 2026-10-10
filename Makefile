@@ -8,7 +8,7 @@
 #   make db-update    alembic upgrade head
 #   make db-seed      load demo data (idempotent)
 #   make aiml-data    build the AI-ML 500 m and 1 km grids once (otherwise the first aiml-api start does it)
-#   make aiml-api     AI-ML engine   -> http://127.0.0.1:8100
+#   make aiml-api     AI-ML engine   -> http://0.0.0.0:8100 (uvicorn --reload, uses the active venv)
 #   make backend      backend API    -> http://0.0.0.0:8000
 #   make frontend     pnpm build + pnpm start -> http://localhost:3000
 #
@@ -19,7 +19,7 @@
 UV ?= uv
 PNPM ?= pnpm
 
-AIML_HOST ?= 127.0.0.1
+AIML_HOST ?= 0.0.0.0
 AIML_PORT ?= 8100
 BACKEND_HOST ?= 0.0.0.0
 BACKEND_PORT ?= 8000
@@ -41,7 +41,7 @@ help:
 	@echo "  make db-update   alembic upgrade head (HAWA_DATABASE_URL, default postgresql+asyncpg://hawa:hawa@localhost:5432/hawa)"
 	@echo "  make db-seed     seed demo data into the database (safe to re-run)"
 	@echo "  make aiml-data   build AI-ML grid covariates once (data/processed/)"
-	@echo "  make aiml-api    AI-ML engine on $(AIML_HOST):$(AIML_PORT) (10-60 s silent startup)"
+	@echo "  make aiml-api    AI-ML engine on $(AIML_HOST):$(AIML_PORT) with --reload (activate the venv first)"
 	@echo "  make backend     backend API on $(BACKEND_HOST):$(BACKEND_PORT)"
 	@echo "  make frontend    pnpm build + pnpm start on port 3000 (API_URL=$(if $(API_URL),$(API_URL),<from .env.local or mocks>))"
 
@@ -59,13 +59,12 @@ db-seed:
 	cd backend && $(UV) run python -m hawa_backend.db.seed
 
 aiml-data:
-	cd AI-ML && $(UV) run --project ../backend python -m hawa_ml.twin.grid
+	cd AI-ML && python -m hawa_ml.twin.grid
 
+# Runs uvicorn from the active virtualenv (e.g. `source backend/.venv/bin/activate`), which must have hawa_ml installed.
 aiml-api:
-	@echo "Starting AI-ML engine on $(AIML_HOST):$(AIML_PORT). Loading models takes 10-60 s with no output;"
-	@echo "the first start also builds AI-ML/data/processed/grid_covariates_500m.parquet (or run 'make aiml-data' once)."
-	@echo "Wait for 'Uvicorn running on ...' before calling it."
-	cd AI-ML && $(UV) run --project ../backend uvicorn hawa_ml.api.main:app --host $(AIML_HOST) --port $(AIML_PORT)
+	@echo "Starting AI-ML engine on $(AIML_HOST):$(AIML_PORT). The first start builds AI-ML/data/processed/ and can take a minute."
+	cd AI-ML && uvicorn hawa_ml.api.main:app --host $(AIML_HOST) --port $(AIML_PORT) --reload
 
 backend:
 	cd backend && $(UV) run uvicorn hawa_backend.api.app:app --host $(BACKEND_HOST) --port $(BACKEND_PORT)

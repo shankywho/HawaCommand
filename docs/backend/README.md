@@ -79,7 +79,7 @@ make install       # cd backend && uv sync --extra dev   (backend + contracts + 
 make db-up         # optional: Postgres via backend/docker-compose.yml
 make db-update     # cd backend && uv run alembic upgrade head
 make db-seed       # cd backend && uv run python -m hawa_backend.db.seed
-make aiml-api      # AI-ML engine on 127.0.0.1:8100 (HAWA_AIML_SERVICE_URL default)
+make aiml-api      # AI-ML engine on 0.0.0.0:8100 with --reload (activate backend/.venv first)
 make backend       # uvicorn hawa_backend.api.app:app on 0.0.0.0:8000
 # OpenAPI UI: http://localhost:8000/docs   ReDoc: /redoc   schema: /openapi.json
 ```
