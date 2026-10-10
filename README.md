@@ -104,7 +104,8 @@ One Python environment, `backend/.venv`, runs both the backend and the AI-ML eng
 | `make db-up` | `docker compose up -d postgres` (PostGIS 16, user/password/db `hawa`) | 5432 |
 | `make db-update` | `uv run alembic upgrade head` in `backend/` | — |
 | `make db-seed` | `uv run python -m hawa_backend.db.seed` in `backend/` (idempotent) | — |
-| `make aiml-api` | `uvicorn hawa_ml.api.main:app` from `AI-ML/` in the backend env | 127.0.0.1:8100 |
+| `make aiml-data` | `python -m hawa_ml.twin.grid` in `AI-ML/`: builds `data/processed/grid_covariates_{500m,1000m}.parquet` once | — |
+| `make aiml-api` | `uvicorn hawa_ml.api.main:app` from `AI-ML/` in the backend env. Startup is silent for 10-60 s (library imports, model loading, and on first run the grid build); wait for `Uvicorn running on ...`. Ctrl+C during that window prints only `Aborted!` | 127.0.0.1:8100 |
 | `make backend` | `uvicorn hawa_backend.api.app:app` from `backend/` | 0.0.0.0:8000 |
 | `make frontend` | `pnpm install`, `pnpm build`, `pnpm start` in `frontend/` | 3000 |
 
