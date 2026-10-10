@@ -20,7 +20,7 @@ fvm flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000
 make lint test               # format check, analyze --fatal-infos, architecture guard, tests
 ```
 
-`make run`, `make apk` and `make it` read `--dart-define-from-file=env/$(FLAVOR).json`. No `env/*.json` or `env/*.json.example` is committed (the repo-root `.gitignore` ignores every `env/` folder), so create `env/dev.json` yourself before using them. Other Makefile targets: `watch`, `l10n`, `format`, `format-check`, `analyze`, `guard`, `fix`, `golden`, `mock-server`, `gen-api`, `gen-api-local`; `mock-server` and `it` point at files that do not exist (`tool/mock_server/`, `integration_test/`).
+`make run`, `make apk` and `make it` read `--dart-define-from-file=env/$(FLAVOR).json`. `env/staging.json.example` is committed (EC2 backend URL); copy it to `env/staging.json` (gitignored) or let the root `make app-apk` do it. For a shareable APK run `make app-apk` from the repo root: it builds `build/app/outputs/flutter-apk/app-staging-release.apk`. Create `env/dev.json` yourself for `make run FLAVOR=dev`. Other Makefile targets: `watch`, `l10n`, `format`, `format-check`, `analyze`, `guard`, `fix`, `golden`, `mock-server`, `gen-api`, `gen-api-local`; `mock-server` and `it` point at files that do not exist (`tool/mock_server/`, `integration_test/`).
 
 Build-time defines (`lib/app/env.dart`): `FLAVOR`, `API_BASE_URL`, `WS_URL`, `USE_FAKE_API` (default `true`), `FAKE_FEATURES`, `REAL_FEATURES`, `MAP_TILE_URL`, `MAP_API_KEY`, `MAP_FALLBACK_TILE_URL`, `MAP_FALLBACK_ATTRIBUTION`, plus routing and geocoding URLs. `Env.flavor` comes from the `FLAVOR` define, not the Gradle flavor.
 

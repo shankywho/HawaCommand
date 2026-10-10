@@ -56,7 +56,7 @@ Status words used in every doc: **Implemented**, **Partial** (works, with a name
 | Backend API (`backend/`, port 8000) | Partial | 33 operations on 31 paths; plans live in memory; devices, alerts and driver route are fixtures; no auth enforced |
 | Database schema and seed | Partial | 23 SQLAlchemy tables, Alembic migration `0001`, idempotent seed (`make db-update db-seed`); the API does not read or write the database yet |
 | Kafka, Redis, WebSocket | Planned | Contracts exist; nothing is connected |
-| Optional AWS layer | Partial (off by default) | Wired: forecast via Step Functions/SageMaker with DynamoDB cache, dispatch Step Functions on plan approval. Written but never called: SNS alerts, Kinesis sensor stream. No state machines or SageMaker model in the repo |
+| Optional AWS layer | Partial (off by default) | Wired: S3 pre-signed evidence uploads, forecast via Step Functions/SageMaker with DynamoDB cache, dispatch Step Functions on plan approval. Written but never called: SNS alerts, Kinesis sensor stream. No state machines or SageMaker model in the repo |
 | Web console (`frontend/`, port 3000) | Partial | Next.js 15 + MapLibre; runs on built-in mocks when `NEXT_PUBLIC_API_URL` is empty |
 | Flutter app (`app_frontend/`) | Partial | Air map, air-near-me and school forecast call the backend; auth, tasks, inspections and reports use the in-app fake backend |
 | Safe route ("Safe Air Navigator") | Stub/Mock | Fixed multipliers and synthetic waypoints; the "43 % lower" figure is a literal string, not a computed result |
@@ -108,6 +108,7 @@ One Python environment, `backend/.venv`, runs both the backend and the AI-ML eng
 | `make aiml-api` | `uvicorn hawa_ml.api.main:app --host 0.0.0.0 --port 8100 --reload` from `AI-ML/`, using the active virtualenv (activate `backend/.venv` first). The first start builds `data/processed/` and can take a minute; wait for `Application startup complete` | 0.0.0.0:8100 |
 | `make backend` | `uvicorn hawa_backend.api.app:app` from `backend/` | 0.0.0.0:8000 |
 | `make frontend` | `pnpm install`, `pnpm build`, `pnpm start` in `frontend/` | 3000 |
+| `make app-apk` | Flutter `pub get`, `gen-l10n`, `build_runner`, then `flutter build apk --release --flavor staging --dart-define-from-file=env/staging.json` in `app_frontend/` | — |
 
 Every environment variable (required and optional) for each component is listed in [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md).
 
@@ -155,6 +156,22 @@ cd ../frontend && pnpm install && pnpm build && pnpm start                   # N
 
 ### Flutter app (from `app_frontend/`)
 
+**Shareable APK:** pass your backend URL at build time (from `app_frontend/`):
+
+```bash
+cd app_frontend
+fvm flutter pub get
+fvm flutter gen-l10n
+fvm dart run build_runner build --delete-conflicting-outputs
+fvm flutter build apk --release --flavor staging \
+  --dart-define=FLAVOR=staging \
+  --dart-define=API_BASE_URL=http://<backend-host>:8000
+```
+
+Output: `app_frontend/build/app/outputs/flutter-apk/app-staging-release.apk`, one universal APK that installs on any Android phone as **Hawa STG**. Use the staging flavor: the dev flavor only allows plain HTTP to the emulator and localhost. Include `:8000` and no trailing slash. Without `app_frontend/android/key.properties` the APK is signed with the debug key, which is fine for sideloading. Check the URL on the phone under Settings → Dev tools. `make app-apk` from the repo root does the same using `app_frontend/env/staging.json`.
+
+**Development run on an emulator or USB device:**
+
 ```bash
 cd app_frontend
 fvm install && fvm flutter pub get
@@ -168,7 +185,6 @@ fvm flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000
 
 - `USE_FAKE_API` defaults to `true`: login (OTP `123456`), driver, inspector, reports and site screens run on the in-app fake backend. `REAL_FEATURES` (default `air_map,citizen_air,alerts,school_forecast`) always call the backend.
 - Default `API_BASE_URL` is `http://10.0.2.2:8000` (Android emulator to host).
-- `make run` and `make apk` expect `env/<flavor>.json`, which is not committed; pass `--dart-define` values directly instead.
 
 ---
 
@@ -195,6 +211,7 @@ fvm flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000
 | `GET` | `/v1/citizen/live-operations`, `/v1/citizen/wards/leaderboard` | Hard-coded |
 | `POST` | `/v1/citizen/reports/missed-machine` | `hawa_ml` IoT auditor (hard-coded fleet telemetry) |
 | `GET` | `/open/v1/air` | AI-ML twin cells |
+| `POST` | `/v1/uploads/presign` | Pre-signed S3 POST for evidence photos (`HAWA_AWS_EVIDENCE_BUCKET`; `503` if not configured) |
 
 Full request and response shapes: [docs/backend/API.md](docs/backend/API.md). AI-ML engine routes: [AI-ML/README.md](AI-ML/README.md#5-http-api).
 
@@ -235,14 +252,14 @@ Per-component lists with file and line references are in each README. The WAQI a
 1. `AI-ML/Makefile` serves the engine on port 8000, the backend's port; the backend expects 8100.
 2. The backend's What-If HTTP branch looks for a `delta_gain_pct` key that AI-ML never returns, so it always falls back (`intel_client.py:933`).
 3. No route enforces authentication; CORS allows every origin on both Python services.
-4. The Flutter app's field endpoints (`/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`) are not served by the backend.
+4. The Flutter app's field endpoints (`/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/ws`) are not served by the backend.
 5. The committed PDF report and figures hard-code numbers that the code does not produce (for example an OR-Tools CVRP engine and 99.91 % attribution accuracy measured in-sample against rule-generated labels).
 
 ---
 
 ## Cloud Integration
 
-The backend has an optional AWS layer (`backend/src/hawa_backend/aws/`, enabled with `HAWA_AWS_ENABLED=true`). Two parts are wired to routes: `GET /v1/forecast/{cell_id}` can run a Step Functions Express workflow or SageMaker endpoint with results cached in DynamoDB, and `POST /v1/plans/{id}/approve` starts a Step Functions dispatch execution. The SNS (`publish_alert`) and Kinesis (`publish_sensor_reading`) publishers exist but nothing calls them. The repo contains no state machine definitions, Lambdas or SageMaker model. `infrastructure/cloudformation/hawa-integration.yaml` provisions the DynamoDB cache table, the SNS alerts topic, the Kinesis sensor stream and an IAM managed policy for the backend. The web console has an `amplify.yml` for Amplify Hosting. ECS Fargate, ElastiCache, RDS and CI/CD are Planned.
+The backend has an optional AWS layer (`backend/src/hawa_backend/aws/`, enabled with `HAWA_AWS_ENABLED=true`). Three parts are wired to routes: `POST /v1/uploads/presign` returns pre-signed S3 uploads for evidence photos (`HAWA_AWS_EVIDENCE_BUCKET`), `GET /v1/forecast/{cell_id}` can run a Step Functions Express workflow or SageMaker endpoint with results cached in DynamoDB, and `POST /v1/plans/{id}/approve` starts a Step Functions dispatch execution. The SNS (`publish_alert`) and Kinesis (`publish_sensor_reading`) publishers exist but nothing calls them. The repo contains no state machine definitions, Lambdas or SageMaker model. `infrastructure/cloudformation/hawa-integration.yaml` provisions the DynamoDB cache table, the SNS alerts topic, the Kinesis sensor stream and an IAM managed policy for the backend. The web console has an `amplify.yml` for Amplify Hosting. ECS Fargate, ElastiCache, RDS and CI/CD are Planned.
 
 - [docs/AWS_INTEGRATION.md](docs/AWS_INTEGRATION.md)
 - [docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md](docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md)

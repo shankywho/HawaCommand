@@ -24,6 +24,12 @@ class AwsSettings(BaseSettings):
     alerts_topic_arn: Optional[str] = None
     sensor_stream: Optional[str] = None
 
+    # Evidence photo uploads (pre-signed S3 POST, api/routes/uploads.py)
+    evidence_bucket: Optional[str] = None
+    evidence_prefix: str = ""
+    upload_max_bytes: int = 5 * 1024 * 1024
+    presign_ttl_seconds: int = 900
+
 
 @lru_cache()
 def get_aws_settings() -> AwsSettings:

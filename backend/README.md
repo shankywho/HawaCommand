@@ -127,7 +127,7 @@ Subcommands: `version`, `config`, `check`.
 
 ## API surface
 
-33 operations on 31 paths. Full shapes in [docs/backend/API.md](../docs/backend/API.md).
+34 operations on 32 paths. Full shapes in [docs/backend/API.md](../docs/backend/API.md).
 
 | Method | Path | Source |
 |---|---|---|
@@ -143,6 +143,7 @@ Subcommands: `version`, `config`, `check`.
 | GET | `/v1/citizen/safe-window` | `hawa_ml` in process |
 | GET | `/v1/citizen/live-operations`, `/v1/citizen/wards/leaderboard` | Hard-coded |
 | GET | `/open/v1/air` | AI-ML twin |
+| POST | `/v1/uploads/presign` | AWS S3 pre-signed POST (needs `HAWA_AWS_ENABLED`, `HAWA_AWS_EVIDENCE_BUCKET`) |
 
 ---
 

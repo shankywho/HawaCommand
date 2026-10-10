@@ -19,6 +19,8 @@ __pycache__/
 venv/
 env/
 ENV/
+# Flutter build-time defines live in app_frontend/env/ (its own .gitignore keeps *.json local, *.json.example tracked)
+!app_frontend/env/
 .pytest_cache/
 .coverage
 htmlcov/

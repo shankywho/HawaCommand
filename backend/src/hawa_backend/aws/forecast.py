@@ -43,7 +43,7 @@ def _compute(cell_id: str) -> Optional[Dict[str, Any]]:
 
 async def get_aws_forecast(cell_id: str) -> Optional[Dict[str, Any]]:
     s = get_aws_settings()
-    if not s.enabled:
+    if not (s.enabled and (s.forecast_state_machine_arn or s.forecast_endpoint)):
         return None
     key = f"forecast:{cell_id}"
     cached = await cache_get(key)

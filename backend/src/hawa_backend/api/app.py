@@ -16,6 +16,7 @@ from .routes import (
     driver,
     open_data,
     citizen,
+    uploads,
 )
 
 
@@ -77,6 +78,7 @@ def create_app() -> FastAPI:
     app.include_router(driver.router)
     app.include_router(open_data.router)
     app.include_router(citizen.router)
+    app.include_router(uploads.router)
 
     return app
 

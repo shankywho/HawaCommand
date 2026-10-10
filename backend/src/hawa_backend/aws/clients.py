@@ -19,6 +19,17 @@ def get_client(service: str):
 
 
 @lru_cache(maxsize=1)
+def get_s3_client():
+    """S3 client with SigV4 and virtual-hosted URLs, so pre-signed URLs use the bucket's regional endpoint."""
+    import boto3
+    from botocore.config import Config
+
+    s = get_aws_settings()
+    config = _config().merge(Config(signature_version="s3v4", s3={"addressing_style": "virtual"}))
+    return boto3.client("s3", region_name=s.region, endpoint_url=s.endpoint_url, config=config)
+
+
+@lru_cache(maxsize=1)
 def get_cache_table():
     import boto3
 
@@ -29,4 +40,5 @@ def get_cache_table():
 
 def reset_clients() -> None:
     get_client.cache_clear()
+    get_s3_client.cache_clear()
     get_cache_table.cache_clear()

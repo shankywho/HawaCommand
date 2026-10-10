@@ -4,6 +4,7 @@ from .dispatch import start_dispatch
 from .events import publish_alert, publish_sensor_reading
 from .forecast import get_aws_forecast
 from .settings import AwsSettings, get_aws_settings
+from .uploads import presign_upload
 
 __all__ = [
     "AwsSettings",
@@ -14,4 +15,5 @@ __all__ = [
     "publish_alert",
     "start_dispatch",
     "publish_sensor_reading",
+    "presign_upload",
 ]

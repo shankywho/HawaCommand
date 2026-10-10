@@ -102,7 +102,7 @@ Run `python -m pytest -q` from AI-ML/ and restore AI-ML/data with git afterwards
 - [ ] Make `/readyz` check real dependencies (`api/routes/health.py`).
 - [ ] Persist plans (currently an in-process dict in `api/routes/plans.py`) using the SQLAlchemy models in `db/models/`. Alembic (`backend/migrations/`) and the seed script (`db/seed.py`) already exist; add a revision for any model change.
 - [ ] Add auth endpoints and enforce JWT with role scoping (`core/security.py` has the helpers).
-- [ ] Serve the field API the Flutter app expects (`app_frontend/openapi/openapi.json`): `/v1/auth/*`, `/v1/me`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`.
+- [ ] Serve the field API the Flutter app expects (`app_frontend/openapi/openapi.json`): `/v1/auth/*`, `/v1/me`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/ws`.
 - [ ] Raise `HawaException` subclasses from routes so clients get RFC 9457 bodies.
 - [ ] Replace fixture routes (`/v1/devices`, `/v1/alerts`, `/v1/driver/route`, `/v1/citizen/live-operations`, `/v1/citizen/wards/leaderboard`) with real data.
 - [ ] Fix or update `tests/integration/test_end_to_end.py::test_full_mission_air_pipeline`.

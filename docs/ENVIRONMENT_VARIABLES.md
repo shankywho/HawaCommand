@@ -68,8 +68,12 @@ Everything AWS is off unless `HAWA_AWS_ENABLED=true`. See [AWS_INTEGRATION.md](A
 | `HAWA_AWS_DISPATCH_STATE_MACHINE_ARN` | unset | Yes: `POST /v1/plans/{id}/approve` | Step Functions execution started with the approved plan (id, ward, window, task groups); the execution ARN is returned in the plan |
 | `HAWA_AWS_ALERTS_TOPIC_ARN` | unset | **No** | `aws/events.py` `publish_alert` exists but no route calls it |
 | `HAWA_AWS_SENSOR_STREAM` | unset | **No** | `aws/events.py` `publish_sensor_reading` exists but no route calls it |
+| `HAWA_AWS_EVIDENCE_BUCKET` | unset | Yes: `POST /v1/uploads/presign` | S3 bucket name (not an `s3://` URI) for evidence photos; unset makes the route return `503` |
+| `HAWA_AWS_EVIDENCE_PREFIX` | empty | Yes | Optional key prefix, e.g. `evidence/`; keys are `{prefix}{purpose}/YYYY/MM/DD/{uuid}.{ext}` |
+| `HAWA_AWS_UPLOAD_MAX_BYTES` | `5242880` | Yes | Max photo size; larger requests get `413`, and the S3 policy enforces it |
+| `HAWA_AWS_PRESIGN_TTL_SECONDS` | `900` | Yes | How long a pre-signed upload stays valid |
 
-Any AWS failure is logged and the backend falls back (forecast to the AI-ML engine; plan approval still succeeds). The repository contains no Step Functions definitions, Lambda functions or SageMaker model: the forecast and dispatch workflows must be built separately. The CloudFormation template creates the DynamoDB table, SNS topic, Kinesis stream and an IAM policy only.
+Any AWS failure is logged and the backend falls back (forecast to the AI-ML engine; plan approval still succeeds). The repository contains no Step Functions definitions, Lambda functions or SageMaker model: the forecast and dispatch workflows must be built separately. The CloudFormation template creates the DynamoDB table, SNS topic, Kinesis stream and an IAM policy only; it does not create the evidence bucket or grant `s3:PutObject` on it, so add that permission to the backend's role yourself.
 
 ### AWS credentials (shell or instance role only)
 
@@ -135,7 +139,7 @@ If you change `AIML_PORT`, set `HAWA_AIML_SERVICE_URL` in `backend/.env` to matc
 
 ## 5. Flutter app: `--dart-define`
 
-Compile-time values from `app_frontend/lib/app/env.dart`. Pass each with `--dart-define=NAME=value`, or put them in `env/<flavor>.json` for `make run` / `make apk` (`--dart-define-from-file`).
+Compile-time values from `app_frontend/lib/app/env.dart`. Pass each with `--dart-define=NAME=value`, or put them in `app_frontend/env/<flavor>.json` for `make run` / `make apk` (`--dart-define-from-file`). For a shareable APK pass the backend URL directly: `fvm flutter build apk --release --flavor staging --dart-define=FLAVOR=staging --dart-define=API_BASE_URL=http://<backend-host>:8000` (or use `make app-apk`, which reads `app_frontend/env/staging.json`).
 
 | Define | Default | What it does |
 |---|---|---|

@@ -11,6 +11,7 @@
 #   make aiml-api     AI-ML engine   -> http://0.0.0.0:8100 (uvicorn --reload, uses the active venv)
 #   make backend      backend API    -> http://0.0.0.0:8000
 #   make frontend     pnpm build + pnpm start -> http://localhost:3000
+#   make app-apk      shareable Android APK (staging flavor, backend URL from app_frontend/env/staging.json)
 #
 # Override any variable on the command line, e.g.
 #   make frontend API_URL=http://<server-ip>:8000
@@ -18,6 +19,10 @@
 
 UV ?= uv
 PNPM ?= pnpm
+FLUTTER ?= fvm flutter
+DART ?= fvm dart
+# Flutter flavor for `make app-apk`; build defines come from app_frontend/env/$(APP_FLAVOR).json
+APP_FLAVOR ?= staging
 
 AIML_HOST ?= 0.0.0.0
 AIML_PORT ?= 8100
@@ -32,7 +37,7 @@ export HAWA_DATABASE_URL
 endif
 
 .DEFAULT_GOAL := help
-.PHONY: help install db-up db-update db-seed aiml-data aiml-api backend frontend
+.PHONY: help install db-up db-update db-seed aiml-data aiml-api backend frontend app-apk
 
 help:
 	@echo "HawaCommand targets (run from the repo root):"
@@ -43,6 +48,7 @@ help:
 	@echo "  make aiml-data   build AI-ML grid covariates once (data/processed/)"
 	@echo "  make aiml-api    AI-ML engine on $(AIML_HOST):$(AIML_PORT) with --reload (activate the venv first)"
 	@echo "  make backend     backend API on $(BACKEND_HOST):$(BACKEND_PORT)"
+	@echo "  make app-apk     Android APK to share (flavor $(APP_FLAVOR), defines from app_frontend/env/$(APP_FLAVOR).json)"
 	@echo "  make frontend    pnpm build + pnpm start on port 3000 (API_URL=$(if $(API_URL),$(API_URL),<from .env.local or mocks>))"
 
 install:
@@ -73,3 +79,12 @@ frontend:
 	cd frontend && $(PNPM) install --frozen-lockfile
 	cd frontend && $(if $(API_URL),NEXT_PUBLIC_API_URL=$(API_URL) )$(PNPM) build
 	cd frontend && $(PNPM) start
+
+# Universal release APK (one file for every phone), signed with the debug key unless app_frontend/android/key.properties exists.
+app-apk:
+	cd app_frontend && test -f env/$(APP_FLAVOR).json || cp env/$(APP_FLAVOR).json.example env/$(APP_FLAVOR).json
+	cd app_frontend && $(FLUTTER) pub get
+	cd app_frontend && $(FLUTTER) gen-l10n
+	cd app_frontend && $(DART) run build_runner build --delete-conflicting-outputs
+	cd app_frontend && $(FLUTTER) build apk --release --flavor $(APP_FLAVOR) --dart-define-from-file=env/$(APP_FLAVOR).json
+	@echo "APK: app_frontend/build/app/outputs/flutter-apk/app-$(APP_FLAVOR)-release.apk"

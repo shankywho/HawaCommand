@@ -146,6 +146,7 @@ RFC 9457 support exists but is not reached by any route (`core/errors.py`, `api/
 | 31 | GET | `/v1/citizen/live-operations` | **Stub/Mock** | `hawa_ml` fleet constant + literals | none |
 | 32 | POST | `/v1/citizen/reports/missed-machine` | **Partial** | AI-ML (in-process) audit against a constant fleet table | none |
 | 33 | GET | `/v1/citizen/wards/leaderboard` | **Stub/Mock** | literals | none |
+| 34 | POST | `/v1/uploads/presign` | **Implemented** | AWS S3 pre-signed POST (`aws/uploads.py`); `503` unless configured | none |
 
 The web console calls 6, 9, 11–17, 19–21 and 26–28 (`frontend/src/lib/api.ts`). The Flutter app calls 6, 8, 9, 10, 19, 20, 26, 27, 30, plus `/v1/auth/*` which does not exist.
 
@@ -633,6 +634,35 @@ Body `MissedMachineReport`: `{"asset_id": "SPR-04", "cell_id": "G-052-054", "war
 
 `200`: `{"total_wards": 250, "leaderboard": [{"rank": 1, "ward_name": "Hauz Khas (Ward 152)", "grade": "A+", "avg_pm25": 118.0, "route_compliance_pct": 98.4, "complaints_resolved_pct": 96.0, "badge": "Green Leader"}, ...7 rows], "methodology": "..."}`.
 
+## 9a. Uploads
+
+#### `POST /v1/uploads/presign`
+
+> Status: **Implemented**. Data source: AWS S3 (`src/hawa_backend/api/routes/uploads.py`, `src/hawa_backend/aws/uploads.py`). Matches `PresignIn` / `PresignOut` in `app_frontend/openapi/openapi.json`.
+
+Configuration (`backend/.env`): `HAWA_AWS_ENABLED=true`, `HAWA_AWS_REGION`, `HAWA_AWS_EVIDENCE_BUCKET`, optional `HAWA_AWS_EVIDENCE_PREFIX` (default empty), `HAWA_AWS_UPLOAD_MAX_BYTES` (default 5242880), `HAWA_AWS_PRESIGN_TTL_SECONDS` (default 900). The backend's AWS identity needs `s3:PutObject` on `arn:aws:s3:::<bucket>/*`; the bucket stays private.
+
+Body `PresignIn`: `{"purpose": "report_photo" | "inspection_photo" | "task_photo", "content_type": "image/jpeg", "content_length": 120000, "sha256": "<64 hex chars>"}`.
+
+`200` (`PresignOut`):
+
+```json
+{
+  "key": "report_photo/2026/10/10/50ff1b9ecd6f4f79926d3f4253b4e000.jpg",
+  "url": "https://hawa-citizen-evidence-prod.s3.ap-south-1.amazonaws.com/",
+  "method": "POST",
+  "expires_at": "2026-10-10T07:15:00Z",
+  "fields": {"Content-Type": "image/jpeg", "x-amz-meta-sha256": "...", "key": "...", "x-amz-algorithm": "AWS4-HMAC-SHA256",
+             "x-amz-credential": "...", "x-amz-date": "...", "policy": "...", "x-amz-signature": "..."},
+  "headers": null,
+  "max_bytes": 5242880
+}
+```
+
+Upload: `POST` to `url` as `multipart/form-data` with every entry of `fields` first, then the file as `file`. The signed policy pins the key, the content type, the `x-amz-meta-sha256` value and a size of 1 byte to `max_bytes`; it expires after `HAWA_AWS_PRESIGN_TTL_SECONDS`. Keys are `{HAWA_AWS_EVIDENCE_PREFIX}{purpose}/YYYY/MM/DD/{uuid}{ext}`.
+
+Errors: `413` when `content_length` exceeds `HAWA_AWS_UPLOAD_MAX_BYTES`; `415` for content types other than `image/jpeg`, `image/png`, `image/webp`, `image/heic`; `422` for an unknown purpose, a non-positive length or a malformed `sha256`; `503` when `HAWA_AWS_ENABLED` is false or `HAWA_AWS_EVIDENCE_BUCKET` is unset.
+
 ## 10. Calls the backend makes to AI-ML
 
 `core/intel_client.py` (`IntelClient`, singleton via `get_intel_client()`). Base URL `HAWA_AIML_SERVICE_URL` (default `http://localhost:8100`), per-request `httpx.AsyncClient(timeout=HAWA_AIML_TIMEOUT_SECONDS)` (default 10 s), no auth header, no propagated request ids. Paths are unprefixed (AI-ML mounts its router at `/`, `/v1` and `/internal/v1`). Circuit breaker and fallback rules are in [ARCHITECTURE.md](ARCHITECTURE.md) §3.
@@ -686,7 +716,7 @@ The citizen routes import `hawa_ml.exposure.routing.safe_route_optimizer`, `hawa
 | Schools | `GET /v1/schools/me`, `GET /v1/schools/{id}/safe-window`, `GET /v1/schools/{id}/indoor-outdoor` |
 | Citizen Eyes | `POST /v1/reports`, `GET /v1/reports/mine`, `GET /v1/reports/{id}`, WhatsApp webhook `GET`/`POST /v1/reports/webhook/whatsapp` (HMAC `X-Hub-Signature-256`) |
 | Inspections, sites, integrity | `GET /v1/inspections`, `POST /v1/inspections/{id}/assign`, `POST /v1/inspections/{id}/close`, `GET /v1/sites`, `GET /v1/sites/{id}`, `GET /v1/sites/me`, `GET /v1/integrity/flags`, `GET /v1/coverage/blind-spots` |
-| Evidence reports, uploads | `GET/POST /v1/evidence-reports`, `GET /v1/evidence-reports/{id}/pdf`, `POST /v1/uploads/presign` |
+| Evidence reports | `GET/POST /v1/evidence-reports`, `GET /v1/evidence-reports/{id}/pdf` (`POST /v1/uploads/presign` is now Implemented, §9a) |
 | Open data | `/open/v1/air?bbox=&ts=&include_simulated=`, `/open/v1/stations`, `/open/v1/cells/{cell_id}/history`, `/open/v1/methods`, per-IP rate limit |
 | Ops | `/readyz` with real Postgres, Redis and migration checks (503 when not ready); `/metrics` (Prometheus) |
 
