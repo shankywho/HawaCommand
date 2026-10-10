@@ -109,6 +109,8 @@ One Python environment, `backend/.venv`, runs both the backend and the AI-ML eng
 | `make backend` | `uvicorn hawa_backend.api.app:app` from `backend/` | 0.0.0.0:8000 |
 | `make frontend` | `pnpm install`, `pnpm build`, `pnpm start` in `frontend/` | 3000 |
 
+Every environment variable (required and optional) for each component is listed in [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md).
+
 Variables you can override: `AIML_HOST`, `AIML_PORT`, `BACKEND_HOST`, `BACKEND_PORT`, `API_URL` (backend URL baked into the web build as `NEXT_PUBLIC_API_URL`), `HAWA_DATABASE_URL`, `UV`, `PNPM`.
 
 ### First run
@@ -252,6 +254,7 @@ The backend has an optional AWS layer (`backend/src/hawa_backend/aws/`, enabled 
 - [Documentation home](docs/README.md)
 - [System Overview](docs/SYSTEM_OVERVIEW.md)
 - [Cross-Discipline Contracts](docs/CONTRACTS.md)
+- [Environment Variables](docs/ENVIRONMENT_VARIABLES.md)
 - Component runbooks: [AI-ML](AI-ML/README.md) · [Backend](backend/README.md) · [Web](frontend/README.md) · [Flutter app](app_frontend/README.md)
 - Per-discipline docs: [docs/aiml/](docs/aiml/README.md) · [docs/backend/](docs/backend/README.md) · [docs/frontend/](docs/frontend/README.md) · [docs/app/](docs/app/README.md)
 - [Team Remaining Work and Role Prompts](docs/TEAM_REMAINING_WORK_AND_PROMPTS.md)
