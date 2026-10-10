@@ -1,5 +1,14 @@
 # AWS integration: handoff runbook
 
+> **Status (2026-10-10).** The backend's AWS layer (`backend/src/hawa_backend/aws/`: `settings.py`, `clients.py`, `cache.py`, `forecast.py`, `dispatch.py`, `events.py`) is implemented and tested with `moto` (`backend/tests/aws/test_aws_integration.py`). It is off unless `HAWA_AWS_ENABLED=true`. `infrastructure/cloudformation/hawa-integration.yaml` creates:
+> - the DynamoDB cache table (parameter `CacheTableName`)
+> - the SNS alerts topic
+> - the Kinesis sensor stream
+> - a backend IAM managed policy
+>
+> Its outputs are `AlertsTopicArn`, `SensorStreamName` and `BackendPolicyArn`. The Step Functions state machines and the SageMaker endpoint are not in the template and must be created separately. Nothing has been deployed to a real account.
+
+
 **Audience:** the engineer (and their AI coding agent) who is wiring HawaCommand to AWS.
 **Read this first, then work top to bottom.** Everything below is verified against the code in this repo unless marked `UNTESTED` (nothing in this repo has ever run against a real AWS account; tests use `moto` mocks).
 

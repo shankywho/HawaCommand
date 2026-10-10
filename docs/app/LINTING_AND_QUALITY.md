@@ -1,5 +1,15 @@
 # Linting and quality
 
+> **Status (as built).** The quality gates are the `app_frontend/Makefile` targets: `format-check`, `analyze` (`--fatal-infos`), `guard` (`tool/architecture_guard.sh`), `lint` (all three) and `test` (`flutter test --coverage`). `analysis_options.yaml` uses `very_good_analysis`; `custom_lint`/`riverpod_lint` are disabled because no release resolves on Dart 3.12.
+>
+> Gaps:
+> - There is no `.github/` CI and no repo-root hook manager, although `tool/hooks/pre_commit.sh` expects one.
+> - `make it` and `make golden` point at tests that do not exist.
+> - Two legacy tests (`test/data_mapping_test.dart`, `test/i18n_test.dart`) import the old package name and do not compile.
+>
+> Not run by the reviewer, because no Flutter SDK was available.
+
+
 Purpose: the lint, format, hook, commit, CI and testing rules for `app_frontend/`, plus the review checklist and Definition of Done. **Lints must pass with zero issues.**
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
@@ -96,7 +106,7 @@ These are rules lints can't express. They run as one CI step (§9) and fail the 
 
 - `dart format` at **page width 100**, set once in `analysis_options.yaml` (`formatter: page_width: 100`, supported on Dart ≥ 3.7) so the IDE, CLI and CI agree.
 - **Why 100:** Riverpod + widget trees nest deeply, 80 columns wrap most `ref.watch(...)` lines, and 100 still fits side-by-side diffs on a laptop. One number for the whole app, never per-file.
-- The CLI formats non-generated tracked files only (see `make format` / `make format-check` in [STRUCTURE §10.7](STRUCTURE.md#107-makefile)). Generated files are rewritten by their generators.
+- The CLI formats non-generated tracked files only (see `make format` / `make format-check` in [STRUCTURE §10.7](STRUCTURE.md)). Generated files are rewritten by their generators.
 - IDE: format on save, `editor.rulers: [100]`.
 
 ## 5. `dart fix`

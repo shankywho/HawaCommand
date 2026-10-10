@@ -1,5 +1,21 @@
 # Data and Training
 
+> **Status (as implemented).**
+> - **Data:**
+>   - `scripts/fetch_all.py` pulls OpenAQ station metadata, Open-Meteo weather and CAMS (fetched but unused by models), NASA FIRMS fires (unused by models), OSM POIs and synthetic bus corridors.
+>   - `scripts/build_dataset.py` turns manual CPCB CSVs in `data/external/cpcb/` into `data/processed/stations_hourly.parquet`, or synthesises 60 days for the stations in `data/fixtures/stations_fallback.csv`. It also builds `grid_covariates_500m.parquet` and `grid_covariates_1000m.parquet`.
+> - **Training:** `scripts/train_all.py` trains 21 LightGBM quantile models and the attribution classifier.
+>   - Forecaster settings: 75 trees, depth 6, 31 leaves, learning rate 0.08; 37 features; temporal holdout of the last 45 days on `tail(45000)` rows.
+>   - The attribution classifier uses weak rule-generated labels.
+>   - Training writes `models/*.txt`, both model cards and `reports/forecast_metrics.json`.
+> - **Not built (Planned):**
+>   - There is no MLflow, no model registry, no promotion gates and no nightly retrain. Model files are committed to git.
+>   - ERA5, IMD, `WAQI_TOKEN`, `CDS_API_KEY` and `DATA_GOV_IN_API_KEY` are not used by any ingestion code.
+> - **Side effects:** the tests, the demo seed and `GET /interventions/{id}/impact` rewrite tracked files under `AI-ML/data/`.
+>
+> Layout: [AI-ML/data/README.md](../../AI-ML/data/README.md). Results: [AI-ML/README.md §7](../../AI-ML/README.md#7-measured-results).
+
+
 Where AI-ML data comes from, how the grid and features are built, the contract with the backend simulator, how models are split, tracked, gated, retrained and kept reproducible and private.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

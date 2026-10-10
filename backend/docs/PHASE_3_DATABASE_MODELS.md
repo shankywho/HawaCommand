@@ -1,5 +1,8 @@
 # Phase 3: Database & PostGIS Data Models
 
+> **Status (2026-10-10).** Partial: 23 SQLAlchemy tables, tested on SQLite. There are no Alembic migrations, no PostGIS geometry columns, and the API never opens a session. Overview: [backend/README.md](../README.md#implementation-status).
+
+
 ## Overview
 Phase 3 establishes the database layer of the HawaCommand backend using SQLAlchemy 2.0. It defines the tables for spatial administrative boundaries, 500 m computational cells, registered IoT sensors, calibrated readings, fleet assets, daily dispatch plans, verified interventions, and audit outboxes.
 

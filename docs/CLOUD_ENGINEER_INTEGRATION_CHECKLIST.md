@@ -1,5 +1,11 @@
 # Cloud Engineer System Integration Checklist
 
+> **Status: target checklist (Planned unless marked otherwise).**
+> - **In code today:** the optional backend AWS layer (DynamoDB cache, Step Functions forecast and dispatch, SageMaker forecast, SNS, Kinesis), configured by the `HAWA_AWS_*` variables in `backend/src/hawa_backend/aws/settings.py`.
+> - **In the CloudFormation template:** the DynamoDB table, SNS topic, Kinesis stream and IAM policy in `infrastructure/cloudformation/hawa-integration.yaml`.
+> - **Planned, not in code:** the S3 evidence bucket, the `hawa-citizen-grievances` and `hawa-fleet-telemetry` DynamoDB tables, ElastiCache, ECS Fargate, ALB/ACM, presigned uploads and CI/CD below. No backend route uses them yet. Start with [AWS_INTEGRATION.md](AWS_INTEGRATION.md).
+
+
 > **Target Environment:** AWS ap-south-1 (Mumbai / Delhi Region)  
 > **Project:** Mission_CleanTheAir — HawaCommand & HawaCitizen Ecosystem  
 > **Purpose:** Step-by-step production integration checklist to connect the Mobile App, FastAPI Backend, AI-ML Digital Twin, and IoT Fleet Telemetry.

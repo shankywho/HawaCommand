@@ -1,5 +1,12 @@
 # Deployment
 
+> **Status (as built).**
+> - **Local run:** `uvicorn hawa_backend.api.app:app --port 8000`, started from `backend/` in a venv with `pip install -e contracts -e ".[dev]" -e ../AI-ML`. See [backend/README.md](../../backend/README.md#quick-start).
+> - **Docker Compose:** `backend/docker-compose.yml` starts PostGIS 16, Redis 7 and Kafka 3.8 (KRaft) only; the API does not use them yet.
+> - **Not built (Planned):** a backend Dockerfile, a root compose file, CDK, CI/CD and the ECS/RDS/MSK deployment described below.
+> - **AWS:** the optional layer in `src/hawa_backend/aws/` is configured by `HAWA_AWS_ENABLED`, `HAWA_AWS_REGION`, `HAWA_AWS_ENDPOINT_URL`, `HAWA_AWS_FORECAST_STATE_MACHINE_ARN`, `HAWA_AWS_FORECAST_ENDPOINT`, `HAWA_AWS_DISPATCH_STATE_MACHINE_ARN`, `HAWA_AWS_CACHE_TABLE`, `HAWA_AWS_CACHE_TTL_SECONDS`, `HAWA_AWS_ALERTS_TOPIC_ARN` and `HAWA_AWS_SENSOR_STREAM`. The matching resources are in `infrastructure/cloudformation/hawa-integration.yaml`; see [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md).
+
+
 How HawaCommand runs locally (Docker Compose at the repo root), how the golden path is reset for the demo, and how the backend deploys to AWS with CDK. Also covers CI/CD, promotion, backups, secrets and cost.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DATA_MODEL](DATA_MODEL.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) §9

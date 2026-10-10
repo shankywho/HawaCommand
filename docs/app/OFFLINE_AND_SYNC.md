@@ -1,5 +1,8 @@
 # Offline-first and sync
 
+> **Status: Implemented in the app, unverified end to end.** The drift outbox, drainer, backoff, conflict resolver and background sync live in `app_frontend/lib/core/sync/` and `lib/core/storage/`. Today every outbox write goes to the in-app fake backend, because the backend has none of the write endpoints. Known defects: multi-photo inspection close ordering, and the presign hash after re-compression ([docs/app/README.md](README.md#9-known-issues), issues 10-11). Not run on a device by the reviewer.
+
+
 Purpose: how the app keeps working with patchy 4G. Covers what is cached, the drift schema, the outbox for mutations, idempotency, conflict resolution, sync triggers, staleness, cleanup, offline testing and the failure matrix.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [SCREENS](SCREENS.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
@@ -22,7 +25,7 @@ Times are measured with server-corrected time (`core/network/server_clock.dart`)
 | Data | Source | Stored in | Kept for | Stale after | Prefetch |
 |---|---|---|---|---|---|
 | Today's route, stops, asset + HawaTag status (driver) | `GET /v1/tasks/mine?date=` | `routes`, `tasks`, `stops` | today + previous 6 days (for summaries) | 10 min during shift, 60 min otherwise | on `route_assignment`/`route_changed` push, app resume, 05:25 IST workmanager job |
-| Map tiles for the route corridor | tile provider | `tiles/` file store | 30 days, LRU | n/a | corridor z15–z16 + bbox z12–z14, ≤ 400 tiles ([ARCHITECTURE §12.4](ARCHITECTURE.md#124-tile-caching-and-offline-routes)) |
+| Map tiles for the route corridor | tile provider | `tiles/` file store | 30 days, LRU | n/a | corridor z15–z16 + bbox z12–z14, ≤ 400 tiles ([ARCHITECTURE §12.4](ARCHITECTURE.md)) |
 | Inspection targets | `GET /v1/tasks/mine` (kind `inspect`) ∪ `GET /v1/inspections?status=assigned` (report-origin inspections may have no task) | `tasks` (kind `inspect`, keyed by inspection id) | until closed + 24 h | 10 min | on `inspection_target` push |
 | Inspection evidence bundle + thumbnails | proposed `GET /v1/inspections/{id}` | `cached_payloads` + `media_files` (thumbs) | until closed + 24 h | 30 min (and before the signed URL `expires_at`) | on first list render when on Wi-Fi or data saver is off |
 | Latest safe windows (today, tomorrow) | `GET /v1/schools/{id}/safe-window?date=` | `safe_windows` | 2 days | once the next scheduled issuance (19:00, 22:00 IST) has passed | on `safe_window` push |

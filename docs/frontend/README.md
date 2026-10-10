@@ -1,124 +1,161 @@
 # HawaCommand Web Frontend: Documentation Index
 
-Purpose: the entry point for the four-person team and for AI coding agents building `frontend/`. That folder holds the Next.js officer console, the public marketing site and the open data portal.
+Purpose: the entry point for anyone working on `frontend/`, the Next.js app that holds the public landing page, the officer console and a mobile driver view. It says what is built, how to run and check it, how it talks to the backend, and what is known to be broken.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md)
+Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../../frontend/README.md](../../frontend/README.md)
 
 ---
 
-## 1. What the web owns
+## 1. Implementation status
 
-HawaCommand runs a closed loop: Sense → Map → Attribute → Forecast → Decide → Act → Verify (§5). The web is the officer-facing and public-facing part of **ACT**: "Officer console React + deck.gl, open data API, evidence report" (§9). It is also where a human approves each plan and where every fix is shown to have worked.
+Status vocabulary used in every frontend doc: **Implemented** (works end to end on API data), **Partial** (works, with the named gaps), **Stub/Mock** (renders fixtures or hard-coded data), **Planned** (not in code).
 
-| Surface | Route prefix | Audience | Rendering | Core features |
-|---|---|---|---|---|
-| Public marketing site | `/` (Hindi: `/hi`) | Judges, press, city officials, public | Static (SSG) per locale | Pitch and demo scenes 0:00–0:20 and 2:45–3:00 (§16.1) |
-| Officer console | `/console/...` | Ward/district officer, analyst, admin | Client-heavy, behind auth | F1–F7, F9, F11–F22 (see [CONTEXT §4](CONTEXT.md#4-features-f1f22-as-surfaced-in-the-web)) |
-| Open data portal | `/open/...` | Public, researchers, journalists | Static shell + client data | F21, AEROS/Soramame-style, labelled "indicative" |
-| Public report status | `/open/reports/[code]` | Citizen who filed a Citizen Eyes report | Dynamic, read-only | F20 (outcome only) |
-| Auth route handlers | `/api/auth/*` | Browser only | Node route handlers | httpOnly cookie session, CSRF |
+| Area | Route / location | Status | Notes |
+|---|---|---|---|
+| Landing page | `/` | Implemented | 12 sections ported from the design. Live numbers (worst hotspot, GRAP stage, plan saving, verified intervention) come from the same API as the console |
+| Console shell | `(console)/layout.tsx` | Implemented | Header with ward picker, AQI chip and clock; labelled icon rail; Cmd/Ctrl+K palette; toast. Dark mode is a CSS invert filter (see §8) |
+| Live map | `/map` | Partial | Hotspot list, detail and heat field come from `/v1/hotspots`. Truck routes, bus trails, schools and the suspect pin on the map are built-in demo data. Scrubbing into the past ("Observed replay") shows current values |
+| Forecast | `/forecast` | Partial | GRAP banner, checklist, ward table and chart come from `/v1/forecast`. The "Thursday 06:00–10:00" subtitle and the "Review Plan #214" link are fixed |
+| Plans index | `/plans` | Implemented | Redirects to the ward's plan or the first plan; otherwise offers "Draft plan now" |
+| Plan review | `/plans/[id]` | Partial | Diff, Auditor comment, Apply suggestion, Approve & dispatch and Request changes call the API. Edit and Reply are disabled; Request changes sends a fixed note |
+| What-If | `/what-if` | Partial | Per-asset table and delta from `/v1/plans/{id}/compare`. Both maps are a client-side approximation. The delta sign differs between backend and mocks (§8) |
+| Impact | `/impact` | Implemented | Interventions, synthetic-control chart, effectiveness library, Markdown report download. The donor-cell map is illustrative |
+| Fleet | `/fleet` | Partial | Assets and HawaTag state from `/v1/devices`, polled every 5 s. "Last packet" age and the spray timeline axis are fixed |
+| Alerts | `/alerts` | Implemented | Read-only alert log, audience filter, WhatsApp/SMS preview. Compose is Planned |
+| Driver view | `/route` | Partial | Stops from `/v1/driver/route`. "Start route" only changes local state; nothing is sent. No web manifest or service worker, so it is not an installable PWA |
+| Sign-in | `/login`, `AuthGuard` | Partial | Cognito (aws-amplify) sign-in when both Cognito env vars are set; otherwise demo mode with no sign-in. The backend does not verify the token. No sign-out control |
+| Mock API | `src/mocks/` | Stub/Mock | Default when `NEXT_PUBLIC_API_URL` is empty: every `/v1` call is answered in the browser from fixtures |
+| API contracts | `src/contracts/` | Implemented | zod schemas validate every response. All 15 checks of `scripts/verify_backend_contracts.ts` passed against the current backend (§6) |
+| Live updates | `src/lib/live.ts` | Partial | 5 s polling for hotspots (hour 0) and devices. WebSocket push is Planned |
+| Map renderer | `src/lib/visuals/hawa-gl.js` | Partial | Vendored `<hawa-gl>` web component on MapLibre GL 4.7.1. deck.gl layers are Planned |
+| Hindi | driver view, causes, alert preview | Partial | Hindi strings are hard-coded where the design has them. No i18n framework, no `/hi` routes (Planned) |
+| Open data portal | `/open` | Planned | Only a footer link to the backend's `GET /open/v1/air` exists |
+| Other blueprint pages | hotspots, GRAP, interventions, schools, reports, inspections, sites, devices, integrity, coverage, evidence, admin | Planned | See [PAGES §5](PAGES.md#5-planned-pages) |
+| Typecheck | `pnpm typecheck` | Implemented | Passes (§6) |
+| Production build | `pnpm build` | Implemented | Passes (§6) |
+| Lint | `pnpm lint` | Planned | The script exists but ESLint is not installed or configured; it fails (§6) |
+| Tests and CI | none | Planned | No unit, component or e2e tests; no CI workflow in the repository |
+| Hosting | `frontend/amplify.yml` | Partial | Amplify build spec only. No deployment was verified and no infrastructure code creates the Amplify app |
 
-**The web does not own:**
-- Driver, inspector, school principal and citizen experiences. These are in the Flutter app ([../app/README.md](../app/README.md)).
-- Business logic, optimisation, agents or verification. Those belong to backend and AI-ML. The web renders them, lets the officer edit and approve, and never recomputes a model output.
-- The API contract. It belongs to the backend. The web generates its types from `/openapi.json` and must not hand-write response types.
+## 2. What the web owns
 
-## 2. Reading order
+| Surface | Routes | Audience | Rendering |
+|---|---|---|---|
+| Landing page | `/` | Judges, officials, public | Prerendered static HTML; live numbers load on the client |
+| Officer console | `/map`, `/forecast`, `/plans`, `/plans/[id]`, `/what-if`, `/impact`, `/fleet`, `/alerts` | MCD and DPCC ward officers | Client components; data on the client via TanStack Query |
+| Officer sign-in | `/login` | Officers | Client form (Cognito) |
+| Driver view | `/route?asset=` | Sprinkler and smog-gun drivers | Client component in a phone-width layout |
 
-| Reader | Order |
-|---|---|
-| New human teammate | [CONTEXT](CONTEXT.md) → [ARCHITECTURE](ARCHITECTURE.md) → [PAGES](PAGES.md) (map, plan detail, What-If, impact first) → [DESIGN_SYSTEM](DESIGN_SYSTEM.md) → [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) → [PLAN](PLAN.md) |
-| AI coding agent | [../CONTRACTS.md](../CONTRACTS.md) → [STRUCTURE](STRUCTURE.md) → the [PAGES](PAGES.md) section for the task → [DESIGN_SYSTEM](DESIGN_SYSTEM.md) tokens |
-| Reviewer on a PR | [LINTING_AND_QUALITY §15–16](LINTING_AND_QUALITY.md#15-code-review-checklist) (checklist + DoD) → the relevant [PAGES](PAGES.md) acceptance criteria |
-| Backend / AI-ML lead | [ARCHITECTURE §18](ARCHITECTURE.md#18-contract-additions-requested-by-the-web) (what the web needs from you) → [PAGES](PAGES.md) data sections |
+The web renders backend and AI-ML results and lets the officer approve. It does not compute model outputs, with two visual exceptions documented in [ARCHITECTURE §5](ARCHITECTURE.md#5-client-side-derivations): the map at a future hour uses each cell's forecast P50, and the "plan" maps scale excess PM2.5 by the plan's exposure reduction.
 
-## 3. Document index
+The Flutter app in `app_frontend/` ([../app/README.md](../app/README.md)) covers citizen, driver, inspector and school experiences. The web `/route` page overlaps with the Flutter driver flow; both read the same backend.
+
+## 3. Document index and reading order
 
 | File | What it answers |
 |---|---|
-| [CONTEXT.md](CONTEXT.md) | Who uses the web, Flow A step by step, which features appear where, how each demo scene maps to a screen, the honesty and uncertainty rules, usability, accessibility, bilingual support, target hardware, non-goals |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Stack, rendering per route group, data flow, API client, WebSocket client, auth, map layers, performance budget, errors, security, observability, hosting, contract additions |
-| [STRUCTURE.md](STRUCTURE.md) | The complete `frontend/` tree, with one line of responsibility per file |
-| [PAGES.md](PAGES.md) | Page-by-page spec: data, channels, wireframes, components, states, acceptance criteria. Also the marketing copy outline |
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | The single source of truth for colours (the Flutter app mirrors it), typography, map styling, data-viz rules, components, content style, accessibility |
-| [LINTING_AND_QUALITY.md](LINTING_AND_QUALITY.md) | ESLint 9 flat config, Prettier, tsconfig, git hooks, CI workflow, testing strategy, review checklist, Definition of Done |
-| [PLAN.md](PLAN.md) | 24-hour build plan for the frontend developer, milestones, backend dependencies, mock-first strategy, cut rules, demo-day checklist, roadmap |
+| [CONTEXT.md](CONTEXT.md) | Who uses the web, the officer flow as built, features F1–F22 with web status, demo-scene mapping, honesty and uncertainty rules, Hindi, non-goals |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Stack and versions, rendering, data flow, API client and endpoints, mock mode, auth, state, map and visuals, errors, hosting, planned architecture |
+| [STRUCTURE.md](STRUCTURE.md) | The complete `frontend/` tree, one line per file, dependency rules |
+| [PAGES.md](PAGES.md) | Page by page: file, what it renders, hooks, endpoints, behaviour without a backend, status; planned pages |
+| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Tokens from `tailwind.config.ts` and `globals.css`, fonts, CPCB colour scale as coded, components, map and chart styling, motion, accessibility |
+| [LINTING_AND_QUALITY.md](LINTING_AND_QUALITY.md) | What quality tooling exists (TypeScript, build, contract verifier) and what is Planned (ESLint, Prettier, hooks, tests, CI) |
+| [PLAN.md](PLAN.md) | What was built against the original milestones, remaining work in priority order, demo checklist |
+
+Reading order: new teammate: CONTEXT → ARCHITECTURE → PAGES → DESIGN_SYSTEM. AI coding agent: STRUCTURE → ARCHITECTURE §4 → the PAGES section for the task. Backend lead: ARCHITECTURE §4 (endpoint table) → §8 of this file.
 
 ## 4. Quick start
 
-Prerequisites: Node.js LTS pinned in `frontend/.nvmrc` (22 LTS, or 24 LTS once every host supports it) and pnpm via Corepack (`corepack enable`). The backend stack is optional because the web runs fully on mocks.
+Prerequisites: Node.js 20 or newer (`engines`), pnpm through Corepack. `package.json` pins `packageManager: pnpm@11.17.0`. No backend is needed: with `NEXT_PUBLIC_API_URL` empty the app runs on in-browser mocks.
 
 ```bash
 cd frontend
 corepack enable
-pnpm i                      # installs deps; `prepare` installs Husky hooks (see LINTING_AND_QUALITY §10)
-cp .env.example .env.local  # defaults point at the local mock API
-pnpm mock:api               # terminal 1: MSW-backed HTTP + WebSocket mock on :4010 (golden-path scenario)
-pnpm dev                    # terminal 2: Next.js dev server (Turbopack) on :3000
+pnpm install --frozen-lockfile
+cp .env.example .env.local   # optional: leave NEXT_PUBLIC_API_URL empty for mock mode
+pnpm dev                     # Next.js dev server (Turbopack) on http://localhost:3000
 ```
 
-Against the real stack: run `docker compose up` at the repo root ([../backend/README.md](../backend/README.md)). Set `NEXT_PUBLIC_API_URL=http://localhost:8000`, `NEXT_PUBLIC_WS_URL=ws://localhost:8000/v1/ws` and `API_URL_INTERNAL=http://localhost:8000`, then run `pnpm gen:api`.
+Against the real backend (FastAPI on port 8000, which calls the AI-ML service on 8100 or falls back in-process):
 
-| Command | What it does | Must pass before merge |
+```bash
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
+pnpm dev
+```
+
+Open `http://localhost:3000` for the landing page and `http://localhost:3000/map` for the console. `NEXT_PUBLIC_*` values are inlined at build time, so restart `pnpm dev` (or rebuild) after changing them.
+
+| Command | What it does | Result on 2026-10-10 |
 |---|---|---|
-| `pnpm dev` | Next dev server (Turbopack) | — |
-| `pnpm build` / `pnpm start` | Production build / serve | yes (CI) |
-| `pnpm lint` | `eslint . --max-warnings 0` (type-aware, flat config) | yes, **zero warnings** |
-| `pnpm format:check` | `prettier --check .` | yes |
-| `pnpm typecheck` | `tsc --noEmit` | yes |
-| `pnpm test` | Vitest unit + component tests (MSW node) | yes, coverage thresholds |
-| `pnpm e2e` | Playwright golden path (Flow A) + axe against the mock API | yes |
-| `pnpm gen:api` | `openapi-typescript` from `$API_OPENAPI_URL` → `src/lib/api/generated/schema.d.ts` + `openapi.snapshot.json` | run whenever the backend contract changes |
-| `pnpm gen:api:check` | Regenerates into a temp dir and fails on drift | CI when the backend is reachable |
-| `pnpm mock:api` | Standalone mock API (HTTP + WS) for dev and e2e | — |
-| `pnpm i18n:check` | `messages/en.json` and `messages/hi.json` have identical key sets | yes |
-| `pnpm knip` | Dead files, exports and dependencies (optional gate) | advisory |
+| `pnpm dev` | `next dev --turbopack -p 3000` | Not run (dev server) |
+| `pnpm build` | `next build` (compiles and type-checks; no lint because ESLint is absent) | Pass |
+| `pnpm start` | `next start -p 3000` (serves the build) | Pass: all 12 routes returned 200 |
+| `pnpm typecheck` | `tsc --noEmit` | Pass, 0 errors |
+| `pnpm lint` | `next lint` | **Fails**: no ESLint config or dependency; `next lint` prompts interactively and exits 1 |
+| `pnpm dlx tsx scripts/verify_backend_contracts.ts` | Calls the backend and validates every response with zod (no `package.json` script) | Pass, 15 of 15, against a local backend on port 8099 |
 
-## 5. Environment variables (summary)
+## 5. Environment variables
 
-Full table with per-stage values: [ARCHITECTURE §17](ARCHITECTURE.md#17-hosting-and-environments). `NEXT_PUBLIC_*` values are inlined at build time, so each stage gets its own build.
+All variables are read at build time (`NEXT_PUBLIC_*` are inlined into the client bundle).
 
-| Variable | Scope | Local default | Purpose |
+| Variable | Read in | Default | Effect |
 |---|---|---|---|
-| `NEXT_PUBLIC_APP_ENV` | client | `local` | `local` \| `demo` \| `aws`; drives banners and telemetry environment |
-| `NEXT_PUBLIC_API_URL` | client | `http://localhost:4010` | Backend origin for browser REST and vector tiles |
-| `NEXT_PUBLIC_WS_URL` | client | `ws://localhost:4010/v1/ws` | WebSocket endpoint (CONTRACTS §6.1) |
-| `API_URL_INTERNAL` | server | `http://localhost:4010` | Backend origin for route handlers and server components |
-| `API_OPENAPI_URL` | dev/CI | `http://localhost:8000/openapi.json` | Source for `pnpm gen:api` |
-| `NEXT_PUBLIC_BASEMAP_PMTILES_URL` | client | `/basemap/delhi.pmtiles` | Protomaps Delhi-NCR extract |
-| `NEXT_PUBLIC_BASEMAP_ASSETS_URL` | client | `/basemap/assets` | Glyphs and sprites for the basemap style |
-| `NEXT_PUBLIC_MAPTILER_KEY` | client | empty | Optional alternative basemap |
-| `NEXT_PUBLIC_API_MOCKING` | client | `off` | `off` \| `browser` (MSW service worker) |
-| `NEXT_PUBLIC_DEMO_BANNER` | client | `true` | Shows the "Simulated fleet · real pipeline" console banner |
-| `NEXT_PUBLIC_E2E` | client | `0` | Exposes map test hooks to Playwright |
-| `NEXT_PUBLIC_SENTRY_DSN` | client | empty | Optional error reporting |
-| `AUTH_COOKIE_SECURE` | server | `true` | Set `false` only when testing over plain http on a LAN IP |
-| `AUTH_JWKS_URL` | server | empty | Optional JWT signature check in `proxy.ts` |
-| `AUTH_REFRESH_MAX_AGE_S` | server | `604800` | Refresh cookie lifetime; must match the backend refresh TTL |
+| `NEXT_PUBLIC_API_URL` | `src/lib/api.ts:10`, `src/lib/time.ts:7`, landing `Footer.tsx` | empty | Empty: mock mode (fixtures, demo clock fixed at Tue 10 Nov 2026 14:00 IST, the footer's open-data link is disabled). Set (for example `http://localhost:8000`): real backend, real clock |
+| `NEXT_PUBLIC_COGNITO_USER_POOL_ID` | `src/lib/auth.ts:5` | empty | With the client id, turns on Cognito sign-in and the console guard |
+| `NEXT_PUBLIC_COGNITO_CLIENT_ID` | `src/lib/auth.ts:6` | empty | See above. If either is empty the console opens without sign-in |
+| `NEXT_PUBLIC_MAP_STYLE` | nowhere | `https://tiles.openfreemap.org/styles/positron` in `.env.example` | **Not read by any code.** The basemap URL is hard-coded in `src/lib/visuals/hawa-gl.js:107` |
+| `API_URL` | `scripts/verify_backend_contracts.ts:15` | `http://127.0.0.1:8099` | Backend origin for the contract verifier only |
 
-## 6. Non-negotiables (summary)
+## 6. Verification record
 
-These come from [../CONTRACTS.md](../CONTRACTS.md) and [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md). They are enforced by lint, types, tests and review.
+Run on 2026-10-10 in a scratch copy of `frontend/` (no `node_modules` in the repo), Node v24.21.0, pnpm 11.17.0 (selected by `packageManager`).
 
-1. **Uncertainty is always shown.** No bare model point estimate reaches the screen. Twin values carry a range or confidence, forecasts carry P10–P90, impacts carry a CI and What-If carries P10–P90 ([CONTEXT §7](CONTEXT.md#7-uncertainty-display-rule)).
-2. **"Simulated" badge** on anything with `is_simulated: true`, plus a console-wide demo banner ([CONTEXT §6](CONTEXT.md#6-honesty-rule-in-the-web)).
-3. **AQI is "indicative"** wherever the app computes it (CONTRACTS §10.1).
-4. **Types come from OpenAPI** (`pnpm gen:api`). The generated client is imported only inside `src/lib/api`.
-5. **Lint passes with zero warnings.** CI runs `--max-warnings 0`.
-6. **English and Hindi** for every user-facing string. Times are shown in IST. Units follow CONTRACTS §1.
-7. **WCAG 2.2 AA.** Colour is never the only signal, and the map and charts have keyboard and screen-reader paths.
-8. **Nothing dispatches without officer approval.** The web never offers an automatic approve.
-9. **Never drop the What-If screen or the impact/verification view** (§16 cut rule).
+| Check | Command | Result |
+|---|---|---|
+| Install | `pnpm install --frozen-lockfile` | Pass. Resolved next 15.5.26, react 19.3.0, @tanstack/react-query 5.104.0, aws-amplify 6.22.0, maplibre-gl 4.7.1, zod 3.25.76, zustand 5.0.15, tailwindcss 3.4.19, typescript 5.9.3 |
+| Typecheck | `pnpm exec tsc --noEmit` | Pass, exit 0 |
+| Build | `pnpm build` | Pass, exit 0. 14 static pages; `/plans/[id]` is dynamic. First-load JS 103 kB shared; largest route `/map` 188 kB |
+| Lint | `pnpm lint` | Fail, exit 1. Output: "`next lint` is deprecated" then "How would you like to configure ESLint?" |
+| Smoke | `next start` then `curl` | `/`, `/login`, `/map`, `/forecast`, `/plans`, `/plans/214`, `/plans/999`, `/what-if`, `/impact`, `/fleet`, `/alerts`, `/route` all 200; unknown paths 404 |
+| Contract | `pnpm dlx tsx@4.19.2 scripts/verify_backend_contracts.ts` against the backend started from `backend/src` on port 8099 (AI-ML in-process fallback) | Pass, 15 of 15 |
+| Contract (plain Node) | `node scripts/verify_backend_contracts.ts` | Fail: `ERR_UNSUPPORTED_DIR_IMPORT` on `../src/contracts` |
 
-## 7. Contract additions and conflicts
+## 7. Product rules and their status
 
-The web needs several endpoints, fields and WebSocket channels that [../CONTRACTS.md](../CONTRACTS.md) does not yet define. Examples: twin run metadata, fleet trails, POIs, uncertainty on exposure, synthetic-control series, plan versions and WebSocket `pong`. All of them are listed with exact proposed names in [ARCHITECTURE §18](ARCHITECTURE.md#18-contract-additions-requested-by-the-web). Until the backend accepts them, the mock API serves the proposed shapes and pages degrade gracefully (see [PLAN §5](PLAN.md#5-mock-first-strategy)).
+| Rule | Status | Where |
+|---|---|---|
+| Nothing dispatches without officer approval | Implemented | Approve & dispatch is the only path to `POST /v1/plans/{id}/approve`; there is no auto-approve |
+| Uncertainty is shown with model outputs | Partial | Forecast P10–P90 band, impact 95% CI, confidence words with the number on hover, plan likely range. Hotspot concentrations and the What-If delta have no interval |
+| Simulated data is labelled | Partial | Landing "Simulated data / Live data", Proof note, fleet "Simulated" chip, What-If "Simulated." note, impact table footnote. No console-wide demo banner; demo map overlays are unlabelled |
+| AQI and PM2.5 never mixed | Implemented | `AqiChip` always spells "AQI n" or "PM2.5 n"; contracts carry separate breakpoints |
+| Colour is never the only signal | Partial | Chips carry the band word; causes carry icon and word. Map markers rely on colour plus value labels |
+| English and Hindi | Partial | Hindi in the driver view, cause names, alert preview. No translation framework |
 
-## 8. Links
+## 8. Known issues
 
-- System context: [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md). Golden path: [§10](../SYSTEM_OVERVIEW.md#10-golden-path-build-this-first)
-- Binding contracts: [../CONTRACTS.md](../CONTRACTS.md), especially [§1 Conventions](../CONTRACTS.md#1-conventions), [§3 Enums](../CONTRACTS.md#3-enums), [§6 REST + WS](../CONTRACTS.md#6-public-rest--websocket-surface-index) and [§10 AQI/GRAP](../CONTRACTS.md#10-air-quality-reference-tables)
-- Backend API (full shapes, auth): [../backend/API.md](../backend/API.md)
-- Backend events: [../backend/EVENTS.md](../backend/EVENTS.md) · deployment: [../backend/DEPLOYMENT.md](../backend/DEPLOYMENT.md)
-- AI-ML (twin, forecast, agents, verifier): [../aiml/README.md](../aiml/README.md)
-- Flutter app (driver, inspector, school, citizen): [../app/README.md](../app/README.md)
+| # | Issue | Where |
+|---|---|---|
+| 1 | `pnpm lint` cannot run: the script is `next lint`, but no ESLint package or config exists; Next prompts interactively and exits 1. `next lint` is also deprecated in Next 15.5 | `frontend/package.json:10` |
+| 2 | `NEXT_PUBLIC_MAP_STYLE` is documented in `.env.example` but never read; the basemap style is hard-coded | `frontend/.env.example:4`, `frontend/src/lib/visuals/hawa-gl.js:107` |
+| 3 | The map makes third-party requests at runtime: MapLibre CSS from unpkg (inside the element's shadow DOM), basemap tiles from tiles.openfreemap.org, and road routes from the public OSRM demo server. The map degrades or breaks offline or behind a strict proxy | `frontend/src/lib/visuals/hawa-gl.js:5`, `:59`, `:99`, `:107` |
+| 4 | What-If delta sign mismatch: the backend returns `deltaPct` as a positive gain (42.0) while the mock returns −31. The page prints `fmtPct(deltaPct)` followed by "less exposure", so against the backend it reads "+42% less exposure" | `frontend/src/app/(console)/what-if/page.tsx:57-58`, `frontend/src/mocks/fixtures.ts:147`, `backend/src/hawa_backend/core/intel_client.py:936`, `:977`, `:1006` |
+| 5 | "People reached" on `/alerts` parses `"<n> delivered"` from `delivered`; the mock strings ("3 of 3 read", "4,106") never match, so mock mode always shows 0. Backend strings ("4,120 delivered") work | `frontend/src/components/alerts/AlertStats.tsx:6`, `frontend/src/mocks/fixtures.ts:232-238` |
+| 6 | Mock mode: `GET /v1/plans/:id` ignores the id and always returns Plan #214, so `/plans/999` shows Plan #214 and the "Plan not found" branch is only reachable against the backend. `POST /v1/plans/draft` returns Plan #214 with status `drafting` instead of a new plan | `frontend/src/mocks/handlers.ts:34-35`, `frontend/src/app/(console)/plans/[id]/page.tsx:68-69` |
+| 7 | Mock mode: `GET /v1/hotspots` ignores `ward`, so the header ward picker does not filter anything without a backend | `frontend/src/mocks/handlers.ts:27-31` |
+| 8 | Scrubbing to negative hours is labelled "Observed replay" but shows current values: hotspots are always fetched at hour 0 and `atHour` only transforms positive hours | `frontend/src/components/map/layers.ts:36`, `frontend/src/hooks/useHotspots.ts:18`, `frontend/src/components/map/TimeScrubber.tsx:18` |
+| 9 | While hotspots are loading, or when the backend is unreachable, every map draws the element's built-in demo field and stations with no "demo data" label. Truck routes, bus trails, schools, anchors and the Ghazipur suspect pin are always built-in | `frontend/src/components/map/useMapStations.ts:6-9`, `frontend/src/lib/visuals/hawa-gl.js:120-121`, `:174-200` |
+| 10 | Backend unreachable: `/plans` shows "No draft plans … Draft plan now" instead of an error; `/route` shows a skeleton forever; `/what-if` and the landing What-If section have no error state ("—" or "Loading plan…") | `frontend/src/app/(console)/plans/page.tsx:24`, `frontend/src/app/(driver)/route/page.tsx:27`, `frontend/src/app/(console)/what-if/page.tsx`, `frontend/src/app/(marketing)/sections/WhatIf.tsx:42` |
+| 11 | Hard-coded values shown as data: "Last packet 6 s ago", "Wind NW · 2.1 m/s", "Thursday 06:00–10:00, by ward", "Review Plan #214", "Awaiting indoor sensor", next stop "2.4 km", "9 assets across 41 candidate cells", and the asset list `T-12, ASG-07, SW-03, I-3` on four maps | `AssetPanel.tsx:63`, `LayerToggles.tsx:25`, `forecast/page.tsx:43`, `:66`, `:79`, `WhatsAppPreview.tsx:29`, `route/page.tsx:83`, `PlanStates.tsx:10`, `plans/[id]/page.tsx:55`, `what-if/page.tsx:28`, `sections/WhatIf.tsx:47` |
+| 12 | Console auth is client-side only: `AuthGuard` hides the console without a Cognito session and the ID token is sent as `Bearer`, but no backend route checks it. `logout()` exists but no UI calls it | `frontend/src/components/shell/AuthGuard.tsx:14`, `frontend/src/lib/auth.ts:44`, `frontend/src/lib/api.ts:25-31` |
+| 13 | Dark mode inverts the whole console with a CSS filter, which also inverts the CPCB data colours and the basemap; the setting is not persisted | `frontend/src/components/shell/ConsoleShell.tsx:18`, `frontend/src/stores/console.ts:31-52` |
+| 14 | The contract verifier has no `package.json` script and no `tsx` dependency; plain `node` fails on the extensionless directory import. It reads `API_URL` (default port 8099, while the backend defaults to 8000), runs 15 requests but prints "ALL 14", and its POSTs change the backend's in-memory Plan #214 (approve, request changes) | `frontend/scripts/verify_backend_contracts.ts:13`, `:15`, `:57-98`, `:116` |
+| 15 | Code comments point to `docs/API.md` (does not exist; the backend API doc is `docs/backend/API.md`) and to `design/claude-design/source/` (the path is `design/source/`) | `frontend/src/contracts/index.ts:1`, `frontend/src/mocks/handlers.ts:1`, `frontend/src/lib/visuals/hawa.js:2`, `hawa-gl.js:2`, `pixel.js:2` |
+| 16 | Alerts for the `Workers` and `Drivers` audiences (in the contract and the fixtures) have no filter button and appear only under "All" | `frontend/src/app/(console)/alerts/page.tsx:11`, `frontend/src/contracts/alert.ts:5` |
+| 17 | `hawa.js` is loaded on every page but none of its elements (`hc-icon`, `hawa-map`, `hc-chart`, `hc-count`, `hc-iso`) is used; `vx-hexmap` in `pixel.js` is also unused | `frontend/src/components/visuals/VisualsLoader.tsx:18` |
+
+## 9. Links
+
+- System context: [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
+- Backend API: [../backend/API.md](../backend/API.md). The wire shapes the web relies on are the zod schemas in `frontend/src/contracts/`; [../CONTRACTS.md](../CONTRACTS.md) describes a broader snake_case blueprint surface that the current backend and web do not follow (see [ARCHITECTURE §4.3](ARCHITECTURE.md#43-relationship-to-docscontractsmd))
+- AI-ML: [../aiml/README.md](../aiml/README.md) · Flutter app: [../app/README.md](../app/README.md)
+- Component quick start: [../../frontend/README.md](../../frontend/README.md) · Design export notes: [../../frontend/design/EXPORT_NOTES.md](../../frontend/design/EXPORT_NOTES.md)

@@ -1,516 +1,452 @@
 # App architecture
 
-Purpose: how the Flutter app is built, covering layers, state, navigation, networking, storage, realtime, location, maps, media, i18n, theming, flavors, errors, security, performance and accessibility, plus the key sequences.
+Purpose: how the Flutter app in `app_frontend/` is built, covering layers, state, navigation, networking and fake mode, the API surface against the real backend, storage, realtime, push, location, maps, media, i18n, theming, flavors, errors, security, performance and accessibility, plus the key sequences.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
+
+> Status: this doc describes the code at HEAD. Design targets that are not built are marked **Planned**; the status vocabulary is defined in [README §2](README.md#2-implementation-status). File paths are relative to `app_frontend/`. The file tree is in [STRUCTURE.md](STRUCTURE.md).
 
 ---
 
 ## 1. Principles
 
-1. **The local database is the source of truth for the UI.** Screens watch drift streams. The network refreshes the cache, and the outbox pushes changes. No screen waits on the network to render.
-2. **The server is authoritative for state.** Local writes are optimistic and are reconciled against server events ([OFFLINE_AND_SYNC §7](OFFLINE_AND_SYNC.md#7-conflict-resolution)).
-3. **Generated client only.** Every `/v1` call goes through `packages/hawa_api`, which is generated from `/openapi.json`. The two exceptions are the presigned S3 upload (no auth) and the WebSocket.
-4. **Every mutation is idempotent.** Each has a client UUIDv7 that doubles as the `Idempotency-Key`.
-5. **Honesty and uncertainty are UI invariants.** `is_simulated` → a badge. A model output → its range or confidence (CONTRACTS §1).
-6. **Contracts over guesses.** Enum names, units and endpoints come from [CONTRACTS.md](../CONTRACTS.md). Unknown enum values render as `unknown`, never crash (CONTRACTS §12.5).
-7. **Field-first.** Offline, low-end devices, sunlight, gloves, Hindi ([CONTEXT §8](CONTEXT.md#8-field-realities-and-design-responses)).
+| # | Principle | Status |
+|---|---|---|
+| 1 | **The local database is the UI's source of truth.** Screens watch drift streams (tables or `cached_payloads` JSON). The network refreshes the cache and the outbox pushes changes | Implemented |
+| 2 | **The server is authoritative.** Local writes are optimistic overlays reconciled against server events ([OFFLINE_AND_SYNC §7](OFFLINE_AND_SYNC.md#7-conflict-resolution)) | Implemented |
+| 3 | **Typed client for the field contract.** Every contract call goes through the generated `packages/hawa_api`. Deliberate exceptions: the presigned S3 upload, the WebSocket, `CommandCenterApi` (untyped reads of the endpoints the backend serves today) and `externalDio` (OSRM, Photon) | Implemented |
+| 4 | **Every mutation is idempotent.** Outbox ops carry a UUIDv7 that doubles as the `Idempotency-Key`; other mutating calls get a generated key | Implemented |
+| 5 | **Honesty and uncertainty are UI invariants.** `is_simulated` → badge; model output → range or confidence (CONTRACTS §1) | Partial: the widgets exist and are used widely, but `UncertaintyText` is unused and the four hard-coded citizen screens rely only on a screen chip |
+| 6 | **Contracts over guesses.** Enums keep wire names and an `unknown` member (`core/utils/contract_enums.dart`, generator option `enumUnknownDefaultCase`) | Implemented |
+| 7 | **Field-first.** Offline, low-end devices, sunlight, gloves, Hindi ([CONTEXT §8](CONTEXT.md#8-field-realities-and-design-responses)) | Implemented in the shells; performance budgets unmeasured |
+| 8 | **Mock-first.** Every feature has a fake remote source on the in-app fake backend, switched per feature by `Env.isFake` (§6.5) | Implemented |
 
 ## 2. Layers
 
-Feature-first, layered. Each feature under `lib/features/<name>/` has four layers. Shared infrastructure lives in `lib/core/`, and app wiring in `lib/app/`.
+Feature-first, layered. Each feature under `lib/features/<name>/` has `domain`, `data`, `application` and `presentation`. Shared infrastructure lives in `lib/core/`, app wiring in `lib/app/`.
 
 ```mermaid
 flowchart TB
+  subgraph APP["app: bootstrap, env, providers, router, theme, l10n"]
+    WIRE["appOverrides + AppWiring"]
+  end
   subgraph PRES["presentation: features/*/presentation"]
-    SCR["Screens and widgets<br/>ConsumerWidget, no business logic"]
+    SCR["Screens and widgets<br/>ConsumerWidget"]
   end
   subgraph APPL["application: features/*/application"]
-    CTL["Controllers<br/>riverpod_generator Notifier / AsyncNotifier / Stream"]
+    CTL["Controllers<br/>riverpod_generator Notifier / Stream / Future"]
   end
   subgraph DOM["domain: features/*/domain"]
-    ENT["Entities and value objects<br/>freezed, pure Dart"]
-    REPI["Repository interfaces"]
+    ENT["Entities (freezed or plain), enums,<br/>repository interfaces, pure planners"]
   end
   subgraph DATA["data: features/*/data"]
     REPO["Repository implementations"]
-    MAPR["Mappers<br/>hawa_api models to entities"]
-    RDS["Remote data source<br/>hawa_api + Dio"]
-    LDS["Local data source<br/>drift DAOs"]
-    FAKE["Fake remote source<br/>JSON fixtures, dev flavor"]
+    MAPR["Mappers"]
+    RDS["Http*RemoteSource (hawa_api)"]
+    CCS["CommandCenter* adapters<br/>(live backend reads)"]
+    FAKE["Fake*RemoteSource<br/>(in-app FakeBackend)"]
   end
-  subgraph CORE["core: shared infrastructure"]
-    NET["network<br/>Dio + interceptor chain"]
-    STO["storage<br/>drift, secure storage, prefs"]
-    SYN["sync<br/>outbox drainer, triggers"]
-    RT["realtime<br/>WS client"]
-    PUSH["notifications<br/>FCM + local notifications"]
-    LOC["location<br/>shift tracker, geofence"]
-    MED["media<br/>capture, compress, upload"]
+  subgraph CORE["core"]
+    NET["network: dio, bareDio, externalDio,<br/>interceptors, CommandCenterApi, fake backend"]
+    STO["storage: drift, secure storage, prefs"]
+    SYN["sync: outbox, drainer, executors, triggers"]
+    RT["realtime: WsClient / FakeRealtimeClient"]
+    PUSH["notifications: FCM, local, push router"]
+    LOC["location: shift tracker, geofence"]
+    MED["media: capture, process, upload"]
+    MAP["maps: tile layer, cache, markers"]
   end
-  GEN[("packages/hawa_api<br/>generated, do not edit")]
+  GEN[("packages/hawa_api<br/>generated")]
 
+  WIRE --> CORE
   SCR --> CTL
-  CTL --> REPI
   CTL --> ENT
-  REPO -. implements .-> REPI
+  CTL --> REPO
   REPO --> MAPR
   REPO --> RDS
-  REPO --> LDS
+  REPO --> CCS
+  REPO --> FAKE
+  REPO --> STO
   REPO --> SYN
-  REPO -->|subscribes| RT
-  REPO -->|subscribes| PUSH
-  FAKE -. replaces in fake mode .-> RDS
   RDS --> GEN
   GEN --> NET
-  LDS --> STO
-  SYN --> STO
+  CCS --> NET
+  FAKE --> NET
   SYN --> NET
+  SYN --> STO
+  RT --> SYN
   CTL --> LOC
   CTL --> MED
 ```
 
-### 2.1 Dependency rules (enforced in review; see [LINTING_AND_QUALITY §11](LINTING_AND_QUALITY.md#11-code-review-checklist))
+Controllers depend on the repository *providers* (which return the `data` implementation) rather than only on domain interfaces; the interfaces exist in `domain/` for most features.
 
-| Layer | May import | Must not import |
-|---|---|---|
-| `presentation` | its feature's `application` + `domain`, `core/widgets`, `app/theme`, `app/l10n`, `app/router` (paths only) | `data`, `hawa_api`, `dio`, `drift` |
-| `application` | its feature's `domain`, other features' `domain` (read-only types), `core/*` services via providers | `presentation`, `hawa_api` |
-| `domain` | `freezed_annotation`, `meta`, `core/utils` (pure) | Flutter SDK widgets, `dio`, `drift`, `hawa_api` |
-| `data` | `domain`, `hawa_api`, `core/network`, `core/storage`, `core/sync` | `presentation`, `application` |
-| `core` | third-party packages, `hawa_api` (network only) | any `features/*` |
+### 2.1 Dependency rules
 
-Cross-feature use goes through a `domain` type or a provider, never through another feature's `data` classes.
+| Layer | May import | Must not import | Enforced by |
+|---|---|---|---|
+| `presentation` | its feature's `application` + `domain`, `core/widgets`, `app/theme`, `app/l10n`, `app/router` | `data`, `hawa_api`, `dio`, `drift` | `tool/architecture_guard.sh` (the `/data/` and `hawa_api` greps); `dio`/`drift` by review |
+| `application` | its `domain`, other features' `domain`, `core/*` providers, its own `data` providers | `presentation`, `hawa_api` | `hawa_api` by the guard; the rest by review |
+| `domain` | `freezed_annotation`, `json_annotation`, `core/utils` | Flutter widgets, `dio`, `drift`, `hawa_api` | review (no current violation) |
+| `data` | `domain`, `hawa_api`, `core/*` | `presentation`, `application` | review |
+| `core` | third-party packages, `app/` (env, theme, l10n, routes), `hawa_api` only in `core/network` | any `features/*` | the guard for `hawa_api`; no current `features` import in `core` |
 
-## 3. Feature anatomy
+`lib/app/providers.dart` is the only place that binds core seams to feature implementations.
 
-Example: `driver_route`.
+**Legacy prototype files.** `lib/app/router.dart`, `lib/app/theme.dart`, `lib/core/{air,api_client,config,geo,i18n,prefs}.dart`, `lib/features/auth/*.dart` (top level), `lib/features/{citizen,driver,hub}/`, `lib/features/school/{school_alert_screen,school_data}.dart`, `lib/features/settings/settings_screen.dart` and `lib/widgets/` come from the first prototype (package `hawacommand_app`). They are excluded from analysis and filtered out of the guard. All except `lib/app/theme.dart` are unreachable; `theme.dart` is still imported by four citizen screens ([README Known issue 6](README.md#9-known-issues)).
 
-| Layer | Files (abridged; full list in [STRUCTURE §4](STRUCTURE.md#4-libfeatures)) | Role |
-|---|---|---|
-| presentation | `today_route_screen.dart`, `route_map_screen.dart`, `stop_detail_screen.dart`, `widgets/stop_card.dart`, `widgets/shift_bar.dart` | Render state, call controller methods |
-| application | `today_route_controller.dart`, `shift_controller.dart`, `stop_actions_controller.dart`, `auto_done_events.dart` | Compose repositories, expose `AsyncValue`, one-shot UI events |
-| domain | `route.dart`, `stop.dart`, `task_status.dart`, `skip_reason.dart`, `driver_route_repository.dart` | Entities (freezed), enums, interface |
-| data | `driver_route_repository_impl.dart`, `task_remote_source.dart`, `task_local_source.dart`, `task_mapper.dart`, `fake_task_remote_source.dart` | Fetch, cache, outbox ops, WS event application |
+## 3. Features
+
+| Feature | Screens (see [SCREENS.md](SCREENS.md)) | Data sources: fake / real | Real backend today |
+|---|---|---|---|
+| `auth` | splash, language, phone, OTP | `FakeAuthRemoteSource` / `HttpAuthRemoteSource` | not served |
+| `shell` | role picker, permission education, unsupported role, five role shells, More sheet | `permission_handler` + geolocator | n/a |
+| `driver_route` | today's route, map, stop detail, skip, manual done, shift summary | `FakeTaskRemoteSource` / `HttpTaskRemoteSource` | not served |
+| `inspector` | targets, map, target detail, photo viewer, outcome | `FakeInspectorRemoteSource` / `HttpInspectorRemoteSource` | not served |
+| `school` | today, indoor/outdoor, forecast | `FakeSchoolRemoteSource` / `HttpSchoolRemoteSource`, wrapped by `CommandCenterForecastSource` when `school_forecast` is real | forecast only |
+| `citizen_air` | air near me, subscription, route tip, safe route, live ops, ward score | open air: `FakeOpenAirRemoteSource` / `CommandCenterOpenAirSource` (or `HttpOpenAirRemoteSource`); subscription (key `citizen_subscription`): fake / HTTP; safe window: `CommandCenterApi` | twin, hotspots, safe-window |
+| `citizen_reports` | capture, privacy, review, my reports, status, missed machine | `FakeReportsRemoteSource` / `HttpReportsRemoteSource` | not served |
+| `air_map` | AI air map with clean-air routing, place search | `FakeAirMapRemoteSource` / `HttpAirMapRemoteSource` (fake fallback); `OsrmRoutingSource`, `PhotonGeocodingSource` | twin, hotspots, forecast |
+| `alerts` | inbox, detail | `FakeAlertsRemoteSource` / `CommandCenterAlertsSource` (or `HttpAlertsRemoteSource`) | broadcast log |
+| `site` | site score | `FakeSiteRemoteSource` / `HttpSiteRemoteSource` | not served |
+| `profile` | profile | secure-storage `/v1/me` cache | n/a |
+| `settings` | settings, sync queue, notification settings, Dev tools, logout flow | outbox, prefs, fake backend | n/a |
+
+Example anatomy (`driver_route`): `domain/` has `today_route.dart`, `stop.dart`, `shift.dart`, `asset_summary.dart`, `impact_summary.dart`, `skip_reason.dart`, `route_diff.dart`, `auto_done_event.dart`, `driver_route_repository.dart`; `data/` has `driver_route_repository_impl.dart`, `task_remote_source.dart`, `fake_task_remote_source.dart`, `task_local_source.dart`, `task_mapper.dart`, `task_event_applier.dart`; `application/` has `today_route_controller.dart`, `shift_controller.dart`, `stop_actions_controller.dart`, `arrival_watcher.dart`, `route_change_detector.dart`, `auto_done_events.dart`.
 
 ## 4. State management: Riverpod with code generation
 
-Riverpod with `riverpod_annotation` + `riverpod_generator`, linted by `riverpod_lint`. Versions are latest stable, pinned in `pubspec.lock`.
+`flutter_riverpod 3.4.3`, `riverpod_annotation 4.0.7`, `riverpod_generator 4.0.9` (generated `*.g.dart`, not committed). `riverpod_lint`/`custom_lint` are **not installed**: no release resolves on Dart 3.12 (`analysis_options.yaml:37-39`).
 
-| Provider kind | Use for | Lifetime |
+| Provider kind | Used for | Examples |
 |---|---|---|
-| `@Riverpod(keepAlive: true)` function | Core singletons: `dio`, `hawaApi`, `appDatabase`, `tokenStore`, `wsClient`, `outboxDrainer`, `clock` | App |
-| `@riverpod` function returning `Stream<T>` | Drift-backed reads (`watchTodayRoute`) | Auto-dispose |
-| `@riverpod class X extends _$X` (`Notifier`/`AsyncNotifier`) | Screen controllers with methods (`TodayRouteController.skip`) | Auto-dispose, family by id where needed |
-| `@riverpod` family | Per-entity (`stopDetailController(taskId)`) | Auto-dispose |
+| `@Riverpod(keepAlive: true)` function | Core singletons | `dio`, `bareDio`, `externalDio`, `hawaApi`, `mutationApi`, `commandCenterApi`, `appDatabase`, `tokenStore`, `settingsStore`, `realtimeClient`, `realtimeDispatcher`, `outboxRepository`, `outboxDrainer`, `opExecutors`, `fakeBackend`, `fcmService`, `localNotifications`, `appClock`, `serverClock`, `tileCache` |
+| `@Riverpod(keepAlive: true)` class | App-wide state with methods | `SessionController`, `AppPreferencesController`, `ForcedOffline`, `SyncTriggers`, `ServiceDate`, `ShiftActiveFlag`, `CurrentUserId`, `ConflictBannerBus`, `InAppMessages`, `UploadProgress`, `ShiftController`, `LogoutController` |
+| `@riverpod` (auto-dispose) | Screen controllers, drift-backed streams | `outboxDepth`, `visibleOutboxOps`, `outboxActive`, `activeRoleWire`, `currentUser`, feature controllers |
+| Hand-written providers | A few app/screen-level cases | `appWiringProvider` (`app/providers.dart`), `safeBreathWindowProvider` (citizen air), the Dev tools health probe |
 
-Rules:
-- Controllers expose `AsyncValue<T>`. Errors are typed `Failure`s (§6.4).
-- Side effects such as navigation, snackbars and haptics go through one-shot event providers (`StreamProvider` of events) or `ref.listen` in widgets, never through state flags that have to be reset.
-- `ref.watch` in `build`, `ref.read` in callbacks. No `ref` use after an `await` without checking `ref.mounted` (Riverpod 3 semantics).
-- If the pinned Riverpod major retries failed providers automatically, set a `ProviderScope` retry policy that retries only transient `Failure`s (`NetworkFailure`, `TimeoutFailure`, `ServerFailure` 502–504) and caps at 3 attempts.
-- Tests use `ProviderContainer` with overrides ([LINTING_AND_QUALITY §10](LINTING_AND_QUALITY.md#10-testing-strategy)).
-
-```dart
-// features/driver_route/application/today_route_controller.dart (sketch)
-@riverpod
-class TodayRouteController extends _$TodayRouteController {
-  @override
-  Stream<TodayRoute> build() {
-    final repo = ref.watch(driverRouteRepositoryProvider);
-    final date = ref.watch(serviceDateProvider); // IST date; flips at 00:00 IST
-    unawaited(repo.refresh(date));               // stale-while-revalidate, updates sync_state
-    return repo.watchRoute(date);                // drift stream is the source of truth
-  }
-
-  Future<void> refresh() =>
-      ref.read(driverRouteRepositoryProvider).refresh(ref.read(serviceDateProvider));
-
-  Future<void> skip(String taskId, SkipReason reason, {String? note}) =>
-      ref.read(driverRouteRepositoryProvider).skip(taskId, reason, note: note);
-}
-```
+Rules in the code:
+- `bootstrap()` sets a `ProviderScope.retry` policy: only transient `Failure`s (`isTransient`), at most 3 attempts, 400 ms × 2ⁿ.
+- `sharedPreferencesProvider` and `crashReporterProvider` are overridden in `bootstrap()`; `appOverrides()` (`app/providers.dart`) binds `tokenRefresherProvider` to `AuthRepository.refreshTokens` and `sessionExpiredProvider` to `SessionController.onExpired`. The same overrides are used in the workmanager isolate.
+- `appWiringProvider` (`AppWiring`) is watched by `HawaApp` and eagerly reads `syncTriggersProvider`, `realtimeDispatcherProvider` and the three realtime appliers, builds the `PushRouter`, starts local notifications and FCM, and owns the foreground/background lifecycle of the WebSocket.
+- Tests use `ProviderScope`/`ProviderContainer` overrides (`test/helpers/pump_app.dart`).
 
 ## 5. Navigation: go_router
 
 ### 5.1 Route tree
 
-One `GoRouter` built by a keep-alive provider. Role shells are `StatefulShellRoute.indexedStack` so each tab keeps its stack. Shared routes (alerts, settings) sit outside the shells and are pushed on top. The full list with specs is in [SCREENS.md](SCREENS.md).
+One `GoRouter` from the keep-alive `routerProvider` (`lib/app/router/router.dart`). `initialLocation` is `/splash`; `refreshListenable` is a `ValueNotifier` bumped on every `sessionControllerProvider` change. Role shells are `StatefulShellRoute.indexedStack`. Modal pages (skip, manual done, outcome, permission education) and the photo viewer use the root navigator. Path constants live in `lib/app/router/routes.dart` (`abstract final class Routes`).
 
-| Path | Screen | Required role | Shell |
+| Path | Screen | Required role | Shell / tab |
 |---|---|---|---|
-| `/splash` | Splash / bootstrap | — | — |
+| `/` | redirects to `/splash` | — | — |
+| `/splash` | Splash | — | — |
 | `/onboarding/language` | Language picker | — | — |
-| `/auth/phone`, `/auth/otp` | Phone + OTP | — (signed out) | — |
+| `/onboarding/permissions/:kind` | Permission education (`notifications`, `location`, `camera`) | — | modal |
+| `/auth/phone?from=`, `/auth/otp?from=` | Phone, OTP | signed out | — |
 | `/auth/role` | Role picker | signed in | — |
-| `/onboarding/permissions/:kind` | Permission education (`notifications`, `location`, `camera`) | signed in | — |
-| `/driver`, `/driver/map`, `/driver/stops/:taskId`, `/driver/stops/:taskId/skip`, `/driver/stops/:taskId/manual-done`, `/driver/shift/summary` | Driver | `driver` | Driver (tabs: Route, Map, More) |
-| `/inspector`, `/inspector/map`, `/inspector/targets/:targetId`, `/inspector/targets/:targetId/outcome`, `/inspector/targets/:targetId/photos/:index` | Inspector | `inspector` | Inspector (Targets, Map, More) |
-| `/school`, `/school/air`, `/school/forecast` | School | `school` | School (Today, Air, Alerts, More) |
-| `/citizen`, `/citizen/subscription`, `/citizen/report/privacy`, `/citizen/report/new`, `/citizen/report/review`, `/citizen/reports`, `/citizen/reports/:reportId`, `/citizen/route-tip` | Citizen | `citizen` | Citizen (Air, Report, My reports, More) |
-| `/site` | Site manager | `site_manager` | Site (single page + More) |
-| `/alerts`, `/alerts/:alertId` | Alert inbox / detail | any signed in | pushed |
-| `/settings`, `/settings/sync`, `/profile` | Settings, pending uploads, profile | any signed in | pushed |
-| `/unsupported-role` | "Use the web console" | `officer`/`admin`/`analyst` | — |
+| `/unsupported-role` | "Use the web console" | web-only roles | — |
+| `/driver`, `/driver/stops/:taskId`, `/driver/stops/:taskId/skip`, `/driver/stops/:taskId/manual-done`, `/driver/shift/summary`, `/driver/map` | Driver | `driver` | Route · Map · More |
+| `/inspector`, `/inspector/targets/:targetId`, `…/outcome`, `…/photos/:index`, `/inspector/map` | Inspector (`:targetId` is the inspection id) | `inspector` | Targets · Map · More |
+| `/school?date=`, `/school/forecast`, `/school/air` | School | `school` | Today · Air · Alerts · More |
+| `/citizen/map` | AI air map (citizen home) | `citizen` | Map |
+| `/citizen`, `/citizen/subscription`, `/citizen/route-tip`, `/citizen/safe-route`, `/citizen/live-ops`, `/citizen/ward-score` | Air near me and children | `citizen` | Air |
+| `/citizen/report/new`, `/citizen/report/new/missed-machine`, `/citizen/report/privacy`, `/citizen/report/review?draft=` | Citizen Eyes | `citizen` | Report |
+| `/citizen/reports`, `/citizen/reports/:reportId` | My reports, status | `citizen` | My reports |
+| `/site` | Site score | `site_manager` | Site · More |
+| `/map`, `/map/search?field=from\|to` | AI air map for any role (from More), place search | any signed in | pushed |
+| `/alerts`, `/alerts/:alertId` | Inbox, detail | any signed in | pushed |
+| `/settings`, `/settings/sync`, `/settings/notifications`, `/settings/dev` | Settings, sync queue, notification prefs, Dev tools | any signed in | pushed |
+| `/profile` | Profile | any signed in | pushed |
 
-Path constants live in `lib/app/router/routes.dart` (`abstract final class Routes`), with helper builders such as `Routes.stop(taskId)`. No string literals for paths anywhere else. An inspector `:targetId` is the **inspection id**. Report-origin inspections can exist without a plan task (backend ARCHITECTURE §5.4), so the target is keyed by inspection. It falls back to the task id only for an `inspect` task that has no inspection row.
+`Routes.reportMissedMachine` (`/citizen/report/missed-machine`) does not match the registered path above, and `Routes.schoolForecast` is linked from a citizen screen ([README Known issue 5](README.md#9-known-issues)).
 
 ### 5.2 Redirect guard
 
-The guard is a pure function of the session state and the requested URI, so it's unit-testable. `refreshListenable` is a `ValueNotifier` bridged from the session provider.
+`authRedirect(SessionState, Uri)` in `lib/app/router/guards.dart` is a pure function, unit-tested in `test/app/router/guards_test.dart`:
 
-```dart
-// app/router/guards.dart (sketch)
-String? authRedirect(SessionState s, Uri uri) {
-  final path = uri.path;
-  if (s is SessionBooting) return path == Routes.splash ? null : Routes.splash;
-  if (!s.languageChosen) return path == Routes.language ? null : Routes.language;
+1. `SessionBooting` → `/splash`.
+2. Language not chosen → `/onboarding/language`.
+3. `SessionSignedOut`: `/onboarding/language` → `/auth/phone`; `/auth/phone` and `/auth/otp` are allowed; anything else → `/auth/phone?from=<uri>` (no `from` for `/` or `/splash`).
+4. Signed in, every role web-only (`officer`, `admin`, `analyst`, `unknown`) → `/unsupported-role`.
+5. No active role → `/auth/role`.
+6. Auth, splash, language, unsupported-role or `/` → the role home (`Routes.homeFor`: driver `/driver`, inspector `/inspector`, school `/school`, citizen `/citizen/map`, site manager `/site`).
+7. A path owned by another role (`Routes.requiredRoleFor`, by prefix) → the active role's home.
 
-  if (s is SessionSignedOut) {
-    if (Routes.publicAuth.contains(path)) return null;
-    return Uri(path: Routes.phone, queryParameters: {'from': uri.toString()}).toString();
-  }
-
-  final signedIn = s as SessionSignedIn;
-  if (signedIn.roles.every(UserRoleX.isWebOnly)) {
-    return path == Routes.unsupportedRole ? null : Routes.unsupportedRole;
-  }
-  final active = signedIn.activeRole;
-  if (active == null) return path == Routes.rolePicker ? null : Routes.rolePicker;
-  if (Routes.publicAuth.contains(path) || path == Routes.splash) return Routes.homeFor(active);
-
-  final required = Routes.requiredRoleFor(path); // derived from the route table
-  if (required != null && required != active) return Routes.homeFor(active);
-  return null;
-}
-```
-
-After login, the controller navigates to `from` if the active role may open it. Otherwise it goes to the role home.
+`afterLogin(from, role)` returns `from` only when the role may open it, otherwise the role home.
 
 ### 5.3 Deep links from push
 
-- Every push payload carries `deep_link` in the backend's **entity** form `hawa://{entity}/{id}`. The backend `alert.deep_link` column already uses `hawa://tasks/…` (backend DATA_MODEL §10.1). The backend doesn't know app routes, and the app maps entities to routes for the active role:
+`resolveDeepLink` (`lib/app/router/deep_links.dart`) maps the backend's entity form `hawa://{entity}/{id}` to a route and the role that may open it. Ids must be UUIDv7 (`isUuidV7`) or a school id (`SCH-…`); anything else returns null.
 
-| Payload `deep_link` | Driver | Inspector | School | Citizen | Site manager |
-|---|---|---|---|---|---|
-| `hawa://route?date=YYYY-MM-DD` | `/driver` | `/inspector` | — | — | — |
-| `hawa://tasks/{task_id}` | `/driver/stops/{task_id}` | `/inspector/targets/{inspection_id or task_id}` | — | — | — |
-| `hawa://inspections/{inspection_id}` | — | `/inspector/targets/{inspection_id}` | — | — | — |
-| `hawa://schools/{school_id}/safe-window?date=` | — | — | `/school?date=` | — | — |
-| `hawa://schools/{school_id}/air` | — | — | `/school/air` | — | — |
-| `hawa://reports/{report_id}` | — | — | — | `/citizen/reports/{report_id}` | — |
-| `hawa://alerts/{alert_id}` | `/alerts/{alert_id}` | `/alerts/{alert_id}` | `/alerts/{alert_id}` | `/alerts/{alert_id}` | `/alerts/{alert_id}` |
-| `hawa://sites/me` | — | — | — | — | `/site` |
+| `deep_link` | Roles that can open it | Route |
+|---|---|---|
+| `hawa://route?date=…` | driver, inspector | `/driver` or `/inspector` |
+| `hawa://tasks/{uuid}` | driver, inspector | `/driver/stops/{id}` or `/inspector/targets/{id}` |
+| `hawa://inspections/{uuid}` | inspector | `/inspector/targets/{id}` |
+| `hawa://schools/{SCH-…}/safe-window?date=YYYY-MM-DD` | school | `/school?date=…` (or `/school`) |
+| `hawa://schools/{SCH-…}/air` | school | `/school/air` |
+| `hawa://reports/{uuid}` | citizen | `/citizen/reports/{id}` |
+| `hawa://alerts/{uuid}` | the active role (else the first held role) | `/alerts/{id}` |
+| `hawa://sites/me` | site_manager | `/site` |
 
-- `PushRouter.open(payload)`:
-  1. Parses `deep_link` against this allow-list. IDs must match the UUIDv7 or CONTRACTS id regexes, and anything else is dropped.
-  2. Resolves the target role. If the user holds it but it isn't active, it calls `session.switchRole(required)` and shows a snackbar "Switched to Driver / ड्राइवर पर बदला गया".
-  3. Calls `router.go(route)`. If the user isn't signed in, the guard sends them to login with `from=`.
-- Sources:
-  - `FirebaseMessaging.instance.getInitialMessage()` (cold start)
-  - `FirebaseMessaging.onMessageOpenedApp`
-  - flutter_local_notifications `onDidReceiveNotificationResponse`
-  - the Android intent filter for the `hawa://` scheme (SMS/WhatsApp links; App Links over https come post-hackathon)
+The active role is preferred when it can open the link, otherwise the first held role that can. `PushRouter.open(payload)` (`lib/core/notifications/push_router.dart`) drops payloads whose `role` the user does not hold, resolves the link, calls `SessionController.chooseRole` if the target role is held but not active, then `router.go(route)`.
+
+| Source of a deep link | Status |
+|---|---|
+| `FirebaseMessaging.getInitialMessage()` (cold start, waits up to 5 s for the session to restore) | Implemented, inactive without Firebase |
+| `FirebaseMessaging.onMessageOpenedApp` | Implemented, inactive without Firebase |
+| flutter_local_notifications taps and launch details | Implemented |
+| In-app banner taps (`AppWiring.open`) | Implemented |
+| Android `hawa://` intent filter (SMS/WhatsApp links) | Partial: declared in the manifest, but no Dart code reads the intent ([README Known issue 8](README.md#9-known-issues)) |
+| App Links over https | Planned |
+
+### 5.4 Roles and role switching
+
+- `UserRole` (`features/auth/domain/user_role.dart`): `driver`, `inspector`, `school`, `citizen`, `site_manager`, `officer`, `admin`, `analyst`, `unknown`. The last four are web-only. Picker order: driver, inspector, school, citizen, site manager. `isField` (driver, inspector) selects outdoor mode and 64 dp buttons.
+- On sign-in or restore, `SessionController._enter` picks the active role: the saved `active_role` pref if still held, else the only app role, else none (→ role picker).
+- **Switch role** (More sheet, shown when the user holds more than one app role): if a shift is running the user confirms, then `chooseRole` saves the pref, updates the session, calls `POST /v1/auth/switch-role` (re-issues tokens; failure is logged and ignored), fires a manual sync trigger and goes to the new home with a "Switched to …" snackbar.
+- Push deep links switch role automatically (§5.3).
+- A background `/v1/me` refresh after restore clears the active role if the server no longer grants it.
 
 ## 6. Networking
 
-### 6.1 Generated client
+### 6.1 HTTP clients and the generated client
 
-- `packages/hawa_api` is generated by `openapi-generator` with generator `dart-dio`, options `serializationLibrary=json_serializable`, `pubName=hawa_api` and `enumUnknownDefaultCase=true`. The last option maps unknown enum values to a sentinel, which satisfies CONTRACTS §12.5. Config lives in `openapi/generator-config.yaml` ([STRUCTURE §10](STRUCTURE.md#10-configuration-file-sketches)).
-- The snapshot `openapi/openapi.json` and the generated package are committed, and regenerated with `make gen-api`.
-- The app constructs `HawaApi(dio: ref.watch(dioProvider))` so the generated APIs share our interceptor chain.
-- Only `features/*/data/*_remote_source.dart` imports `package:hawa_api`.
-- Requirement on the backend: stable, readable `operationId`s and tags in OpenAPI (FastAPI's default ids produce unusable Dart method names). Listed in the contract proposals ([§7.3](#73-proposed-contract-additions-the-app-depends-on)).
+| Client | Built in | Base URL | Interceptors | Used for |
+|---|---|---|---|---|
+| `dioProvider` | `core/network/dio_provider.dart` | `API_BASE_URL` | full chain (§6.2); timeouts 10 s connect / 20 s receive / 20 s send | the generated `HawaApi` (all contract calls except refresh) |
+| `bareDioProvider` | same file (re-exported by `bare_dio_provider.dart`) | `API_BASE_URL` | ForcedOffline (non-prod), RequestId, ProblemJson, Logging; 10/30/60 s | token refresh, S3 presigned upload (absolute URL), `CommandCenterApi` |
+| `externalDioProvider` | `core/network/command_center_api.dart` | none (absolute URLs) | none; `User-Agent: HawaCommand-field/0.1 (in.hawacommand.field)` | OSRM routing, Photon search |
+
+- **Generated client.** `packages/hawa_api` (openapi-generator 7.17.0, `dart-dio`, `json_serializable`, `enumUnknownDefaultCase`, `skipCopyWith`; config in `openapi/generator-config.yaml`) is built from `openapi/openapi.json`, a hand-written snapshot titled "HawaCommand API (field app surface)" `1.1.0-app` with 36 operations and 124 schemas. `hawaApiProvider` constructs `HawaApi(dio: dio, interceptors: const [])` so the generated APIs share our chain and add none of their own. The guard allows `package:hawa_api` only in `features/*/data/` and `core/network/`.
+- **`CommandCenterApi`** wraps the read endpoints the backend serves today: `twin({bbox, limit=2000})`, `hotspots({hour=0, ward})`, `forecast({cellId})`, `safeWindow({persona='general'})`, `alerts()`, `devices()`, `impact()`, `healthy()` (`GET /healthz`, 5 s). It returns raw JSON maps; feature adapters reshape them into contract models. `devices()` and `impact()` are not called anywhere.
+- `HttpMutationApi` (`core/network/http_mutation_api.dart`) is the only place outbox ops touch `hawa_api`; it passes the op id as both the `idempotencyKey` parameter and `extra['idempotency_key']`.
 
 ### 6.2 Interceptor chain
 
-Order matters. Dio runs request hooks in insertion order and error hooks in the same order.
+Order in `dioProvider`. Dio runs request hooks and error hooks in insertion order.
 
-| # | Interceptor | Request | Error / response |
+| # | Interceptor | Request | Response / error |
 |---|---|---|---|
-| 1 | `RequestIdInterceptor` | New UUIDv7 `X-Request-Id` **per attempt**. Forwards `X-Correlation-Id` if the caller set one | Reads the echoed ids into `extra` for logs |
-| 2 | `IdempotencyInterceptor` | For `POST`/`PUT`/`PATCH`/`DELETE`: sets `Idempotency-Key` from `options.extra['idempotency_key']` (outbox op id), or generates one for non-outbox calls. **Stays the same across retries** | — |
-| 3 | `AuthInterceptor` | Adds `Authorization: Bearer <access>`. If `exp` is under 60 s away, awaits the shared refresh first | — |
-| 4 | `RefreshInterceptor` (`QueuedInterceptor`) | — | On `401` from a non-auth endpoint: refresh once (single-flight), replay the request once with the new token. On refresh failure: emit `SessionExpired` and pass the error on |
-| 5 | `RetryInterceptor` | — | Retries transient errors (connection, timeout, 502/503/504, 429 honouring `Retry-After`, and `409 idempotency_in_progress` with `Retry-After: 1` per backend CACHING §9) up to 2 times with 0.5 s / 1.5 s + jitter. Only for `GET`/`PUT`/`DELETE` and for `POST`s that carry an `Idempotency-Key`. Long-term retry belongs to the outbox |
-| 6 | `ProblemJsonInterceptor` | — | Parses `application/problem+json` (`type, title, status, detail, instance, code, errors[]`) into a typed `Failure` and sets it as `DioException.error` |
-| 7 | `LoggingInterceptor` (dev/staging) | Logs method, path, request id, duration | Redacts `Authorization`, phone numbers, OTP codes, tokens and presigned URLs |
+| 0 | `ForcedOfflineInterceptor` (not in prod) | Rejects with a connection error while Dev tools "Go offline" is on | — |
+| 1 | `RequestIdInterceptor` | New UUIDv7 `X-Request-Id` per attempt, stored in `extra['request_id']` | Copies an echoed `X-Request-Id` into `extra` |
+| 2 | `IdempotencyInterceptor` | `POST/PUT/PATCH/DELETE` outside `/v1/auth/`: `Idempotency-Key` from `extra['idempotency_key']`, an existing header, or a new UUIDv7 stored back in `extra` (stable across retries) | — |
+| 3 | `AuthInterceptor` | `Authorization: Bearer <access>` (skipped for `/v1/auth/*` except `/logout` and `/switch-role`). If the JWT `exp` is under 60 s away, awaits the shared refresh first | — |
+| 4 | `RefreshInterceptor` (`QueuedInterceptor`) | — | On `401` from a non-auth path: if no one refreshed since the request left, runs the single-flight refresh, then replays once (`extra['after_refresh']`). A failed refresh calls `SessionExpired` |
+| 5 | `RetryInterceptor` | — | Connection/timeouts, `429`, `502/503/504`, `409` `idempotency(.|_)in_progress`: up to 2 retries at 0.5 s / 1.5 s + 0–250 ms jitter, or `Retry-After` if ≤ 10 s. Only `GET`/`PUT`/`DELETE` or requests carrying an `Idempotency-Key` |
+| 6 | `ProblemJsonInterceptor` | — | Converts every `DioException` into a typed `Failure` set as `DioException.error` (§6.4) |
+| 7 | `LoggingInterceptor` (disabled in prod) | Stamps `started_at` | Logs `METHOD path → status Nms rid=…` at FINE, redacted; feeds `ServerClock` from the `Date` header (also in prod) |
 
-The S3 upload (a **presigned POST** with policy fields, backend ARCHITECTURE §7 "Uploads") uses a separate bare `Dio` with no interceptors other than logging. Sending our `Authorization` header to S3 would leak the token and break the signature.
+`failureOf(error)` unwraps a `Failure` from any error; data sources rethrow it.
 
 ### 6.3 Refresh, single-flight
 
-```dart
-// core/network/interceptors/refresh_interceptor.dart (sketch)
-class RefreshInterceptor extends QueuedInterceptor {
-  RefreshInterceptor(this._tokens, this._refresher, this._dio, this._session);
-  final TokenStore _tokens;
-  final TokenRefresher _refresher; // calls POST /v1/auth/refresh on a bare Dio
-  final Dio _dio;
-  final SessionEvents _session;
-  Future<void>? _inFlight;
-
-  @override
-  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
-    final opts = err.requestOptions;
-    final isRetry = opts.extra['after_refresh'] == true;
-    if (err.response?.statusCode != 401 || isRetry || ApiPaths.isAuthCall(opts.path)) {
-      return handler.next(err);
-    }
-    try {
-      final sentWith = opts.headers['Authorization'] as String?;
-      final current = 'Bearer ${await _tokens.readAccess()}';
-      if (sentWith == current) {
-        // Nobody refreshed since this request left: refresh once for everyone.
-        await (_inFlight ??= _refresher.refresh().whenComplete(() => _inFlight = null));
-      }
-      opts
-        ..extra['after_refresh'] = true
-        ..headers['Authorization'] = 'Bearer ${await _tokens.readAccess()}';
-      return handler.resolve(await _dio.fetch<Object?>(opts));
-    } on Object {
-      _session.expired(); // router guard sends user to /auth/phone, outbox is kept
-      return handler.next(err);
-    }
-  }
-}
-```
-
-Refresh tokens rotate (SYSTEM_OVERVIEW §6: access 15 min + rotating refresh). If the server detects reuse and revokes the token family, refresh fails with `401`. The app then signs out **but keeps the outbox**, which is tied to the user id and drains after the same user signs in again. A different user signing in triggers the logout wipe ([OFFLINE_AND_SYNC §10](OFFLINE_AND_SYNC.md#10-storage-limits-cleanup-and-logout)).
+`SingleFlightRefresh.run()` shares one in-flight `Future` between `AuthInterceptor`, `RefreshInterceptor` and `WsClient`. The refresher is `TokenRefresherImpl` (`features/auth/data/token_refresher.dart`): it reads the refresh token, calls `POST /v1/auth/refresh` through a `HawaApi` built on the **bare** Dio (so the refresh cannot loop through the chain) and saves the rotated pair. On failure the session controller's `onExpired` pauses the drainer, disconnects realtime and moves to `SessionSignedOut(expired: true)`. Data and outbox are kept for the same user; a different user signing in wipes first ([OFFLINE_AND_SYNC §10](OFFLINE_AND_SYNC.md#10-storage-limits-cleanup-and-logout)).
 
 ### 6.4 Typed failures
 
-```dart
-// core/errors/failure.dart (sketch)
-sealed class Failure implements Exception {
-  const Failure({this.requestId, this.code});
-  final String? requestId; // X-Request-Id, shown in "Details" for support
-  final String? code;      // problem+json `code`
-  bool get isTransient => false;
-}
-final class NetworkFailure extends Failure { const NetworkFailure({super.requestId}); @override bool get isTransient => true; }
-final class TimeoutFailure extends Failure { const TimeoutFailure({super.requestId}); @override bool get isTransient => true; }
-final class UnauthorizedFailure extends Failure { const UnauthorizedFailure({super.requestId, super.code}); }
-final class ForbiddenFailure extends Failure { const ForbiddenFailure({super.requestId, super.code}); }
-final class NotFoundFailure extends Failure { const NotFoundFailure({super.requestId, super.code}); }
-final class ConflictFailure extends Failure { const ConflictFailure({required String super.code, this.detail, super.requestId}); final Map<String, Object?>? detail; }
-final class ValidationFailure extends Failure { const ValidationFailure(this.errors, {super.requestId, super.code}); final List<FieldError> errors; }
-final class RateLimitedFailure extends Failure { const RateLimitedFailure({this.retryAfter, super.requestId}); final Duration? retryAfter; @override bool get isTransient => true; }
-final class ServerFailure extends Failure { const ServerFailure(this.status, {super.requestId}); final int status; @override bool get isTransient => status >= 502 && status <= 504; }
-final class UnknownFailure extends Failure { const UnknownFailure(this.cause, {super.requestId}); final Object cause; }
-```
+`core/errors/failure.dart` defines a sealed `Failure` (with `requestId`, normalized `code`, `ProblemDetails`, `isTransient`). `Failure.fromStatus` maps HTTP status:
 
-Presentation maps a `Failure` to localized copy with `failure.message(context.l10n)`. The raw server `detail` is never shown to field users. It goes into an expandable "Details" row along with `requestId`.
+| Failure | From | Transient |
+|---|---|---|
+| `NetworkFailure` | connection error, unknown socket exception | yes |
+| `TimeoutFailure` | connect/send/receive/transform timeout, `408` | yes |
+| `UnauthorizedFailure` | `401` | no |
+| `ForbiddenFailure` | `403` | no |
+| `NotFoundFailure` | `404`, `410` | no |
+| `ConflictFailure(code, retryAfter)` | `409` | only `idempotency_in_progress` |
+| `ValidationFailure(errors, status)` | `400`, `413`, `415`, `422` | no |
+| `RateLimitedFailure(retryAfter)` | `429` | yes |
+| `ServerFailure(status)` | `≥ 500` | `502–504` |
+| `UnknownFailure(cause)` | anything else | no |
+| `SimulatedOfflineFailure` | fake mode "Go offline" | yes |
+
+`ProblemDetails` (`core/errors/problem_details.dart`) parses RFC 9457 bodies; `code` comes from `code` or a `urn:hawa:problem:` type and is normalized (`auth.otp_invalid` → `otp_invalid`, `idempotency.in_progress` → `idempotency_in_progress`, `inspection.already_closed` → `inspection_already_closed`, `upload.too_large` → `media_too_large`, …). Presentation shows `failure.message(l10n)` (`failure_messages.dart`); the raw `detail` is never shown. `asFailure(error)` wraps anything else.
+
+### 6.5 Fake vs real selection
+
+`Env.isFake(feature)` = not in `REAL_FEATURES` and (`USE_FAKE_API` or in `FAKE_FEATURES`). Each feature's `*RemoteSource` provider chooses its implementation; tests override those providers directly. Core seams follow the same switch:
+
+| Seam | Fake when | Real |
+|---|---|---|
+| `mutationApiProvider` | `USE_FAKE_API=true` → `FakeMutationApi` for every op | `HttpMutationApi`; with `FAKE_FEATURES`, `_RoutingMutationApi` routes per op (tasks/shifts/locations → `driver_route`/`inspector`; close/on-site → `inspector`; reports and presign → `citizen_reports`/`inspector`; alert ack → `alerts`/`school`; push token → `auth`; `PATCH /v1/me` → `auth`/`settings`; subscription → `citizen_air`) |
+| `objectUploaderProvider` | `citizen_reports` or `inspector` fake → `FakeObjectUploader` | `DioObjectUploader` on the bare Dio |
+| `realtimeClientProvider` | `driver_route` or `alerts` fake → `FakeRealtimeClient` | `WsClient(WS_URL)` |
+| `alertsRemoteSourceProvider` | `alerts` fake | `CommandCenterAlertsSource`, or `HttpAlertsRemoteSource` with `ALERTS_CONTRACT=true` |
+| `openAirRemoteSourceProvider` | `citizen_air` fake | `CommandCenterOpenAirSource` (twin + hotspots, fixture fallback), or `HttpOpenAirRemoteSource` with `OPEN_AIR_CONTRACT=true` |
+| `schoolRemoteSourceProvider` | `school` fake | `HttpSchoolRemoteSource`; `CommandCenterForecastSource` wraps either unless `school_forecast` is fake |
+| `airMapRemoteSourceProvider` | `air_map` fake | `HttpAirMapRemoteSource` with `FakeAirMapRemoteSource` as fallback |
+
+### 6.6 The in-app fake backend
+
+`core/network/fake/fake_backend.dart` (`FakeBackend`) is a pure-Dart, in-process stand-in for the contract API, built from `assets/fixtures/api/*.json`:
+
+- **Loading.** Fixtures are read through `rootBundle` and every ISO date/time (and `date=` query values) is rebased from 2026-11-13 to today's IST date. Latency is 180 ms per call. Every fixture item is `is_simulated: true`.
+- **Auth.** `otpRequest` validates `+91[6-9]\d{9}`; `otpVerify` accepts `123456` (5 failures → `429`, retry after 60 s), maps the phone to a `/v1/me` fixture (unknown numbers become citizens with a stable id) and issues an unsigned JWT (`alg: none`, 15 min `exp`) plus a refresh token. `refresh`, `switchRole`, `logout`, `me`, `patchMe`, `adoptSession` (re-attach after an app restart). `strictAuth` is off in the app, so the last session is assumed when a token is unknown.
+- **Domain.** Tasks (`tasksMine`, `taskGet`, `taskAck`, `taskStatus` with the backend state machine and conflict codes such as `transition_already_past`, `task_already_done`, `task_cancelled`, `already_in_state`), shifts (`shiftAction`, `shiftLocations`), inspections (`inspectionsList`, `inspectionGet`, `inspectionOnSite`, `inspectionClose` with `applied: false` for already-closed cases), alerts (`alertsList`, `alertGet`, `alertAck`, per-role audience and language), schools (`schoolsMe`, `safeWindow` today/tomorrow, `indoorOutdoor`), `forecast`, `grapOutlook`, `openAir` (the fixture grid re-centred on the requested bbox), `presign` (fake S3 URL, ≤ 8 MB), `reportsCreate` (deduped by `client_report_id`), `reportsMine`, `reportGet`, `sitesMe`, `getAlertSubscription`, `putAlertSubscription`, `putPushToken`.
+- **Idempotency.** Mutations replay the stored response for a repeated `Idempotency-Key`.
+- **Events.** State changes emit WS-shaped envelopes `{channel, type, event_id, seq, ts, data}` on `tasks:me` and `alerts:me`; `eventsFor(token)` filters them per session and language.
+- **Simulations** (Dev tools): `simulateSpray` (`task.in_progress`, then `task.done` with `source=hawatag` after 3 s and a `task_done_auto` alert), `simulateVerify` (`task.verified` with an impact summary), `simulateRouteChange` (cancel one stop, add one, bump route version, `route_changed` alert), `setTagOffline` (`device_health` alert), `simulateNewTarget` (spike-origin inspection), `simulateTestAlert` (role-specific push).
+- **Persistence.** `fakeBackendProvider` saves `exportState()` to `fake_backend_state.json` in the app documents directory (debounced 400 ms) and restores it on the same IST day; in-progress reports resume their timers.
+- `fakeCall` maps `FakeNetworkException` → `SimulatedOfflineFailure` and `FakeHttpException` → the same `Failure` types as HTTP, so controllers cannot tell fake from real.
+- The file header says the same engine serves `tool/mock_server`; that mock server does not exist (**Planned**).
+
+### 6.7 Connectivity and server clock
+
+- `networkStatusProvider` maps `connectivity_plus` to `online` / `offline` / `unknown`, forced to `offline` by Dev tools. Connectivity does not prove internet; the first real request does.
+- `onMobileDataProvider` is true on mobile data without Wi-Fi (the drainer then uploads one photo at a time; data saver forces the same).
+- `ServerClock` (`core/network/server_clock.dart`) applies the skew from response `Date` headers when it exceeds 2 minutes; `FreshnessBanner` uses it.
 
 ## 7. API surface used by the app
 
-Shapes are owned by [../backend/API.md](../backend/API.md). "Proposed" means it isn't in CONTRACTS.md §6 yet and needs a contract PR ([§7.3](#73-proposed-contract-additions-the-app-depends-on)).
+Shapes are defined by `openapi/openapi.json` (contract snapshot) and, for the live endpoints, by the backend code. "Backend serves" was checked against `backend/src/hawa_backend/api/routes/*.py`.
 
 ### 7.1 Endpoints
 
-| Endpoint | Feature | Offline behaviour | Status |
-|---|---|---|---|
-| `POST /v1/auth/otp/request`, `POST /v1/auth/otp/verify` | auth | Online only (clear message) | exists |
-| `POST /v1/auth/refresh`, `POST /v1/auth/logout` | core/network, settings | refresh retried on regain. Logout works offline (local wipe) and sends later best-effort | exists |
-| `GET /v1/me` | auth, shell, profile | cached in secure prefs | exists. The backend model is single-role (`app_user.role`, JWT `role`), and `roles[]` for the role picker is **proposed** |
-| `PATCH /v1/me` `{lang, notification_prefs}` | settings | outbox `profile_update` | **proposed** |
-| `PUT /v1/me/push-token` | notifications | outbox `push_token` (latest wins) | exists |
-| `GET /v1/tasks/mine?date=` | driver_route, inspector | cached (drift `routes`/`tasks`/`stops`) | exists (fields proposed, §7.2) |
-| `GET /v1/tasks/{id}` | driver_route, inspector | cached | exists |
-| `POST /v1/tasks/{id}/ack` | driver_route, inspector | outbox `task_ack` | exists |
-| `POST /v1/tasks/{id}/status` `{status, source?, reason?, note?, litres?, s3_keys?, client_ts, location?}` | driver_route, inspector | outbox `task_status` | exists (body proposed). App-sent statuses follow the backend state machine (backend ARCHITECTURE §5.2). **Driver:** `en_route`, `done` with `source=manual` (only from `acknowledged`/`en_route`), `skipped`. **Inspector:** `en_route`, `in_progress` (on site). The driver never sends `in_progress`: the server sets it on `spray.started` |
-| `GET /v1/inspections?status=assigned` | inspector | cached (`tasks` rows with kind `inspect` + `cached_payloads`) | exists. Needed because report-origin inspections may have no plan task |
-| `GET /v1/inspections/{id}` (evidence bundle) | inspector | cached in `cached_payloads` + thumbnails | **proposed** |
-| `GET /v1/hotspots/{id}` | inspector (evidence for hotspot/spike-origin targets) | cached | exists |
-| `POST /v1/inspections/{id}/close` `{outcome, notes, evidence_keys[], closed_at, location}` | inspector | outbox `inspection_close` after `photo_upload` | exists (body proposed). **The app's single close path.** The backend marks the linked `inspect` task `done`. `POST /v1/tasks/{id}/evidence` is not used by the app (clarify in API.md) |
-| `POST /v1/shifts/{id}/start`, `POST /v1/shifts/{id}/end`, `POST /v1/shifts/{id}/locations` | driver_route, inspector | outbox `shift_start`, `shift_end`, `location_batch` | **proposed**. `{id}` is the `asset_shift` id returned in `tasks/mine.shift` (`ShiftStatus` `scheduled → active → completed`, backend DATA_MODEL §8.2) |
-| `GET /v1/alerts`, `GET /v1/alerts/{id}` | alerts, school | cached (`alerts`) | exists |
-| `POST /v1/alerts/{id}/ack` | alerts, school | outbox `alert_ack` | **proposed** |
-| `GET /v1/schools/me` | school | cached | exists |
-| `GET /v1/schools/{id}/safe-window?date=` | school | cached (`safe_windows`) | exists |
-| `GET /v1/schools/{id}/indoor-outdoor?from=&to=` | school | cached (last 6 h) | exists |
-| `GET /v1/forecast/{cell_id}` | school | cached (latest issue) | exists |
-| `GET /v1/grap/outlook?ward=&days=3` | school, citizen, site | cached | exists (role widening **proposed**) |
-| `GET /open/v1/air?bbox=&ts=` | citizen_air | cached (30 min) | exists (fields proposed) |
-| `GET`/`PUT /v1/me/alert-subscription` | citizen_air | outbox `profile_update` | **proposed** |
-| `POST /v1/uploads/presign` | core/media | inside the `photo_upload` op | exists. Returns a **presigned POST** (url + form fields, 5 min, ≤ 8 MB, key `uploads/{user_id}/…`). `purpose` is proposed |
-| `POST /v1/reports` `{client_report_id, s3_key, lat, lon, location_accuracy_m, captured_at, category, note}` | citizen_reports | outbox `report_submit` | JSON after presign, as in backend ARCHITECTURE §5.4. **Conflicts with the "multipart" wording in CONTRACTS §6.** `client_report_id` and `category` are proposed. Backend §5.4 names the time field `taken_at`, while the `citizen_report` column is `captured_at`, so API.md must pick one |
-| `GET /v1/reports/mine`, `GET /v1/reports/{id}` | citizen_reports | cached | exists. `outcome_text`/`outcome_text_hi` and `rejection_reason` exist in DATA_MODEL §11.1. `timeline[]` and `outcome` are proposed |
-| `GET /v1/sites/me` | site | cached | exists (`pm10_trend` proposed) |
-| WS `GET /v1/ws?token=`: `tasks:me`, `alerts:me` | core/realtime | foreground only, gap-filled by REST on reconnect | exists |
+| Endpoint | Caller | Called when | Backend serves | Status |
+|---|---|---|---|---|
+| `GET /healthz` | `CommandCenterApi.healthy` | Dev tools | yes | Implemented |
+| `GET /v1/twin?limit=2000` then `?bbox=min_lat,min_lon,max_lat,max_lon` strips | `HttpAirMapRemoteSource.grid` | `air_map` real (default) | yes (limit ≤ 2000) | Implemented |
+| `GET /v1/twin?bbox=…&limit=400` + `GET /v1/hotspots` | `CommandCenterOpenAirSource` | `citizen_air` real (default) | yes | Implemented |
+| `GET /v1/hotspots?hour=0` | `HttpAirMapRemoteSource.hotspots` | `air_map` real | yes | Implemented |
+| `GET /v1/forecast` | `HttpAirMapRemoteSource.forecast` | `air_map` real | yes | Implemented |
+| `GET /v1/forecast/{cell_id}` | `CommandCenterForecastSource` | `school_forecast` real (default) | yes | Implemented |
+| `GET /v1/citizen/safe-window?persona=general` | `safeBreathWindowProvider` | citizen air near me, always | yes (no lat/lon sent; server defaults to central Delhi) | Implemented |
+| `GET /v1/alerts` (broadcast log) | `CommandCenterAlertsSource` | `alerts` real (default) | yes | Implemented |
+| `GET /v1/devices`, `GET /v1/impact` | `CommandCenterApi` | never | yes | unused |
+| `POST /v1/auth/otp/request`, `/otp/verify` | `HttpAuthRemoteSource` | `auth` real | no | Planned (backend) |
+| `POST /v1/auth/refresh` | `TokenRefresherImpl` (bare Dio) | `401` or expiring token | no | Planned (backend) |
+| `POST /v1/auth/switch-role`, `/logout` | `HttpAuthRemoteSource` | role switch, logout (3 s, best effort) | no | Planned (backend) |
+| `GET /v1/me` | `HttpAuthRemoteSource.me` | after verify, background refresh after restore | no | Planned (backend) |
+| `PATCH /v1/me` `{lang}` | outbox `profile_update` (`field: me`) | language chosen before login or changed in Settings | no | Planned (backend) |
+| `PUT /v1/me/push-token` | outbox `push_token` | after login, on FCM token refresh (only with Firebase) | no | Planned (backend) |
+| `GET /v1/me/alert-subscription` | `HttpSubscriptionRemoteSource` | `citizen_subscription` real | no | Planned (backend) |
+| `PUT /v1/me/alert-subscription` | outbox `profile_update` (`field: alert_subscription`) | C2 save | no | Planned (backend) |
+| `GET /v1/tasks/mine?date=`, `GET /v1/tasks/{id}` | `HttpTaskRemoteSource` | `driver_route` real | no (the backend has the older `GET /v1/driver/route`, unused) | Planned (backend) |
+| `POST /v1/tasks/{id}/ack` | outbox `task_ack` | route opened, per dispatched stop | no | Planned (backend) |
+| `POST /v1/tasks/{id}/status` | outbox `task_status` | driver `en_route`, `skipped`, `done` (`source=manual`); inspector `in_progress` | no | Planned (backend) |
+| `POST /v1/shifts/{id}/start`, `/end` | outbox `shift_start`, `shift_end` | Start/End shift (only with a server shift id) | no | Planned (backend) |
+| `POST /v1/shifts/{id}/locations` | outbox `location_batch` | every 60 s while pings are kept | no | Planned (backend) |
+| `GET /v1/inspections?status=assigned`, `GET /v1/inspections/{id}` | `HttpInspectorRemoteSource` | `inspector` real | no | Planned (backend) |
+| `POST /v1/inspections/{id}/on-site` | `MutationApi.markOnSite` | never (no op kind calls it) | no | Planned |
+| `POST /v1/inspections/{id}/close` | outbox `inspection_close` | outcome saved | no | Planned (backend) |
+| `GET /v1/alerts?cursor=&limit=`, `GET /v1/alerts/{id}` (contract) | `HttpAlertsRemoteSource` | `ALERTS_CONTRACT=true` | list exists with a different shape; `{id}` no | Planned (backend) |
+| `POST /v1/alerts/{id}/ack` | outbox `alert_ack` | ack of a non-`cc:` alert | no | Planned (backend) |
+| `GET /v1/schools/me`, `/v1/schools/{id}/safe-window?date=`, `/v1/schools/{id}/indoor-outdoor` | `HttpSchoolRemoteSource` | `school` real | no | Planned (backend) |
+| `GET /v1/grap/outlook?ward=` | `HttpSchoolRemoteSource` | `school` real | no | Planned (backend) |
+| `GET /open/v1/air?bbox=` | `HttpOpenAirRemoteSource` | `OPEN_AIR_CONTRACT=true` | exists with a different contract (`ward`, `limit`) | Planned (contract alignment) |
+| `POST /v1/uploads/presign` | `UploadService` inside `photo_upload` | before each upload | no | Planned (backend) |
+| presigned `POST` (multipart, fields then `file`) or `PUT` | `DioObjectUploader` (bare Dio, no `Authorization`) | `photo_upload` | n/a (S3/MinIO) | Implemented, unexercised |
+| `POST /v1/reports` | outbox `report_submit` | Citizen Eyes Send | no | Planned (backend) |
+| `GET /v1/reports/mine`, `GET /v1/reports/{id}` | `HttpReportsRemoteSource` | `citizen_reports` real | no | Planned (backend) |
+| `GET /v1/sites/me` | `HttpSiteRemoteSource` | `site` real | no | Planned (backend) |
+| WS `GET /v1/ws?token=` | `WsClient` | signed in, foreground, realtime real | no | Planned (backend) |
+| `POST /v1/citizen/safe-route`, `GET /v1/citizen/live-operations`, `GET /v1/citizen/wards/leaderboard`, `POST /v1/citizen/reports/missed-machine` | none: the four citizen screens use hard-coded data | — | yes | Planned (app) |
+| OSRM `GET {ROUTING_URL}/{lon,lat;…}?overview=full&alternatives=…` | `OsrmRoutingSource` (`externalDio`) | citizen route planning | third party | Implemented |
+| Photon `GET {GEOCODING_URL}?q=&limit=8&bbox=76.80,28.38,77.40,28.90&lat=&lon=` | `PhotonGeocodingSource` | place search | third party | Implemented |
+| Raster tiles (MapTiler with key, else Esri World Street Map) | `HawaTileLayer` | every map | third party | Implemented |
 
-### 7.2 Shapes the app expects (proposed where CONTRACTS is silent)
+### 7.2 Shapes the app expects
 
-`GET /v1/tasks/mine?date=2026-11-13` (driver). Field names are `snake_case` (CONTRACTS §1).
+The contract shapes (task DTO with `asset`, `shift`, `route{geometry,bbox,version}` and per-stop `sequence`, windows, `place_name{en,hi}`, `instructions`, `target_litres`, `arrival_radius_m`, `completion_source`, `impact_summary`; the inspection evidence bundle with `suspect_pin`, `back_trajectory`, `spike{series}`, redacted `photos[]` and `reporter{kind}`; report detail with `timeline[]` and `outcome_text{,_hi}`) are defined in `openapi/openapi.json` and exemplified by the fixtures:
 
-```json
-{
-  "date": "2026-11-13",
-  "asset": {
-    "id": "AST-SPR-0012", "type": "sprinkler", "label": "Sprinkler 12",
-    "tag_device_id": "HTG-0031", "tag_status": "active", "tag_last_seen_at": "2026-11-13T00:10:02Z",
-    "is_simulated": true
-  },
-  "shift": { "id": "0192a0a9-…", "status": "scheduled", "start": "2026-11-13T00:30:00Z", "end": "2026-11-13T05:30:00Z" },
-  "route": {
-    "route_id": "0192a0c4-…", "plan_id": "0192a0b1-…", "version": 3,
-    "geometry": { "type": "LineString", "coordinates": [[77.2095, 28.6412], [77.2130, 28.6420]] },
-    "bbox": [77.18, 28.62, 77.24, 28.66]
-  },
-  "items": [
-    {
-      "id": "0192a0c5-…", "plan_id": "0192a0b1-…", "kind": "spray", "status": "dispatched", "sequence": 1,
-      "cell_id": "g500-042-077",
-      "location": { "type": "Point", "coordinates": [77.2095, 28.6412] },
-      "place_name": { "en": "Ajmal Khan Rd, Karol Bagh", "hi": "अजमल ख़ान रोड, करोल बाग़" },
-      "window_start": "2026-11-13T00:40:00Z", "window_end": "2026-11-13T01:10:00Z",
-      "instructions": { "en": "Spray about 600 L along 800 m", "hi": "800 मीटर में लगभग 600 लीटर छिड़काव करें" },
-      "target_litres": 600, "segment_length_m": 800, "arrival_radius_m": 150,
-      "cause_label": "dust", "cause_conf": 0.78,
-      "completion_source": null, "intervention_id": null, "impact_summary": null,
-      "version": 4, "updated_at": "2026-11-13T00:02:11Z", "is_simulated": true
-    }
-  ]
-}
-```
+| Shape | Example fixture |
+|---|---|
+| `GET /v1/tasks/mine` (driver, 6 stops) | `assets/fixtures/api/tasks_mine_driver.json` |
+| `GET /v1/tasks/mine` (inspector) | `tasks_mine_inspector.json` |
+| `GET /v1/inspections`, `/{id}` | `inspections_assigned.json`, `inspection_detail.json`, `inspection_detail_site.json` |
+| `GET /v1/alerts` | `alerts.json` (9 alerts across 5 audiences) |
+| `GET /v1/me` per role | `me_*.json` |
+| `GET /v1/schools/me`, safe windows, indoor/outdoor, GRAP, forecast | `school_me.json`, `safe_window_2026-11-13.json`, `safe_window_2026-11-14.json`, `indoor_outdoor.json`, `grap_outlook.json`, `forecast_cell.json` |
+| `GET /open/v1/air` (contract) | `open_air_bbox.json` |
+| `GET /v1/reports/mine`, `/{id}` | `reports_mine.json`, `report_detail_closed.json` |
+| `GET /v1/sites/me` | `sites_me.json` |
+| `GET /v1/me/alert-subscription` | `alert_subscription.json` |
+| problem+json `409 task_already_done` | `problem_409_task_done.json` (unused) |
+| WS envelopes | `assets/fixtures/ws/*.json` (unused; the fake backend generates its own) |
+| Live backend captures for the air map | `assets/fixtures/air_map/twin_grid.json`, `twin_sample.json`, `hotspots.json`, `forecast.json` (not bundled as assets) |
 
-- `impact_summary` (after `task.verified`): `{pollutant, effect_pct, ci_low, ci_high, duration_min, method, verdict}`.
-- `completion_source` uses `InterventionSource` (`hawatag | manual | gps_inferred`).
-- Inspector tasks (`kind: "inspect"`) add `inspection_id`, `origin` (backend `inspection.origin`: `report | spike | hotspot | plan | manual`), `hotspot_id?`, `report_id?`, `suspect_pin` (GeoJSON Point from `inspection.target_geom`), `priority` (1–5) and `cause_label`/`cause_conf`.
-
-`GET /v1/inspections/{id}` (proposed evidence bundle for inspectors, built from `inspection.evidence_summary` + hotspot + report):
-
-```json
-{
-  "id": "…", "status": "assigned", "task_id": "…|null", "origin": "report", "priority": 2,
-  "cause_label": "burning", "cause_conf": 0.86,
-  "suspect_pin": { "type": "Point", "coordinates": [77.1712, 28.6690] },
-  "back_trajectory": { "type": "LineString", "coordinates": [[77.1790, 28.6655], [77.1712, 28.6690]] },
-  "spike": { "pollutant": "pm25", "baseline": 81, "peak": 262, "series": [{ "ts": "…", "value": 84 }] },
-  "photos": [{ "url": "https://…presigned GET, 5 min…", "thumb_url": "https://…", "captured_at": "…", "expires_at": "…" }],
-  "reporter": { "kind": "citizen" },
-  "is_simulated": true
-}
-```
-
-The reporter is never identified: no name, no phone. Photos are the faces/plates-redacted copy (`citizen_report.photo_redacted_key`, backend DATA_MODEL §11.1), served by 5-minute presigned GET URLs. The app caches thumbnails on first view and refetches the bundle when `expires_at` has passed.
+The app reshapes the live endpoints itself: `AirMapMapper` (hotspots `at: [lon, lat]`, band and cause words, Roman-numeral GRAP stages), `CommandCenterOpenAirSource.featureCollection` (twin cells → AQI via CPCB breakpoints, nearest hotspot within 3 km gives the cause), `CommandCenterAlertsSource.items` (audience School → `school`/`safe_window`, otherwise `citizen`/`pollutant_warning`, ids prefixed `cc:`), `CommandCenterForecastSource.reshape` (`h` offsets → `valid_at`, quantiles sorted). These mappers are unit-tested.
 
 ### 7.3 Proposed contract additions the app depends on
 
-The consolidated list is in the final section of [PLAN.md §11](PLAN.md#11-contract-proposals-to-raise). In short:
-- shift start/end/location endpoints on `asset_shift`
-- `PATCH /v1/me` and `roles[]` (+ role switch)
-- alert ack
-- the inspection evidence bundle and an on-site transition for task-less inspections
-- the alert subscription endpoint
-- GRAP outlook role widening
-- `purpose` on presign
-- the JSON `POST /v1/reports` body (vs "multipart" in CONTRACTS)
-- task DTO fields (`sequence`, windows, `route.geometry`, `instructions`, tag status, `shift.id`, `impact_summary`, `version`)
-- `AlertKind += route_changed, task_done_auto`
-- a `task.updated` event
-- enums `SkipReason`, `UploadPurpose`, `ReportCategory`, plus `ClassroomAdvice` (already in backend DATA_MODEL, missing from CONTRACTS §3)
-- the FCM data payload schema (§10.3)
-- problem+json `code` values the app branches on
-- idempotency retention
-- stable OpenAPI `operationId`s
+The consolidated list is [PLAN §11](PLAN.md#11-contract-proposals-to-raise). In short: the whole field surface above (auth, me, tasks, shifts, inspections, schools, reports, uploads, sites, WS), `roles[]` + switch-role, alert ack, inspection on-site, alert subscription, `/open/v1/air?bbox=` as a FeatureCollection, the FCM data payload (§10.3), problem+json codes, idempotency retention and stable `operationId`s.
 
 ## 8. Models
 
-| Kind | Tooling | Where | Rule |
+| Kind | Tooling | Where | Notes |
 |---|---|---|---|
-| API models | Generated in `hawa_api` (json_serializable) | `packages/hawa_api` | Used only inside `data/` |
-| Domain entities | `freezed` (v3 syntax: `sealed`/`abstract` classes) + `json_serializable` for cache payloads | `features/*/domain` | Immutable. No Flutter imports |
-| Realtime/push DTOs | `freezed` + `json_serializable` (hand-written, not in OpenAPI) | `core/realtime`, `core/notifications` | Tolerant parsing, unknown `type` → ignored + logged |
-| Drift rows | drift codegen | `core/storage/tables` | Mapped to entities in `*_local_source.dart` |
+| API models | json_serializable, generated and committed (217 files incl. `*.g.dart`) | `packages/hawa_api/lib/src/model/` | Used only in `data/`; required keys checked, unknown keys allowed |
+| Domain entities | `freezed` 4 (dev) + `json_serializable` for cache payloads, or plain immutable classes | `features/*/domain` | freezed in `driver_route` (`today_route`, `stop`, `shift`, `asset_summary`, `impact_summary`), `alerts/app_alert`, `citizen_air` (`air_snapshot`, `alert_subscription`), `profile`, `site_score` |
+| Core value types | freezed | `core/utils/geo.dart` (`GeoPoint`, `GeoBox`), `core/utils/localized_text.dart` (`LocalizedText`) | |
+| Contract enums | hand-written enums with `wire` values and `unknown` | `core/utils/contract_enums.dart` (`AqiCategory`, `CauseLabel`, `Pollutant`, `TaskKind`, `TaskStatus`, `InterventionSource`, `ImpactMethod`, `ImpactVerdict`, `InspectionStatus`, `InspectionOrigin`, `DeviceStatus`, `ShiftStatus`, `ReportStatus`, `ConfidenceLevel`) | Labels and icons in `app/l10n/enum_labels.dart` |
+| Realtime/push DTOs | hand-written, tolerant parsing | `core/realtime/ws_message.dart`, `core/notifications/push_payload.dart` | Never throw on malformed input |
+| Drift rows | drift codegen (`*.g.dart`) | `core/storage/tables/` | `@DataClassName` rows such as `TaskRow`, `OutboxOpRow` |
 
-```dart
-// features/driver_route/domain/stop.dart (sketch)
-@freezed
-abstract class Stop with _$Stop {
-  const factory Stop({
-    required String taskId,
-    required int sequence,
-    required TaskKind kind,              // spray | sweep | inspect | protect_alert | unknown
-    required TaskStatus status,          // server status
-    TaskStatus? pendingStatus,           // optimistic, from an unsent outbox op
-    required GeoPoint location,
-    required LocalizedText placeName,
-    required DateTime windowStart,       // UTC; formatted in IST by the UI
-    required DateTime windowEnd,
-    LocalizedText? instructions,
-    int? targetLitres,
-    InterventionSource? completionSource,
-    ImpactSummary? impact,
-    required bool isSimulated,
-  }) = _Stop;
-
-  factory Stop.fromJson(Map<String, Object?> json) => _$StopFromJson(json);
-}
-```
-
-Enums mirror CONTRACTS §3 names exactly and each has an `unknown` member. Example: `enum TaskStatus { pending, dispatched, acknowledged, enRoute, inProgress, done, verifying, verified, inconclusive, skipped, cancelled, missed, failed, unknown }` with `@JsonValue('en_route')`-style mapping, or the mapper converting from the generated enum.
+`build.yaml` scopes the builders: json_serializable (`field_rename: snake`, `checked`, `explicit_to_json`) on `lib/**/domain/**` and `lib/core/**`; freezed on those plus `lib/**/application/**`; riverpod_generator on `lib/**`; drift_dev on `lib/core/storage/**` (`named_parameters`, timestamps stored as integers).
 
 ## 9. Local storage
 
 | Store | Package | Holds | Notes |
 |---|---|---|---|
-| SQLite | **drift** (+ `sqlite3_flutter_libs`) | routes, tasks, stops, alerts, reports_draft, outbox_ops, sync_state, media_files, location_pings, safe_windows, cached_payloads | Opened with `NativeDatabase.createInBackground`, WAL mode, `busy_timeout`. Schema in [OFFLINE_AND_SYNC §3](OFFLINE_AND_SYNC.md#3-drift-schema-sketch). Migrations via drift `MigrationStrategy` with schema dumps tested |
-| Secure | **flutter_secure_storage** | access token, refresh token, user id, device install id | Android Keystore-backed. Survives app restart, wiped on logout |
-| Prefs | **shared_preferences** | language, active role, theme mode (light/dark/outdoor), data saver, onboarding flags, last-seen app version | Nothing sensitive |
-| Files | `path_provider` app documents dir `media/` | compressed photos awaiting upload | Not the cache dir (the OS may purge it before upload) |
-| Tile cache | file store under app support dir `tiles/` | map tiles | Size-capped (§12.4) |
+| SQLite `hawa.sqlite` (app documents) | drift 2.35 | `routes`, `tasks`, `stops`, `alerts`, `reports_draft`, `outbox_ops`, `sync_state`, `media_files`, `location_pings`, `safe_windows`, `cached_payloads` | `NativeDatabase.createInBackground`, `PRAGMA journal_mode=WAL`, `busy_timeout=5000`. `schemaVersion 1`, `onCreate` only (no migrations yet). Schema in [OFFLINE_AND_SYNC §3](OFFLINE_AND_SYNC.md) |
+| Secure storage | flutter_secure_storage 11 | `access_token`, `refresh_token`, `user_id`, `me_json` (cached `/v1/me`), `install_id` | Access token also cached in memory. `InMemoryTokenStore` for tests |
+| Prefs | shared_preferences | `language`, `active_role`, `display_mode`, `data_saver`, `cvd_palette`, `citizen_privacy_accepted`, `notification_prefs`, `last_app_version` (never written), `dev_fake_offline`, `active_shift`, `citizen_manual_area`, `perm_education_<kind>` | `SettingsStore` + reactive `AppPreferencesController` |
+| Files | path_provider | `media/<uuid>.jpg` + `_thumb.jpg` (app documents), `fake_backend_state.json` (app documents), `tiles/` (app support) | |
 
-Android `android:allowBackup="false"` and `android:fullBackupContent="false"`. Tokens and the DB must not leave the device through backups on shared phones.
+Android `allowBackup="false"` and `fullBackupContent="false"`, so tokens and the DB do not leave the device through backups.
 
 ## 10. Realtime: WebSocket + FCM
 
 ### 10.1 WebSocket client
 
-- URL `WS_URL?token=<access JWT>` (CONTRACTS §6.1: Flutter authenticates with `?token=`). Because query strings can end up in proxy logs, tokens are short-lived (15 min), and a single-use ticket (`POST /v1/ws/ticket`, proposed, optional) can replace the JWT later.
-- On open, the client sends `{"op":"subscribe","channels":["tasks:me","alerts:me"]}`.
-- Heartbeat: the server pings every 25 s (backend ARCHITECTURE §5.3). The client also sends `{"op":"ping"}` every 25 s and reconnects if nothing arrives for 35 s.
-- Reconnect uses exponential backoff with full jitter, 1 s → 30 s cap, reset after 60 s of stable connection. It fetches a fresh token before each attempt and pauses while connectivity is `none`.
-- Server signals (backend ARCHITECTURE §5.3, §6):
-  - close code **4401**: the token expired. Refresh, then reconnect immediately.
-  - close **1013**: the send queue overflowed. Reconnect and refetch.
-  - close **1001**: the server is shutting down. Reconnect with backoff.
-  - message `{"type":"resync"}`: refetch all subscribed scopes.
-- **Gap fill.** WS isn't replayable, and the server drops events older than 60 s. After every (re)connect or `resync`, the app calls `refresh()` on the active role's repositories (`GET /v1/tasks/mine`, `GET /v1/alerts`).
-- Lifecycle: connected only while the app is in the foreground (`AppLifecycleState.resumed`). It disconnects 30 s after going to the background. Background delivery is FCM's job.
+> Status: `WsClient` is Implemented; the backend serves no `/v1/ws`, so in every default build the `FakeRealtimeClient` is used instead (§6.5).
 
-| Channel | `type` values handled | Effect |
+`WsClient` (`core/realtime/ws_client.dart`):
+- Connects to `WS_URL?token=<access JWT>` (10 s timeout) and sends `{"op":"subscribe","channels":["tasks:me","alerts:me"],"id":"c1"}`.
+- Sends `{"op":"ping"}` every 25 s, answers server `sys.ping` with `pong`, and reconnects if nothing arrives for 35 s.
+- Reconnect: full-jitter backoff, cap `min(30, 2^attempt)` s, attempt counter reset after 60 s connected; at least 5 s after close code 1013. Close 4401 → refresh then reconnect; 4400/4403 → stop (no loop). After 5 failures within 2 minutes it gives up until the next `connect()` (polling via sync triggers covers the gap).
+- `sys.token_expiring` → refresh and send `{"op":"auth","token":…}`.
+- `RealtimeStatus`: disconnected, connecting, connected, reconnecting (`realtimeStatusProvider` exists but no screen shows it).
+
+`FakeRealtimeClient` subscribes to `FakeBackend.eventsFor(token)` and drops events while offline or marked `push_only`.
+
+`RealtimeDispatcher` (`core/realtime/realtime_dispatcher.dart`) dedupes by `channel|type|task_id or alert_id or report_id|status` within 10 minutes (`EventDeduper`, shared with FCM), routes by type prefix to the registered handlers, and fires the `wsReconnected` sync trigger on (re)connect and on `sys.resync`.
+
+| Prefix | Handler | Effect |
 |---|---|---|
-| `tasks:me` | `task.dispatched`, `task.acknowledged`, `task.en_route`, `task.in_progress`, `task.done`, `task.skipped`, `task.missed`, `task.cancelled`, `task.verifying`, `task.verified`, `task.inconclusive`, proposed `task.updated` | Upsert task in drift (server wins). Resolve outbox conflicts. `task.done` with `source=hawatag` emits an `AutoDoneEvent` (tick + chime). `task.cancelled`/`task.updated` show the route-changed banner |
-| `alerts:me` | `alert.requested` | Insert into `alerts`. Show an in-app banner if the app is foreground. The server's push covers background |
+| `task.` | `TaskEventApplier` (`driver_route/data`) | Upserts the task row (server wins), runs `ConflictResolver.onServerTaskStatus`, emits `AutoDoneEvent` for `task.done` with `source=hawatag`, signals a route change on `task.updated`, `task.cancelled` or an unknown dispatched task |
+| `inspection.` | `inspectorEventApplier` | Refreshes the inspector targets |
+| `alert.` | `AlertEventApplier` | Inserts the alert into the inbox for the active role |
+| (any) `alert.requested` | `AppWiring._onAlertEvent` | Fake mode's stand-in for push: in-app banner when resumed, local notification when paused |
 
-Unknown `type`s are logged and ignored. Messages are deduplicated by `(channel, type, data.task_id or data.alert_id, data.status)` within a 10 min window, which also dedupes against FCM.
+Lifecycle (`AppWiring`): `SessionController` connects after sign-in; on resume it reconnects if signed in; 30 s after pause it disconnects, except when any feature is fake.
 
 ### 10.2 FCM + local notifications
 
-- `firebase_messaging` for delivery, `flutter_local_notifications` for display, channels and tap handling.
-- **Android: data-only, high-priority messages.** The app renders them so it controls channel, language fallback, grouping and dedupe.
-- **iOS: `notification` + `data`**, because data-only delivery isn't reliable when the app is terminated.
-- Token lifecycle:
-  - after login: `PUT /v1/me/push-token {token, platform, app_flavor, app_version, locale}`
-  - on `onTokenRefresh`: re-register
-  - on logout: `POST /v1/auth/logout` (the server drops the token for the session) and `deleteToken()`
-- Background handler: a top-level `@pragma('vm:entry-point')` function. It initialises Firebase, opens drift (its own connection, WAL), inserts the alert row, shows the local notification and marks `sync_state` dirty. No Riverpod container in that isolate.
-- Foreground: if the payload's entity is on screen, show an in-app banner instead of a system notification.
-- Tap: `PushRouter.open(payload)` (§5.3).
-- Android 13+: request `POST_NOTIFICATIONS` from the education screen ([SCREENS §2](SCREENS.md#2-permission-education)).
+> Status: Partial. The FCM code is complete, but `lib/firebase/firebase_options_{dev,staging,prod}.dart` return `null`, so `Firebase.initializeApp` never runs and every FCM path is a no-op. No `google-services.json` or `GoogleService-Info.plist` exists and the Gradle Google Services plugin is not applied (options are meant to come from `flutterfire configure`).
 
-| Android channel id | Importance | Push `type`s |
+- `FcmService` (`core/notifications/fcm_service.dart`): `available` only when `Firebase.apps` is non-empty; streams `messages` (foreground `onMessage`), `opened` (`onMessageOpenedApp`) and `tokenRefreshes`; `start()` returns the cold-start message. Notification title/body are folded into the data map when the data lacks them.
+- `firebaseMessagingBackgroundHandler` (top-level, `@pragma('vm:entry-point')`): opens its own `AppDatabase`, stores the alert row, marks `sync_state` dirty (`reports` for `report_outcome`, else `tasks`), shows a localized local notification and schedules a one-off workmanager sync. It does not initialise Firebase itself ([README Known issue 9](README.md#9-known-issues)).
+- Foreground pushes (`AppWiring._onForegroundPush`): dedupe, store the alert, fire a `push` sync trigger, show an in-app banner (`InAppMessages`, newest of up to 3, auto-dismiss after 6 s; tapping routes like a notification tap).
+- `LocalNotifications` (flutter_local_notifications 22): small icon `ic_stat_hawa`, iOS permissions not requested at init, taps decoded from the JSON payload. `requestPermission()` (Android 13+) is called only from the permission education screen.
+- Token lifecycle (`PushTokenRegistrar`): after login enqueue `push_token` `{token, platform: android, app_flavor, app_version, locale}` (coalesced, latest wins) and re-enqueue on refresh; on logout cancel the listener and `deleteToken()`.
+- Android channels are re-registered with localized names whenever the UI language changes (`HawaApp`):
+
+| Channel id | Importance | Push `type`s |
 |---|---|---|
-| `route_updates` | high | `route_assignment`, `route_changed`, `task_done_auto`, `inspection_target` |
-| `air_alerts` | high | `pollutant_warning`, `safe_window`, `grap_outlook` |
+| `route_updates` | high, sound `stop_done` (`res/raw/stop_done.ogg`) | `route_assignment`, `route_changed`, `task_done_auto`, `inspection_target` |
+| `air_alerts` | high | `pollutant_warning`, `safe_window`, `grap_outlook`, and any unknown type |
 | `reports` | default | `report_outcome` |
 | `device_status` | default | `device_health` |
-| `shift_tracking` | low, ongoing | foreground service notification (not a push) |
+| `shift_tracking` | low | registered for the shift foreground service (geolocator posts that notification itself) |
 
-Channel names and descriptions are localized and re-registered on language change (Android updates the name for an existing id).
+The manifest sets `default_notification_icon` (`ic_stat_hawa`) and `default_notification_channel_id` (`route_updates`).
 
 ### 10.3 FCM data payload (proposed contract; FCM data values are strings)
+
+`PushPayload` (`core/notifications/push_payload.dart`) parses this shape tolerantly (missing fields → null; `type` falls back to `kind`, then `unknown`; `is_simulated` accepts `"true"` or `true`):
 
 ```json
 {
@@ -529,239 +465,175 @@ Channel names and descriptions are localized and re-registered on language chang
 }
 ```
 
-- `title`/`body` arrive in the user's `lang` (set via proposed `PATCH /v1/me`). If they're missing, the app renders them from `type` + `args` with its ARB templates. Templates for every `type` are in the [push catalogue](SCREENS.md#9-push-notification-catalogue); the backend notifier should use the same text.
-- The `alert.requested` Kafka payload already has `deep_link`, `lang`, `title`, `body` (CONTRACTS §5.2), and the `alert` row has `pollutant`, `task_id`, `report_id`, `expires_at` (backend DATA_MODEL §10.1). The notifier maps them 1:1. `deep_link` stays in the entity form `hawa://…` and the app resolves the route (§5.3).
+- The dedupe key is `collapse_key`, else `alerts:me|alert.requested|<alert_id or entity_id>|`, which matches the WebSocket key for the same alert.
+- A notification id is the hash of `collapse_key`/`alert_id`/`entity_id`/title, so repeats replace each other.
+- Simulated payloads get the localized "Simulated" suffix on the body.
+- Rendering missing `title`/`body` from `type` + `args` with ARB templates is **Planned**; today the app falls back to the app title.
 
 ## 11. Location and shift
 
 ### 11.1 Rules
 
-- Location is sampled **only while a shift is active** (driver, and inspector if they start a shift). **Start shift** calls proposed `POST /v1/shifts/{id}/start` on the `asset_shift` returned by `tasks/mine` (`scheduled → active`), and **End shift** calls `/end` (`active → completed`). There's no `ACCESS_BACKGROUND_LOCATION`: a foreground service of type `location`, started from the foreground, can keep receiving updates with the while-in-use permission.
-- The foreground service shows an ongoing notification on channel `shift_tracking`: "Shift on: sharing location with the control room / शिफ्ट चालू: कंट्रोल रूम के साथ लोकेशन साझा हो रही है". Tapping it opens `/driver`.
-- Auto-stop: when all tasks are terminal and the shift's scheduled end has passed, the app prompts "End shift?". At scheduled end + 2 h it ends the shift itself and notifies the driver. The service never survives logout.
-- Implementation: `geolocator` `getPositionStream` with `AndroidSettings(foregroundNotificationConfig: …)`, which makes the plugin run its foreground service. Verify the merged manifest declares the service with `android:foregroundServiceType="location"`. If the pinned plugin version doesn't, declare it in `android/app/src/main/AndroidManifest.xml` with `tools:node="merge"` ([STRUCTURE §8](STRUCTURE.md#8-android-notes)).
+> Status: Implemented for drivers. Inspector shifts are Planned (the inspector shell has no shift controls).
 
-```dart
-// core/location/shift_location_tracker.dart (sketch)
-Stream<Position> _stream(SamplingPolicy p, AppLocalizations l10n) => Geolocator.getPositionStream(
-      locationSettings: AndroidSettings(
-        accuracy: p.accuracy,
-        distanceFilter: p.distanceFilterM,
-        intervalDuration: p.interval,
-        foregroundNotificationConfig: ForegroundNotificationConfig(
-          notificationTitle: l10n.shiftNotificationTitle,
-          notificationText: l10n.shiftNotificationBody,
-          setOngoing: true,
-          enableWakeLock: false,
-        ),
-      ),
-    );
-```
+- Location is sampled only between **Start shift** and **End shift** (`ShiftController`, `driver_route/application/shift_controller.dart`), through `ShiftLocationTracker` (`core/location/shift_location_tracker.dart`). The manifest has no `ACCESS_BACKGROUND_LOCATION` (the guard checks it); geolocator's `GeolocatorLocationService` is declared with `foregroundServiceType="location"`.
+- On Android the stream uses `AndroidSettings` with a `ForegroundNotificationConfig` (localized title and body, `ic_stat_hawa`, ongoing). Stopping the stream removes the notification.
+- Start shift: starts tracking, takes a fix, enqueues `shift_start` (only when `tasks/mine` returned a shift id; otherwise a local id `local:<date>` is used and nothing is sent), saves `active_shift` in prefs and sets `ShiftActiveFlag` (60 s periodic sync).
+- A 60 s tick flushes pings, prompts "End shift?" when every stop is terminal after the scheduled end, and ends the shift itself at scheduled end + 2 h.
+- After an app kill or reboot the saved shift makes the driver home offer **Resume**; location never restarts without the user.
+- End shift flushes pings, stops the arrival watcher and tracker, purges `location_pings`, enqueues `shift_end` for a server shift and clears the saved shift.
+- `LocationService` gives one-off fixes (15 s timeout, last-known position flagged `coarse`), permission state and the settings deep link. Permission is requested only after the education screen.
 
 ### 11.2 Battery-aware sampling policy
 
-The stream is re-created when the policy changes, debounced 30 s.
+`choosePolicy` (`core/location/sampling_policy.dart`, pure). The stream is re-created when the policy changes, debounced 30 s, using `battery_plus` for level and charging state.
 
 | State | Accuracy | Distance filter | Interval |
 |---|---|---|---|
-| Shift on, ≤ 500 m from the next stop | high | 15 m | 5 s |
-| Shift on, moving, > 500 m from the next stop | medium | 50 m | 15 s |
+| Within 500 m of the next stop | high | 15 m | 5 s |
+| Moving, farther than 500 m | medium | 50 m | 15 s |
 | Stationary (speed < 1 m/s for 2 min) | medium | 50 m | 60 s |
-| Battery < 20 % and not charging (`battery_plus`) | low | 100 m | 60 s (except within 500 m of the next stop: 15 m / 10 s) |
-| Shift off | — | — | stream cancelled, service stopped |
+| Battery < 20 % and not charging | low | 100 m | 60 s (within 500 m: 15 m / 10 s) |
+| Shift off | — | — | stream cancelled |
 
 ### 11.3 Geofence and upload
 
-- Arrival: haversine distance to the next stop/target ≤ `arrival_radius_m` (default 150 m) with a 20 s dwell, or the **Arrived** button.
-  - **Driver:** arrival is a *local* UI state only ("You're here, start spraying"). The server moves the task to `in_progress` itself on `spray.started` (backend ARCHITECTURE §5.2), and manual done is allowed only from `acknowledged`/`en_route`. So the app never posts `in_progress` for drivers.
-  - **Inspector:** arrival enqueues `task_status` `in_progress` (on site) for task-backed targets. For task-less inspections it needs the proposed on-site transition. Until that exists, arrival stays local.
-- **What leaves the phone.** HawaTag GPS already gives the machine's position (backend CONTEXT §7.5: positions belong to the asset). So the app uploads pings only when the server has no other source:
-  - inspector (inspection team) shifts
-  - driver shifts while the HawaTag is `offline`/`degraded`
-
-  In those cases pings go into drift `location_pings` and are batched every 60 s into outbox op `location_batch` → proposed `POST /v1/shifts/{id}/locations`. Batches older than 6 h are dropped, not sent.
-- In every other case pings stay on the device for the geofence and are purged at shift end. The same applies if the backend doesn't add the shifts endpoints.
+- `ArrivalDetector` (`core/location/geofence.dart`): within `radiusM` (default 150 m, per stop `arrival_radius_m`) continuously for 20 s fires once per target. `ArrivalWatcher` feeds it from the shift stream. For drivers arrival is local only (`tasks.arrived_at`); the app never posts `in_progress` for drivers.
+- Inspector **Arrived** enqueues `task_status in_progress` for task-backed targets; for task-less inspections it is local only (the on-site endpoint is not called).
+- Pings are persisted to `location_pings` only while the HawaTag cannot confirm (`asset.tagCannotConfirm`); every 60 s they become a `location_batch` op (`pings: [{ts, lat, lon, accuracy_m, speed_kmh}]`, expires after 6 h). Otherwise positions stay in memory for the geofence and the map marker (`shiftPositionProvider`).
 
 ### 11.4 Navigation hand-off
 
-`url_launcher` with `google.navigation:q=<lat>,<lon>&mode=d` on Android. The fallback is `https://www.google.com/maps/dir/?api=1&destination=<lat>,<lon>&travelmode=driving` (which also covers iOS). The Android manifest declares `<queries>` for the `google.navigation` scheme and `https` view intents so `canLaunchUrl` works on Android 11+.
+`url_launcher`: `google.navigation:q=<lat>,<lon>&mode=d`, falling back to `https://www.google.com/maps/dir/?api=1&destination=…`. The manifest declares `<queries>` for `google.navigation` and `https` view intents. The citizen air map hands a chosen clean-air route to Google Maps with its waypoints.
 
 ## 12. Maps
 
 ### 12.1 Stack
 
-- `flutter_map` + `latlong2`. Layers: `TileLayer`, `PolylineLayer`, `MarkerLayer`, `CircleLayer`, plus a current-position marker during shift only.
-- **Tiles: MapTiler raster tiles** for the hackathon, with a key restricted in the provider dashboard where supported. The key ships in the APK, so treat it as public and set a usage cap. **Post-hackathon: Protomaps**, a self-hosted Delhi-NCR PMTiles extract rendered with a vector tile plugin. That gives true offline maps with no per-request billing.
-- **OSM tile usage policy.** The app never uses `tile.openstreetmap.org`, including for development and prefetch. The OSMF policy forbids bulk and offline downloading from its servers.
-- Attribution is always visible (`RichAttributionWidget`): "© MapTiler © OpenStreetMap contributors".
+- `flutter_map 8.3.2` + `latlong2`. `HawaTileLayer` (`core/maps/hawa_tile_layer.dart`) uses `Env.basemapUrl`: the MapTiler template with `MAP_API_KEY` when a key is set (not starting with `replace-`), else the keyless **Esri World Street Map** raster (`MAP_FALLBACK_TILE_URL`, demo use only). OSM Foundation tile servers are never used; the guard greps for them.
+- The basemap is desaturated by a colour matrix (or inverted for dark mode); the citizen air map keeps street colours. `HawaMapAttribution` always shows the attribution string for the active basemap.
+- Markers (`core/maps/map_markers.dart`): `StopMarker` (40 dp ink circle, white number, status icon badge, violet ring when simulated), `SuspectPin` (ink teardrop with a cause glyph, scaled 0.8–1.2 by confidence), `PositionMarker`; `PhotoMarker` is defined but unused.
 
 ### 12.2 Layers by role
 
 | Role | Layers |
 |---|---|
-| Driver | Route polyline (`brand` `#0E7C66`, 6 dp, ink casing 2 dp for sunlight). Completed legs dashed `muted-foreground`. Stop markers: numbered 40 dp ink circles with white Latin digits and a status **icon** (tick, skip, clock), never colour alone. Current position during shift. A simulated asset gets a 2 dp violet outer ring (DESIGN_SYSTEM §8 fleet rule) |
-| Inspector | Suspect pin per DESIGN_SYSTEM §8: ink teardrop with a white cause glyph and a 2 dp white stroke, scaled 0.8–1.2 by `cause_conf` (**not** danger red, which is reserved for real danger). Back-trajectory: `info` 3 dp dashed `[6, 4]` with arrowheads toward the hotspot and hourly ticks. Citizen photo location marker |
-| Citizen | Own position (coarse). The 500 m cell under it filled with its AQI colour at `alpha = 0.25 + 0.60 × confidence`, plus a label chip (number + category + "indicative") |
+| Driver | Route polyline, numbered stop markers, own position during a shift |
+| Inspector | Suspect pins, back-trajectory line, target detail map |
+| Citizen and `/map` | AI pollution overlay from the twin grid, hotspots, forecast slider, clean-air routes (see [SCREENS.md](SCREENS.md)) |
 
-Basemap: DESIGN_SYSTEM §8 specifies a desaturated light/dark basemap (Protomaps on the web). For the hackathon the app uses a desaturated light MapTiler style that approximates it, and moves to the same Protomaps style post-hackathon.
+### 12.3 Tile caching and offline
 
-### 12.3 Map performance
-
-- Polylines are simplified client-side (Douglas-Peucker, 5 m tolerance at z15).
-- At most 50 markers.
-- The map uses a `RepaintBoundary` and is not rebuilt on location ticks: only the position marker layer listens.
-
-### 12.4 Tile caching and offline routes
-
-| Mechanism | Detail |
-|---|---|
-| Runtime cache | `flutter_map_cache` + `dio_cache_interceptor` with a file store in `tiles/`. Cached tiles are served when offline (max-stale 30 days) |
-| Corridor prefetch | On route receipt or change: tiles intersecting a 300 m buffer around `route.geometry` at z15–z16, plus the route `bbox` at z12–z14. Hard cap of 400 tiles (a 40 km route is roughly 300 tiles, ~6–9 MB raster). Runs on Wi-Fi, or on mobile data only when data saver is off |
-| Size cap | 100 MB (40 MB with data saver). LRU by file mtime, evicting tiles older than 30 days first. Enforced after prefetch and on app start |
-| Licensing check | Confirm the MapTiler plan permits caching and offline storage before the demo. The Protomaps self-hosted extract removes this constraint |
-| Offline fallback | If tiles are missing, the map shows a plain background with the polyline and markers (still usable). The **list** is the offline-safe primary UI |
+| Mechanism | Status | Detail |
+|---|---|---|
+| Runtime cache | Implemented | `TileCache` → `CachedTileProvider(FileCacheStore('<app support>/tiles'), maxStale: 30 days)` from `flutter_map_cache` + `http_cache_file_store` |
+| Offline fallback | Implemented | No tiles → plain background with polylines and markers; the list is the offline-safe UI |
+| Size cap (100 MB, 40 MB with data saver; LRU by mtime, 30-day max age) | Partial | `TileCache.enforceCap` exists but is never called |
+| Corridor prefetch (300 m buffer z15–16 + bbox z12–14, ≤ 400 tiles, MapTiler only) | Partial | `CorridorPrefetcher` exists but is never called |
+| Polyline simplification (Douglas–Peucker 5 m) | Partial | `simplifyPolyline` exists but is never called |
+| Protomaps offline vector extract | Planned | |
 
 ## 13. Camera and images
 
-| Step | How |
-|---|---|
-| Capture | `image_picker` `pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.rear, maxWidth: 2048)`. **Camera only**, no gallery for Citizen Eyes. System camera intent: small footprint, robust on low-RAM devices |
-| Lost-activity recovery | On low-RAM phones Android may kill our activity while the camera is open. Call `ImagePicker().retrieveLostData()` on startup and resume the draft |
-| Compress + strip EXIF | `flutter_image_compress` → JPEG, long edge 1600 px, quality 80 (data saver: 1280 px, q70), `keepExif: false`. Re-encoding drops all EXIF, including GPS and device model. Target ≤ 400 KB |
-| Verify | A unit test asserts the output has no EXIF GPS/Make/Model tags (parsed with an EXIF reader in tests only) |
-| Location + time | From `geolocator` at capture (`accuracy_m`), and `captured_at` from server-corrected time. Never from EXIF. Accuracy > 100 m warns "Location is rough". No fix within 15 s uses the last known position and flags it `location_quality: coarse` |
-| Store | App documents `media/<uuid>.jpg`, `sha256` recorded in `media_files` |
-| Upload | Outbox op `photo_upload`: `POST /v1/uploads/presign {purpose, content_type: "image/jpeg", content_length, sha256}` returns a **presigned POST** (`url` + policy `fields`, 5 min expiry, 1 B–8 MB, key prefix `uploads/{user_id}/`, per backend ARCHITECTURE §7). The app sends a `multipart/form-data` POST on a bare Dio: all `fields` first, then `file` (progress shown), and stores the returned key. An expired policy (`403`) triggers a re-presign. The server HEAD-checks the object before accepting the report |
-| Reference | The dependent op sends the keys: `report_submit` → `s3_key`, `inspection_close` → `evidence_keys[]`, manual `task_status` → `s3_keys[]` |
-
-The in-app `camera` package (custom viewfinder with a privacy overlay) is optional post-hackathon. It's heavier and more fragile on low-end devices.
+| Step | Implementation | Status |
+|---|---|---|
+| Capture | `PhotoCapture.capture()`: `image_picker` camera only, `maxWidth/maxHeight 2048`, `requestFullMetadata: false` | Implemented |
+| Lost-activity recovery | `PhotoCapture.retrieveLost()` used by the report capture controller | Implemented |
+| Compress + strip EXIF | `ImageProcessor.process`: long edge 1600 px q80 (data saver 1280 px q70) via `flutter_image_compress`; `hasExif` scans the JPEG for an APP1 `Exif` segment and rejects the file if one survives; 320 px q70 thumbnail; `sha256` | Implemented |
+| Location + time | geolocator fix with accuracy at capture; coarse fallback after the timeout | Implemented |
+| Store | `media/<uuid>.jpg` + `media_files` row (`local` → `uploaded` / `missing`) | Implemented |
+| Upload | `photo_upload` op → `UploadService.upload`: presign `{purpose, content_type: image/jpeg, content_length, sha256}` at upload time, presigned `POST` (fields then `file`) or `PUT` on the bare Dio with progress, re-presign once on `403`; `413` → re-compress to 1280 px q70 once | Implemented; Stub/Mock in the default build (`FakeObjectUploader` marks the key on the fake backend) |
+| Reference | Dependent ops resolve object keys from media ids at execution time: `report_submit` → `photo_key`, `inspection_close` → `evidence_keys[]`, manual `task_status` → `s3_keys[]` | Implemented |
+| Full-size cleanup 24 h after upload | `MediaDao.uploadedBefore` exists, never called | Partial |
 
 ## 14. Internationalisation (en + hi)
 
-- `flutter_localizations` + `intl` + ARB files `lib/app/l10n/arb/app_en.arb` (template) and `app_hi.arb`. Generated into `lib/app/l10n/gen/` via `l10n.yaml` ([STRUCTURE §10](STRUCTURE.md#10-configuration-file-sketches)).
-- Every user-facing string is in ARB. A missing `hi` translation **fails CI** (`untranslated-messages-file` checked to be empty).
-- **Language first.** The onboarding language picker comes before login. The choice is stored in prefs and sent via proposed `PATCH /v1/me {lang}` so pushes/SMS/WhatsApp arrive in the same language. It can be toggled any time in Settings (and on the school home, per F19).
-- Enum labels come from extension methods (`AqiCategory.good.label(l10n)`), including `unknown`. Canonical Hindi terms for AQI categories: अच्छा, संतोषजनक, मध्यम, खराब, बहुत खराब, गंभीर.
-- **Time:** always IST, whatever the device timezone. IST is a fixed UTC+05:30 with no DST, so `utc.add(const Duration(hours: 5, minutes: 30))` is exact and no tz database is needed.
-  - en: "6:30 AM"
-  - hi: day-part + clock ("सुबह 6:30", "दोपहर 1:30", "शाम 5:00", "रात 9:00"), using रात 00–04, सुबह 04–12, दोपहर 12–16, शाम 16–20, रात 20–24
-  - This deliberately differs from the console's 24-hour "06:45 IST" rule (DESIGN_SYSTEM §12). Field users read 12-hour times with a day-part far more reliably, and the app shows only IST, so it omits the "IST" suffix except on the stop detail's window line.
-- **Digits and numbers** follow DESIGN_SYSTEM §12:
-  - Latin digits in both locales
-  - `en-IN` grouping
-  - a space before units ("164 µg/m³", "82 %")
-  - a true minus sign U+2212 ("−18.2 %")
-  - en-dash ranges ("137–191"), with "to" when a bound is negative ("−26.0 to −9.9")
-- **Fonts:** Inter and Noto Sans Devanagari are bundled as assets (no runtime font download; the app must work offline on first launch). Two weights each (Regular 400, SemiBold 600). `fontFamily: 'Inter'` with `fontFamilyFallback: ['NotoSansDevanagari']`, so Latin digits and IDs stay in Inter inside Hindi text.
-  - Hindi line heights follow DESIGN_SYSTEM §5 (body 1.65, titles 1.4–1.5) so matras don't clip.
-  - Minimum Devanagari size is 13 sp, and weight is never below 400.
-  - No letter-spacing on Devanagari (it breaks conjunct rendering) and no all-caps transforms.
-- Hindi strings are written for speech-level clarity ("पानी छिड़कें"), not formal Sanskritised terms. Technical tokens stay Latin: PM2.5, NO₂, CO₂, AQI, GRAP, HawaTag, OTP. Terms shared with the console use the DESIGN_SYSTEM §12 glossary (सिम्युलेटेड, सांकेतिक, भरोसा उच्च/मध्यम/कम, धूल/ट्रैफ़िक/खुले में जलाना/क्षेत्रीय धुआँ). Server text with no Hindi version (for example agent `reason_text`) is shown in English with the note "(अंग्रेज़ी में)". It is never machine-translated on device.
+- `flutter_localizations` + `intl 0.20.2`. ARB files `lib/app/l10n/arb/app_en.arb` (template) and `app_hi.arb`, 638 messages each with matching keys. `l10n.yaml` generates `AppLocalizations` into `lib/app/l10n/gen/` (`nullable-getter: false`) and writes untranslated messages to `build/l10n_untranslated.json`, which `tool/check_untranslated.dart` fails on (`make l10n`).
+- `context.l10n`, `context.lang` (`en`/`hi`) and `context.isHindi` come from `lib/app/l10n/l10n_x.dart`. Enum labels and icons: `lib/app/l10n/enum_labels.dart` (AQI category, cause, pollutant, task kind/status, intervention source, impact verdict/method, inspection status, report status, confidence, GRAP stage).
+- **Language first.** `/onboarding/language` comes before login (shows both scripts). The choice is stored in prefs; after login, or when changed in Settings, it is sent as `PATCH /v1/me {lang}` through the outbox. Until chosen the UI language is Hindi.
+- **Time.** `IstTime` (`core/utils/ist_time.dart`) formats in IST (fixed UTC+05:30, no tz database): en "6:30 AM"; hi day part + clock ("सुबह 6:30") with रात 00–04, सुबह 04–12, दोपहर 12–16, शाम 16–20, रात 20–24; short dates and weekdays via `intl`.
+- **Numbers.** `Numbers` (`core/utils/numbers.dart`): Latin digits, `en_IN` grouping, true minus U+2212, en-dash ranges and "to" when a bound is negative.
+- **Server text.** `LocalizedText {en, hi?}` falls back to English and reports `isEnglishFallback` so the UI can say "(अंग्रेज़ी में)".
+- **Fonts.** Inter (400, 600) and Noto Sans Devanagari (400, 600) are bundled and declared in `pubspec.yaml`; `fontFamily: Inter` with `fontFamilyFallback: [NotoSansDevanagari]`. Their OFL licence is registered in `bootstrap()`. `assets/fonts/` also holds Geist, GeistMono, Silkscreen and two more Noto weights that are not declared (used only by the legacy theme).
+- Partial: some newer citizen screens (the air-near-me feature tiles and the four hard-coded citizen screens) use English literals instead of ARB strings.
 
 ## 15. Theming
 
-Tokens mirror [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md). If that file differs, it wins, and `lib/app/theme/tokens.dart` is updated to match. Implemented as a `ThemeExtension<HawaColors>` plus a Material 3 `ColorScheme` seeded from the tokens (seed not auto-generated).
+Tokens mirror [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md) by hand in `lib/app/theme/tokens.dart` (`HawaTokens`). `HawaColors` (`ThemeExtension`, `context.hawaColors`) resolves semantic colours per mode; `AppTheme.light/dark/outdoor` build a Material 3 `ColorScheme` from the tokens (no seed), `HawaTypography` builds the text theme, `AqiPalette` gives AQI fills.
 
-Token names below are DESIGN_SYSTEM's. `brand` is what the brief calls "primary", and it maps to Material `ColorScheme.primary`.
-
-| Token | Light | Dark | On-colour | Use in the app |
+| Token | Light | Dark | On-colour | Use |
 |---|---|---|---|---|
-| `brand` | `#0E7C66` | fill `#0E7C66`, text/lines `#2BB597` | `#FFFFFF` (5.1:1) | Primary actions, route polyline, done/verified, P50 lines |
-| `warning` | `#F59E0B` | `#F59E0B` | `#0B1220` (9.1:1) | Stale banner, HawaTag-offline chip, near-expiry |
-| `warning-fg` | `#B45309` | `#F59E0B` | — | Warning **text** on surfaces ("lower evidence") |
-| `danger` | `#DC2626` | fill `#DC2626`, text `#F87171` | `#FFFFFF` (4.8:1) | Errors, missed/failed, adverse effect only |
-| `info` | `#2563EB` | fill `#2563EB`, text `#60A5FA` | `#FFFFFF` (5.2:1) | Info banners, back-trajectory, `in_progress` |
-| `simulated` | `#7C3AED` | fill `#7C3AED`, text `#A78BFA` | `#FFFFFF` (5.7:1) | **Only** simulated data (badge, map ring) |
-| `ink` | `#0B1220` | — | — | Text, pins, outdoor-mode borders |
-| `surface` / `surface-elevated` | `#F8FAFC` / `#FFFFFF` | `#0B1220` / `#111A2E` (overlay `#18233B`) | — | Background / cards |
-| `foreground` / `muted-foreground` | `#0B1220` / `#475569` | `#E2E8F0` / `#94A3B8` | — | Body / secondary text |
-| `muted` / `border` / `input` | `#F1F5F9` / `#E2E8F0` / `#64748B` | `#1A2540` / `#24314D` / `#64748B` | — | Backgrounds / dividers / control outlines (≥ 3:1) |
+| `brand` | `#0E7C66` | fill `#0E7C66`, text `#2BB597` | `#FFFFFF` | Primary actions, route, done/verified |
+| `warning` / `warningFg` | `#F59E0B` / `#B45309` | `#F59E0B` | `#0B1220` | Stale banner, tag offline, "lower evidence" text |
+| `danger` | `#DC2626` | text `#F87171` | `#FFFFFF` | Errors, missed/failed |
+| `info` | `#2563EB` | text `#60A5FA` | `#FFFFFF` | Info, `in_progress`, position marker |
+| `simulated` | `#7C3AED` | text `#A78BFA` | `#FFFFFF` | Only simulated data |
+| `ink` | `#0B1220` | — | — | Text, pins, outdoor borders |
+| `surface` / `surfaceElevated` | `#F8FAFC` / `#FFFFFF` | `#0B1220` / `#111A2E` (overlay `#18233B`) | — | Background / cards |
+| `foreground` / `mutedForeground` | `#0B1220` / `#475569` | `#E2E8F0` / `#94A3B8` | — | Body / secondary text |
+| `muted` / `border` / `input` | `#F1F5F9` / `#E2E8F0` / `#64748B` | `#1A2540` / `#24314D` / `#64748B` | — | Backgrounds / dividers / outlines |
+| `offline` | `#334155` | `#18233B` | `#FFFFFF` (dark `#E2E8F0`) | Offline banner |
 
-| AQI token (`AqiCategory`) | Fill | Text on fill | Border on light surfaces | Label en / hi |
+| `AqiCategory` | Fill | Text on fill | Border | Viridis (CVD) fill |
 |---|---|---|---|---|
-| `aqi.good` | `#00B050` | `#0B1220` (6.6:1) | `#008A3E` | Good / अच्छा |
-| `aqi.satisfactory` | `#92D050` | `#0B1220` (10.2:1) | `#5E8C2C` | Satisfactory / संतोषजनक |
-| `aqi.moderate` | `#FFD600` | `#0B1220` (13.4:1) | `#9A8000` | Moderate / मध्यम |
-| `aqi.poor` | `#FF9900` | `#0B1220` (8.8:1) | `#B36B00` | Poor / खराब |
-| `aqi.very_poor` | `#FF0000` | `#0B1220` (4.7:1) | `#B30000` | Very poor / बहुत खराब |
-| `aqi.severe` | `#C00000` | `#FFFFFF` (6.5:1) | `#800000` (dark: `#FCA5A5`) | Severe / गंभीर |
+| good | `#00B050` | ink | `#008A3E` | `#FDE725` |
+| satisfactory | `#92D050` | ink | `#5E8C2C` | `#7AD151` |
+| moderate | `#FFD600` | ink | `#9A8000` | `#22A884` |
+| poor | `#FF9900` | ink | `#B36B00` | `#2A788E` |
+| very_poor | `#FF0000` | ink | `#B30000` | `#414487` |
+| severe | `#C00000` | white | `#800000` (dark `#FCA5A5`) | `#440154` |
+| unknown | `muted` | ink | `input` | `muted` |
 
-A missing or unknown category renders a neutral `muted` fill + "—" + "No estimate". The colour-blind-safe (viridis) alternative from DESIGN_SYSTEM §2.3 is available as **Settings → Display → Colour-blind safe colours**. It changes fills only, never names.
+GRAP stages reuse the triggering AQI fill (I → poor, II → very poor, III/IV → severe).
 
-**Encodings shared with the console** (DESIGN_SYSTEM §2.4–§2.5, §4):
+**Modes.** `DisplayMode` (`auto`, `standard`, `dark`, `outdoor`, Settings → Display). In `auto`, the driver and inspector roles get the outdoor theme (white surface, ink text, 2 dp ink borders, no elevation, type scale 1.1) and other roles follow the system light/dark. `outdoor` forces it; `dark` forces dark. `highContrastTheme` is always the outdoor theme. The CVD toggle switches AQI fills to viridis.
 
-| Domain | App encoding |
-|---|---|
-| Confidence | High ≥ 0.7, Medium 0.4–0.7, Low < 0.4. Word + percentage (never colour alone). Hindi "भरोसा उच्च / मध्यम / कम" |
-| `TaskStatus` | pending/dispatched/acknowledged/en_route → neutral + step icon. `in_progress` → `info` + dot. `done`/`verifying` → `brand` outline + tick. `verified` → `brand` solid + tick. `inconclusive` → neutral. `skipped`/`cancelled` → neutral + word. `missed`/`failed` → `danger` + word. Manual completion adds a `warning-fg` "lower evidence" label |
-| `ImpactVerdict` | effective → `brand` + check. no_detectable_effect → neutral + circle. inconclusive → neutral + dashed circle. adverse → `danger` + triangle |
-| `GrapStage` | Roman numeral + label ("Stage III · Severe / चरण III · गंभीर") on the triggering AQI fill. Stage IV adds a 2 dp ink border |
-| `SiteGrade` | A → `brand` + "A". B → `warning` + "B". C → `danger` + "C" + stripe pattern |
-| `CauseLabel` | Icon + label only, **no hue** (so cause is never confused with AQI) |
+**Shape and size.** Radii 4 / 6 / 8 / 12 (chips, buttons, cards, dialogs), gutter 16, buttons 48 dp (64 dp in field shells via `BigActionButton`), `materialTapTargetSize.padded`, navigation bar 68 dp. Typography: Inter + Noto fallback, tabular figures, no letter-spacing, Hindi line heights 1.45–1.65.
 
-**Icons.** The console uses lucide. The app uses the bundled Material Symbols equivalent for each DESIGN_SYSTEM §7 meaning, so no icon package is added:
+**Core widgets** (`lib/core/widgets/`): `AqiChip`, `BigActionButton`, `ConfidenceChip` (word + % + 5-segment meter, 0.7/0.4 thresholds), `showConfirmSheet`, `ConflictBanner`, `EmptyState`, `ErrorView` (localized message, Retry, Details with request id), `LoadingSkeleton`, `OfflineBanner`, `StaleBanner` + `FreshnessBanner` (offline → stale → error strip), `SimulatedBadge`, `SimulatedScreenChip`, `StatusPill`, `SyncStatusChip` (outbox depth, opens `/settings/sync`), `UncertaintyText` (unused).
 
-| Meaning | Material icon |
-|---|---|
-| dust / traffic / burning / regional smoke / unknown | `construction` / `directions_car` / `local_fire_department` / `foggy` / `help` |
-| sprinkler (spray) / smog gun / sweeper / inspection | `water_drop` / `air` / `cleaning_services` / `fact_check` |
-| simulated / real device | `science` / `verified` |
-| stale / offline / GRAP | `schedule` / `wifi_off` / `shield` |
-
-**Rules**
-- **Never colour alone.** Every AQI chip shows number + category word + "indicative" and carries its light-surface border. Every status shows icon + word. Every simulated item shows the word "Simulated" with the flask (`science`) icon. Charts use dash patterns and direct labels.
-- Typography: Inter + Noto Sans Devanagari. Base body 16 sp (18 sp in outdoor mode). Driver stop titles 22 sp SemiBold. Tabular figures for metrics.
-- Three modes:
-  - **light**: default for school/citizen/site
-  - **dark**: follows the system for non-driver roles, using the DESIGN_SYSTEM dark surfaces and the `*-fg-dark` text colours. Brand, danger, info and simulated fills are never used as text in dark mode
-  - **outdoor**: high contrast. `#FFFFFF` surface, ink text, 2 dp ink borders, no elevation shadows or translucency, primary buttons with ink border. Outdoor is the default for the driver and inspector shells, and `MediaQuery.highContrastOf(context)` forces it
-- Shapes follow DESIGN_SYSTEM §6 radii (chips 4, buttons 6, cards 8, dialogs 12). Gutters are 16 dp. Primary buttons are 64 dp in the driver/inspector shells and 48 dp elsewhere (mobile targets exceed the console's 24 px minimum).
-- Tokens are hand-mirrored into `lib/app/theme/tokens.dart`. A unit test reads `../frontend/src/styles/tokens.json` (same repo, the machine-readable source per DESIGN_SYSTEM §2) when it exists and fails on drift. DESIGN_SYSTEM asks for the Flutter lead to be tagged on token changes.
-
-```dart
-// core/widgets/simulated_badge.dart (sketch)
-class SimulatedBadge extends StatelessWidget {
-  const SimulatedBadge({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final c = context.hawaColors;
-    return Semantics(
-      label: context.l10n.simulatedBadgeSemantics, // "Simulated data"
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: c.simulated, borderRadius: BorderRadius.circular(999)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.science, size: 14, color: c.onSimulated), // flask, never icon-only
-              const SizedBox(width: 4),
-              Text(context.l10n.simulatedBadge, style: TextStyle(color: c.onSimulated, fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-```
+A test that compares `tokens.dart` with a machine-readable token file is **Planned** (`frontend/src/styles/tokens.json` does not exist).
 
 ## 16. Flavors and configuration
 
-| Flavor | Android `applicationId` | API | Firebase project | Crash reporting | Dev tools |
+### 16.1 Flavors
+
+| Flavor | Android `applicationId` | App name | Network security | Firebase options | Dev tools |
 |---|---|---|---|---|---|
-| `dev` | `in.hawacommand.field.dev` | local (10.0.2.2 / adb reverse) or fake | `hawacommand-dev` | off | on |
-| `staging` | `in.hawacommand.field.stg` | staging HTTPS | `hawacommand-staging` | on | on (hidden behind 7 taps on version) |
-| `prod` | `in.hawacommand.field` | prod HTTPS | `hawacommand-prod` | on | off |
+| `dev` | `in.hawacommand.field.dev` (version suffix `-dev`) | Hawa DEV | `network_security_config.xml`: cleartext to `10.0.2.2`, `localhost`, `127.0.0.1` | `devFirebaseOptions()` → null | on when `FLAVOR != prod` and `SHOW_DEV_TOOLS` |
+| `staging` | `in.hawacommand.field.stg` (`-stg`) | Hawa STG | none (main manifest allows cleartext) | `stagingFirebaseOptions()` → null | same rule |
+| `prod` | `in.hawacommand.field` | HawaCommand | none (main manifest allows cleartext) | `prodFirebaseOptions()` → null | hidden when `FLAVOR=prod` |
 
-(The application id and project names are placeholders. Confirm the domain before any Play upload.)
+The application id is a placeholder; confirm the domain before any store upload. One entrypoint, `lib/main.dart` → `bootstrap()`. The Gradle flavor sets the id, name and dev resources; the Dart side reads the `FLAVOR` define, and nothing checks that they match ([README Known issue 12](README.md#9-known-issues)). iOS has no flavors.
 
-- Run: `fvm flutter run --flavor dev --dart-define-from-file=env/dev.json`. Build: `fvm flutter build apk --flavor prod --dart-define-from-file=env/prod.json --split-per-abi --obfuscate --split-debug-info=build/symbols`.
-- One entrypoint `lib/main.dart`. `FLAVOR` comes from the define file, and Android `productFlavors` set the app id suffix, app name and `google-services.json` source set (`android/app/src/<flavor>/`). This avoids per-flavor `main_*.dart` drift.
-- `lib/app/env.dart` reads `String.fromEnvironment`/`bool.fromEnvironment` into `abstract final class Env`. `bootstrap()` asserts the required keys are non-empty and the flavor matches the Android flavor (read via a platform channel or `package_info_plus` package name suffix).
-- **Values in `env/*.json` are compiled into the binary and are not secrets** (§18). Only the `.example` files are committed. Real files come from the team vault or CI secrets.
+### 16.2 Dart defines (`Env`)
 
-`env/dev.json.example`:
+`lib/app/env.dart` reads compile-time defines (`--dart-define` or `--dart-define-from-file`). Values are compiled into the binary and are not secrets.
+
+| Define | Default | Meaning |
+|---|---|---|
+| `FLAVOR` | `dev` | `dev` / `staging` / `prod`; `prod` disables the forced-offline interceptor, HTTP logging and Dev tools and selects prod Firebase options |
+| `API_BASE_URL` | `http://10.0.2.2:8000` | Backend base URL (all Dio clients except `externalDio`) |
+| `WS_URL` | `ws://10.0.2.2:8000/v1/ws` | WebSocket URL |
+| `USE_FAKE_API` | `true` | See [README §6.3](README.md#63-fake-and-real-modes) |
+| `FAKE_FEATURES` | empty | CSV of feature keys kept fake when `USE_FAKE_API=false` |
+| `REAL_FEATURES` | `air_map,citizen_air,alerts,school_forecast` | CSV of features always real |
+| `ALERTS_CONTRACT` | `false` | Contract alerts inbox instead of the broadcast-log adapter (`alerts_remote_source.dart`) |
+| `OPEN_AIR_CONTRACT` | `false` | `/open/v1/air?bbox=` instead of the twin adapter (`open_air_remote_source.dart`) |
+| `MAP_TILE_URL` | MapTiler `streets-v2/256/{z}/{x}/{y}.png?key={key}` | Keyed basemap template |
+| `MAP_API_KEY` | empty | MapTiler key; empty or `replace-…` → fallback basemap |
+| `MAP_ATTRIBUTION` | `© MapTiler © OpenStreetMap contributors` | |
+| `MAP_FALLBACK_TILE_URL` | Esri World Street Map | Keyless basemap |
+| `MAP_FALLBACK_ATTRIBUTION` | `Tiles © Esri · Esri, HERE, Garmin, OpenStreetMap contributors` | |
+| `ROUTING_URL` | `https://routing.openstreetmap.de/routed-{profile}/route/v1/driving` | OSRM (`{profile}` = car, bike, foot) |
+| `GEOCODING_URL` | `https://photon.komoot.io/api/` | Photon |
+| `CRASH_REPORTING` | `false` | Crashlytics (also needs Firebase) |
+| `LOG_LEVEL` | `info` | `package:logging` root level |
+| `SHOW_DEV_TOOLS` | `true` | Dev tools entry (never in `FLAVOR=prod`) |
+
+`Env.missingKeys()` only logs missing keys at startup; it does not stop the app. `HAWA_API_URL` is read only by the legacy `lib/core/config.dart`.
+
+No `env/*.json` file is committed ([README Known issue 2](README.md#9-known-issues)). A template for `app_frontend/env/dev.json`:
 
 ```json
 {
@@ -770,77 +642,68 @@ class SimulatedBadge extends StatelessWidget {
   "WS_URL": "ws://10.0.2.2:8000/v1/ws",
   "USE_FAKE_API": true,
   "FAKE_FEATURES": "",
-  "MAP_TILE_URL": "https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key={key}",
-  "MAP_API_KEY": "replace-with-restricted-public-key",
-  "MAP_ATTRIBUTION": "© MapTiler © OpenStreetMap contributors",
+  "REAL_FEATURES": "air_map,citizen_air,alerts,school_forecast",
+  "MAP_API_KEY": "",
   "CRASH_REPORTING": false,
   "LOG_LEVEL": "debug",
   "SHOW_DEV_TOOLS": true
 }
 ```
 
-(Copy the exact tile URL template from the provider dashboard. The one above is illustrative.) `FAKE_FEATURES` is an optional comma-separated list (e.g. `"inspector,school"`). When `USE_FAKE_API=false`, only those features use fake remote sources. This mixes real and fake during integration ([PLAN §6](PLAN.md#6-mock-first-approach)).
+### 16.3 Firebase
+
+`bootstrap()` picks `prod`/`staging`/`dev` options by `Env.flavor`. All three functions return `null` (no Firebase project yet), so Firebase is skipped, `FirebaseMessaging.onBackgroundMessage` is not registered and the crash reporter is disabled. To enable: create the projects, run `flutterfire configure` per flavor, replace the three functions' bodies, and set `CRASH_REPORTING=true` where wanted. `google-services.json` and `GoogleService-Info.plist` are git-ignored. **Planned.**
 
 ## 17. Errors, logging and crash reporting
 
-- **Crash reporting: Firebase Crashlytics.** Firebase is already required for FCM, so this adds no new vendor. (Sentry is a valid alternative if the team prefers its Dart stack traces. Pick one, not both.)
-  - `FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError`
-  - `PlatformDispatcher.instance.onError` → `recordError(fatal: true)`
-  - `runZonedGuarded` is not needed with these handlers
-- Crash context keys: `flavor`, `active_role`, `shift_active`, `outbox_depth`, `app_version`. The user identifier is a SHA-256 of the user id, never a phone number.
-- Logging uses `package:logging` with a redacting formatter (phones, OTPs, tokens, presigned URLs). Dev → console. Staging/prod → Crashlytics breadcrumbs (`log()`), at info level and above. Every network log line carries `X-Request-Id` so backend logifyx logs can be joined.
-- Error UI:
-  - Screens render `AsyncValue` errors with `ErrorView(failure)`, which shows a localized message, a **Retry** button and a "Details" expander (request id).
-  - Unhandled widget errors in release show a friendly fallback via `ErrorWidget.builder`.
-  - An error never wipes the cached data: the error becomes a banner over the stale content.
-- Non-fatal reporting: permanent outbox failures, refresh failures and WS protocol errors are recorded as non-fatal with the problem `code`.
+- **Logging.** `AppLogger.configure(level: LOG_LEVEL)` sends `package:logging` records to `dart:developer` (or a sink). Every line is redacted: bearer tokens, JWTs, `access_token`/`refresh_token`/`token` values, OTP `code` values, `X-Amz-*` presign parameters, `?token=` query values and Indian mobile numbers.
+- **Crash reporting.** `CrashReporter` wraps Crashlytics and is a no-op unless `CRASH_REPORTING` and Firebase are both on. When on it installs `FlutterError.onError` and `PlatformDispatcher.instance.onError`, sets the user id as a SHA-256 of the user id, and records non-fatals (permanent outbox failures, `idempotency_key_mismatch`). Context keys (`flavor`, `active_role`, …) are **Planned** (`setKey` exists, unused).
+- **Release error widget.** `ErrorWidget.builder` shows an icon instead of the red screen in release builds.
+- **Error UI.** Screens render failures with `ErrorView`; cached data stays visible under `FreshnessBanner`'s error strip.
 
 ## 18. Security
 
-| Area | Rule |
-|---|---|
-| Secrets | **No secrets in the app.** No backend service tokens, WhatsApp/SNS credentials or S3 keys (uploads use presigned URLs). The map key and Firebase config are public identifiers, restricted provider-side |
-| Tokens | flutter_secure_storage only. Access token in memory + secure storage. Never logged. Wiped on logout |
-| Transport | HTTPS/WSS in staging/prod (`usesCleartextTraffic=false`). A dev network security config allows cleartext to `10.0.2.2` and `localhost` only |
-| Certificate pinning | Optional, off for the hackathon. If enabled for prod: pin the SPKI of the API's intermediate CA plus one backup, via a custom `HttpClient` `SecurityContext` on the Dio adapter, and ship pin rotation with app updates |
-| Backups | `allowBackup=false`, `fullBackupContent=false`, no `dataExtractionRules` exporting app data |
-| Root / jailbreak | Not blocked: field phones are often cheap, rooted or modified, and blocking would stop a driver working. Post-hackathon: Play Integrity verdict sent as a header on Citizen Eyes submissions to cut abuse, as an input to server-side trust, not a hard gate |
-| Deep links | Allow-listed path patterns only. IDs validated as UUIDv7. No arbitrary URLs opened from payloads |
-| Screens | `FLAG_SECURE` not used (drivers may need screenshots for support). The OTP field is excluded from autofill suggestions except SMS User Consent |
-| Dependencies | New packages need a PR note (maintenance, licence, size). No GPL packages in the app binary without team sign-off (e.g. check the licence of any tile-caching package) |
-| Obfuscation | `--obfuscate --split-debug-info` for prod builds. Symbols uploaded to Crashlytics |
+| Area | Rule in the code | Status |
+|---|---|---|
+| Secrets | None in the app. Map key and Firebase config are public identifiers | Implemented |
+| Tokens | flutter_secure_storage; access token in memory too; never logged; wiped on logout | Implemented |
+| Transport | Intended: HTTPS/WSS outside dev. Actual: `usesCleartextTraffic="true"` in the main manifest for every flavor | Partial ([README Known issue 7](README.md#9-known-issues)) |
+| S3 upload | Bare Dio, never our `Authorization` header | Implemented |
+| Backups | `allowBackup=false`, `fullBackupContent=false` | Implemented |
+| Deep links | Allow-listed patterns, ids validated (UUIDv7 / `SCH-`), payload `role` must be held | Implemented |
+| Third parties | OSRM/Photon receive only the query (start/end points, search text, an NCR bbox and a 0.001° location bias); no user id | Implemented |
+| Certificate pinning | — | Planned |
+| Obfuscation (`--obfuscate --split-debug-info`) | Not in `make apk` | Planned |
+| Play Integrity on Citizen Eyes | — | Planned |
+| Root / jailbreak | Not blocked (field phones are often rooted) | Implemented (by design) |
 
 ## 19. Performance budgets
 
-Measured on the reference low-end device ([README §6](README.md#6-supported-platforms)) with release builds.
+> Status: Planned targets. None of these has been measured.
 
-| Metric | Budget | How we hold it |
+| Metric | Budget | What the code does toward it |
 |---|---|---|
-| Cold start → first frame | ≤ 1.5 s | Minimal `main`. Firebase init, DB open and prefs load run in parallel. No network before first frame |
-| Cold start → cached route visible | ≤ 2.5 s | Drift in a background isolate. Route list renders from cache, network refresh after |
-| Push tap → stop detail visible | ≤ 1.5 s (warm), ≤ 3 s (cold) | Deep link resolves from cache |
-| WS `task.done` → tick on screen | ≤ 1 s after receipt | Direct drift upsert → stream |
-| Frame time on route list / map | 60 fps target, no jank > 32 ms in profile traces | `ListView.builder`, `const` widgets, map `RepaintBoundary`, simplified polylines |
-| Release APK size (arm64-v8a, split per ABI) | ≤ 25 MB | 4 bundled font files, no Lottie, icon tree-shaking, deferred heavy features only if needed |
-| Memory (driver home + map) | ≤ 200 MB RSS | Image cache limits, thumbnails not full images in lists |
-| Battery during a 5 h shift | ≤ 15 % attributable to the app (target) | §11.2 policy, WS off in background |
-| Data per shift | ≤ 10 MB without tile prefetch | ETag on `tasks/mine` (proposed), compressed photos |
-
-Lists are always virtualised (`ListView.builder`/`SliverList`). The alert inbox and report list use cursor pagination (`?limit=50&cursor=`, CONTRACTS §6).
+| Cold start → first frame | ≤ 1.5 s | `SharedPreferences` and Firebase init run in parallel before `runApp`; no network before the first frame |
+| Cold start → cached route visible | ≤ 2.5 s | Drift on a background isolate; session restore reads cached `/v1/me` offline |
+| Push tap → stop detail | ≤ 1.5 s warm, ≤ 3 s cold | Routes resolve from cache |
+| WS `task.done` → tick | ≤ 1 s | Direct drift update → stream |
+| Release APK (arm64 split) | ≤ 25 MB | Four declared font files; no CI size check yet |
+| Battery over a 5 h shift | ≤ 15 % attributable | §11.2 policy, WS off in the background |
 
 ## 20. Accessibility
 
-| Requirement | Implementation |
-|---|---|
-| TalkBack | Every icon-only control has a `Semantics` label. AQI chip reads "Air quality poor, AQI 245, indicative". Stop cards read "Stop 2 of 6, spray, arrive 6:10 to 6:40 AM, done automatically by HawaTag". Logical traversal order |
-| Text scaling to 200 % | No fixed heights on text containers. `Flexible`/`Wrap` layouts. Goldens at `TextScaler.linear(2.0)` for driver home, stop detail and OTP. Nothing clips, and primary actions stay reachable |
-| Touch targets | ≥ 48 dp everywhere (`materialTapTargetSize: padded`). 64 dp primary actions in driver/inspector shells. ≥ 8 dp spacing between destructive and primary actions |
-| Colour | Never the only signal (§15). Contrast ≥ 4.5:1 for text, ≥ 3:1 for large text and UI glyphs |
-| High-contrast outdoor mode | §15. Toggle in Settings and a sun icon on driver/inspector app bars. Honours system high-contrast |
-| Motion | Auto-done celebration respects `MediaQuery.disableAnimations`. Haptics + sound give non-visual confirmation |
-| Low literacy | Icon + short word on every action. Consistent icons (water drop = spray, broom = sweep, magnifier = inspect). Voice prompts are on the roadmap ([PLAN §10](PLAN.md#10-post-hackathon-roadmap)) |
+| Requirement | In the code | Status |
+|---|---|---|
+| Touch targets ≥ 48 dp, 64 dp primary in field shells | `materialTapTargetSize.padded`, `BigActionButton` | Implemented |
+| Never colour alone | AQI chip shows number + word + "indicative"; status pills icon + word; simulated badge word + flask | Implemented |
+| Semantics labels on icon-only marks | Markers, badges | Partial (not audited) |
+| Text scaling to 200 % | `pumpApp` supports a text scale; no golden or test at 2.0 exists | Planned (verification) |
+| High contrast | Outdoor theme, `highContrastTheme` | Implemented |
+| Reduced motion, haptics, voice prompts | — | Planned (not audited) |
 
 ## 21. Key sequences
+
+> Status: these show the **target** flow against the contract API. In the default build, every call to an endpoint marked "Planned (backend)" in §7.1 is answered by the in-app fake backend, push is replaced by fake realtime events, and S3 by `FakeObjectUploader`.
 
 ### 21.1 Auth: phone OTP
 
@@ -849,32 +712,25 @@ sequenceDiagram
   autonumber
   actor U as User
   participant A as App
-  participant API as api
-  participant R as Redis
-  participant M as SNS SMS / WhatsApp
+  participant API as api (fake backend today)
   U->>A: choose language, enter +91 phone
   A->>API: POST /v1/auth/otp/request phone_e164, channel=sms, lang
-  API->>R: rate limit rl:otp, store otp:{phone} hash for 5 min
-  API->>M: send 6-digit code
-  API-->>A: 202 request_id, expires_in, resend_after
-  M-->>U: SMS with code
-  A->>U: SMS User Consent prompt offers autofill
-  U->>A: confirm code
+  API-->>A: request_id, expires_in, resend_after
+  U->>A: enter code (demo 123456)
   A->>API: POST /v1/auth/otp/verify phone_e164, request_id, code, install_id
-  API-->>A: 200 access_token, refresh_token, user id, roles, lang
-  A->>A: tokens to flutter_secure_storage
-  A->>API: GET /v1/me
-  A->>API: PUT /v1/me/push-token token, platform, app_version
-  alt user has more than one app role
+  API-->>A: access_token, refresh_token, user (role, roles, lang)
+  A->>A: different user than last time? wipe local data
+  A->>A: tokens + user id to secure storage
+  A->>API: GET /v1/me (cached as me_json)
+  A->>A: outbox push_token (if FCM), profile_update lang (if changed)
+  alt user has more than one app role and none saved
     A->>U: role picker
-  else single role
+  else
     A->>U: role home
   end
-  Note over A,API: 15 min later the access token has expired
-  A->>API: GET /v1/tasks/mine returns 401
-  A->>API: POST /v1/auth/refresh (single flight, other calls queue)
-  API-->>A: new access token + rotated refresh token
-  A->>API: replay queued calls with new token
+  Note over A,API: token near expiry or 401
+  A->>API: POST /v1/auth/refresh on the bare Dio (single flight)
+  API-->>A: rotated tokens, request replayed once
 ```
 
 ### 21.2 Driver route lifecycle (Flow B)
@@ -882,49 +738,29 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
   autonumber
-  participant BE as Backend<br/>scheduler, dispatch-worker, api
-  participant N as notifier
-  participant F as FCM
+  participant BE as Backend (Planned) / FakeBackend
   participant A as App
   actor D as Driver
   participant T as HawaTag (simulated)
-  participant V as AI-ML verifier
-  Note over BE: 05:30 IST, approved master-plan tasks released
-  BE->>BE: task.dispatched per stop
-  BE->>N: alert.requested kind=route_assignment
-  N->>F: data message type=route_assignment
-  F-->>A: push within 10 s of dispatch
-  A->>A: local notification on route_updates
-  N-->>D: no ack after 15 min, re-notify via WhatsApp, then SMS
-  D->>A: tap notification
+  D->>A: open Today's route
   A->>BE: GET /v1/tasks/mine?date=today
-  BE-->>A: route geometry, ordered stops, windows, shift id
-  A->>A: upsert drift, prefetch corridor tiles
-  A->>BE: POST /v1/tasks/{id}/ack via outbox with Idempotency-Key
+  BE-->>A: asset, shift, route, ordered stops
+  A->>A: replace snapshot in drift, resolve conflicts
+  A->>BE: outbox task_ack per dispatched stop
   D->>A: Start shift
-  A->>BE: POST /v1/shifts/{id}/start (proposed)
-  A->>A: start foreground location service
-  A->>BE: WS /v1/ws?token= subscribe tasks:me, alerts:me
-  D->>A: Navigate to stop 1
-  A->>BE: POST /v1/tasks/{id}/status en_route
+  A->>A: foreground location service, save active shift
+  A->>BE: outbox shift_start (server shift id only)
+  D->>A: Navigate
+  A->>BE: outbox task_status en_route
   A->>D: hand-off to Google Maps
-  A->>A: geofence 150 m with 20 s dwell
-  A->>D: arrived, show what to do (local state only)
-  T->>BE: MQTT spray_start
-  BE-->>A: WS tasks:me task.in_progress
-  T->>BE: MQTT spray_stop
-  BE->>BE: spray.stopped matched, task.done source=hawatag
-  BE-->>A: WS tasks:me task.done
-  N->>F: task_done_auto, displayed only if app is backgrounded
-  A->>D: big tick, chime, vibration, next stop highlighted
-  Note over BE,V: 2 to 4 h after spray end
-  BE->>V: cmd.verify.run
-  V->>BE: impact.verified effect_pct, ci_low, ci_high
-  BE-->>A: WS tasks:me task.verified, or next refresh
-  A->>D: Verified PM10 -18 % for 90 min, range -26 to -10 %
+  A->>A: geofence arrival (local only)
+  T->>BE: spray (Dev tools: Simulate HawaTag spray)
+  BE-->>A: task.in_progress, then task.done source=hawatag (WS or fake realtime)
+  A->>D: auto-done overlay, next stop
+  BE-->>A: task.verified with impact_summary (Dev tools: Simulate verification)
   D->>A: End shift
-  A->>A: stop location service, purge pings
-  A->>BE: POST /v1/shifts/{id}/end (proposed)
+  A->>A: stop tracker, purge pings
+  A->>BE: outbox shift_end
 ```
 
 ### 21.3 Citizen Eyes (Flow D)
@@ -935,32 +771,19 @@ sequenceDiagram
   actor C as Citizen
   participant A as App
   participant DB as drift
-  participant API as api
-  participant S3 as S3 / MinIO
-  participant AI as AI-ML vision + matcher
-  participant I as Inspector app
-  C->>A: Report burning
-  A->>C: privacy notice, first time only
-  A->>A: camera capture via image_picker
-  A->>A: geolocator fix with accuracy
-  A->>A: re-encode JPEG 1600 px q80, EXIF stripped
-  A->>DB: reports_draft row
-  C->>A: add note, Send
-  A->>DB: outbox photo_upload then report_submit (depends_on)
-  A->>API: POST /v1/uploads/presign content_type=image/jpeg, purpose=report_photo
-  API-->>A: presigned POST url + fields, 5 min, max 8 MB
-  A->>S3: multipart POST fields + file, no Authorization header
-  S3-->>A: 204
-  A->>API: POST /v1/reports client_report_id, s3_key, lat, lon, captured_at, note<br/>Idempotency-Key = op id
-  API->>API: HEAD object, rate limit, strip EXIF again, re-encode
-  API-->>A: 201 id, status=submitted
-  API->>AI: report.submitted via outbox relay and Kafka
-  AI->>API: report.verified with matched spike
-  API-->>A: push report_outcome status=verified
-  Note over API: dispatch opens inspection, officer taps assign
-  API->>I: push inspection_target
-  I->>API: POST /v1/inspections/{id}/close outcome=closed_confirmed, evidence_keys
-  API->>API: report.closed with outcome_text en + hi
-  API-->>A: push report_outcome outcome=closed_confirmed
-  A->>C: The inspector confirmed the source and acted on it
+  participant API as api (FakeBackend today)
+  participant S3 as S3 (FakeObjectUploader today)
+  C->>A: Report burning (privacy notice first time)
+  A->>A: camera capture, geolocator fix
+  A->>A: re-encode JPEG 1600 px q80, reject if EXIF survives
+  A->>DB: reports_draft + media_files
+  C->>A: category, note, Send
+  A->>DB: outbox photo_upload, report_submit (depends_on)
+  A->>API: POST /v1/uploads/presign purpose=report_photo
+  API-->>A: presigned POST url + fields
+  A->>S3: multipart POST, no Authorization header
+  A->>API: POST /v1/reports client_report_id, photo_key, location, accuracy_m, captured_at, category, note, lang
+  API-->>A: report_id, status=submitted
+  API-->>A: status timeline verifying, verified, ticketed, closed (fake: 4 s, 10 s, 16 s, 45 s)
+  API-->>A: report_outcome alert with the outcome text
 ```

@@ -1,5 +1,8 @@
 # AI-ML Build Plan
 
+> **Status (2026-10-10).** Code exists for the twin, forecaster, attribution, exposure, greedy optimiser, What-If (constant baseline), causal verifier, four agents, insights, pipelines, simulator and HTTP API; 38 tests pass once `make data && make train` has been run (37/38 on a clean checkout). Still open: OR-Tools CVRP, real forecast features at inference, twin accuracy (loses to nearest-station in `reports/twin_metrics.json`), real What-If baseline, verification of real interventions, Kafka/DB integration, MLflow, Strands, Citizen Eyes vision, anti-gaming guard, coverage router, site score. The prioritised list is in [TEAM_REMAINING_WORK_AND_PROMPTS.md](../TEAM_REMAINING_WORK_AND_PROMPTS.md#2-ai--ml-engineer); defects are in [AI-ML/README.md](../../AI-ML/README.md#9-known-issues).
+
+
 The hour-by-hour hackathon plan for the ML engineer and the agents person, milestones with acceptance criteria, backend dependencies, cut rules, risks, and the post-hackathon model roadmap.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

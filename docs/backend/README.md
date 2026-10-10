@@ -1,169 +1,177 @@
 # HawaCommand Backend — Documentation Index
 
-Entry point for everything under `backend/`: what the backend owns, which document to read for what, and how to get the golden path running locally.
+Entry point for everything under `backend/`: what the backend does today, what is still only designed, which document to read for what, how to run and test it, and the defects that are known.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
+Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../../backend/README.md](../../backend/README.md) · [../../backend/PHASES.md](../../backend/PHASES.md)
 
 ---
 
-## 1. What the backend owns
+## 1. Implementation status
 
-The backend (`backend/`, Python 3.12, FastAPI + asyncio) is the **plumbing and the command surface** of the closed loop (§5). It does not compute the twin, forecasts, plans or causal effects; those belong to AI-ML. The backend moves data between loop stages, stores it, serves it, and turns approved decisions into real-world actions.
+Status vocabulary used in every backend document: **Implemented** (works as described), **Partial** (works, with the named gap), **Stub/Mock** (returns fixtures or hard-coded data), **Planned** (designed in these docs, not in the code).
 
-| Area | Backend responsibility | Key artefacts |
-|---|---|---|
-| Edge ingest | MQTT to Kafka bridge, packet validation, dedupe, calibration apply, cell lookup, readings storage, HawaTag spray segments | `mqtt-bridge`, `ingest-worker`, `reading`, `device_event`, `intervention` |
-| External feeds | CPCB / OpenAQ, Open-Meteo (IMD/ERA5 proxy), NASA FIRMS polling and normalisation | `feeds-worker`, `reference_observation`, `weather_*`, `fire_point` |
-| Orchestration | Cron in IST that publishes `hawa.cmd.*` commands; dispatch saga (approve → notify → await spray → verify) | `scheduler`, `dispatch-worker` |
-| Command surface | REST + WebSocket for the officer console, the Flutter field and community app, and the open data portal | `api` ([API.md](API.md)) |
-| Human-in-the-loop gate | Nothing dispatches without officer approval (F14) | `POST /v1/plans/{id}/approve` |
-| Delivery | Push (FCM), WhatsApp Cloud API, SMS (SNS), in-app | `notifier`, `alert-engine` |
-| Schema | Alembic owns **every** DDL change for the shared `hawa` schema, including AI-ML-owned tables | `backend/alembic/` ([DATA_MODEL.md](DATA_MODEL.md)) |
-| Contracts | `hawa_contracts` Python package: enums, packets, envelopes, topics, Redis key builders | `backend/contracts/` |
-| Local stack | Root `docker-compose.yml`, `.env.example`, `Makefile` | repo root (owned by the backend team) |
-| Infra | AWS CDK (Python) for the pilot | `backend/infra/` |
-| Device simulator | Virtual HawaPod/HawaTag fleet publishing the exact firmware packet | `backend/simulator/` |
+| Area | Status | What exists in code | Where |
+|---|---|---|---|
+| FastAPI app, CORS, request-context middleware | **Implemented** | One ASGI app, 33 operations on 31 paths, wildcard CORS | `src/hawa_backend/api/app.py` |
+| AI-ML bridge (`IntelClient`) | **Implemented** | HTTP to the AI-ML service, then in-process `hawa_ml`, then fixtures; in-memory circuit breaker | `src/hawa_backend/core/intel_client.py` |
+| Live station ingestion | **Implemented** | WAQI map-bounds API, then OpenAQ v3 locations, then 5 baseline stations; cached 15 min in process | `IntelClient._fetch_live_stations` |
+| Hotspots, twin, forecast, open air data | **Implemented** | Served from AI-ML (live WAQI data kriged in-process when the HTTP service is down), fixture fallback | `api/routes/hotspots.py`, `forecast.py`, `open_data.py` |
+| Plans (list, draft, approve, request changes, apply suggestion, compare) | **Partial** | Drafts come from the AI-ML planner; all state is an in-process dict; seed plan `214` is a fixture; no state machine, no persistence | `api/routes/plans.py` |
+| Causal impact and effectiveness library | **Partial** | Fixture intervention enriched with an AI-ML verification; library from AI-ML | `api/routes/impact.py` |
+| Citizen endpoints | **Partial** | Safe route, safe window, missed-machine audit call `hawa_ml` in process; live operations and ward leaderboard are hard-coded | `api/routes/citizen.py` |
+| Devices, alerts, driver route | **Stub/Mock** | Return fixtures from `api/fixtures.py` | `api/routes/devices.py`, `alerts.py`, `driver.py` |
+| Health probes | **Stub/Mock** | `/readyz` always reports database and redis `ok` without checking | `api/routes/health.py` |
+| RFC 9457 errors | **Partial** | Model, exception classes and handler exist; no route raises them, so clients get FastAPI's default error bodies | `core/errors.py` |
+| Auth (JWT, OTP, password hashing, webhook HMAC) | **Partial** | Helper functions only; no auth endpoints; no route enforces a token | `core/security.py` |
+| Structured JSON logging with PII masking | **Partial** | Formatter and masking helpers exist; nothing in `src/` uses `get_logger` | `core/logging.py` |
+| Optional AWS layer | **Implemented** | DynamoDB cache, Step Functions or SageMaker forecast, Step Functions dispatch on approve, SNS and Kinesis publishers (not called by any route); off unless `HAWA_AWS_ENABLED=true` | `src/hawa_backend/aws/` |
+| `hawa_contracts` package | **Implemented** | Enums, ids, units, packets, envelope, 26 topics, 12 consumer groups, Redis key builder, 24 event models | `backend/contracts/` |
+| SQLAlchemy models | **Partial** | 23 tables defined and tested on SQLite; no migrations; the API never opens a session | `src/hawa_backend/db/` |
+| Ingest, simulator, dispatch saga | **Partial** | Plain Python classes, unit-tested; not connected to MQTT, Kafka or the database | `src/hawa_backend/workers/` |
+| CLI `hawa` | **Partial** | `version`, `config`, `check` only | `src/hawa_backend/cli.py` |
+| Local infrastructure | **Implemented** | `docker-compose.yml` with PostGIS 16, Redis 7, Kafka 3.8 (KRaft); the backend does not connect to any of them yet | `backend/docker-compose.yml` |
+| Alembic migrations, PostGIS geometry | **Planned** | none | [DATA_MODEL.md](DATA_MODEL.md) §5 |
+| Kafka producers and consumers, outbox relay | **Planned** | Topic names and event models only | [EVENTS.md](EVENTS.md) |
+| Redis caching, rate limits, idempotency, OTP store | **Planned** | Key builders only | [CACHING.md](CACHING.md) |
+| WebSocket `/v1/ws` | **Planned** | none | [API.md](API.md) §6 |
+| Auth endpoints, RBAC, ward scoping | **Planned** | none | [API.md](API.md) §6 |
+| Scheduler, notifier, feeds-worker, alert-engine, MQTT bridge, other workers | **Planned** | none | [ARCHITECTURE.md](ARCHITECTURE.md) §8 |
+| Metrics, tracing, dashboards | **Planned** | none | [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) §6 |
+| Dockerfile, CI/CD, CDK | **Planned** | A CloudFormation template exists at the repo root (`infrastructure/cloudformation/hawa-integration.yaml`), owned by the AWS runbook | [DEPLOYMENT.md](DEPLOYMENT.md), [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md) |
+
+In one sentence: today the backend is a single FastAPI process that serves the web console and the Flutter app by translating AI-ML output (live, in-process or fixture) into the frontend's camelCase contract, keeps plan state in memory, and optionally calls AWS. The event-driven, database-backed design in the rest of these documents is the target, and is labelled **Planned** wherever it appears.
 
 ## 2. Documents
 
 | File | What it covers | Read when |
 |---|---|---|
-| [CONTEXT.md](CONTEXT.md) | Backend role per loop step, users and flows, the day timeline, spike path, real vs simulated, non-functional requirements, risks, non-goals | First, always |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Processes, layering, sequence diagrams (ingest, saga, WebSocket, Citizen Eyes, school alerts, What-If), auth/RBAC overview, security, resilience, performance, scaling | Before writing any code |
-| [STRUCTURE.md](STRUCTURE.md) | Full `backend/` tree with one line per file, tooling (uv, ruff, mypy, pytest, pre-commit, Makefile) | When creating files or packages |
-| [DATA_MODEL.md](DATA_MODEL.md) | Postgres/PostGIS schema, SQLAlchemy models, Alembic workflow, partitions | Before touching tables or migrations |
-| [API.md](API.md) | Full REST and WebSocket spec, auth, RBAC details, errors, pagination | Before touching routers or clients |
-| [EVENTS.md](EVENTS.md) | Kafka: setup, topic bootstrap, envelope/serde, producer/consumer design, outbox, consumer group map, saga choreography, replay, DLQ, lag | Before writing a producer or consumer |
-| [CACHING.md](CACHING.md) | Redis: keys and TTLs, versioned cache-aside, stampede protection, rate limiting, OTP, idempotency, locks, pub/sub, GEO, failure modes | Before adding any Redis usage |
-| [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) | logifyx setup and policy, PII rules, audit vs app log, OpenTelemetry, Prometheus metrics, Grafana, alerts, probes | Before adding logs, metrics or spans |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | docker-compose services, `.env.example` catalogue, Makefile, demo-reset, AWS CDK stacks, CI/CD, backups, secrets, cost | When running, shipping or demoing |
-| [PLAN.md](PLAN.md) | Hour-by-hour hackathon plan for the backend lead, milestones with acceptance criteria, dependencies, cut rules, risks, post-hackathon phases | At kickoff and at every checkpoint |
+| [CONTEXT.md](CONTEXT.md) | Backend role per loop step (as built vs target), users and flows, honesty rule as implemented, non-functional targets, risks, non-goals | First |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | The one running process, module layering, the hotspot/forecast fallback chain, the circuit breaker, live station ingestion, plan flow, security and resilience as built, then the target process architecture | Before changing any code |
+| [STRUCTURE.md](STRUCTURE.md) | The real `backend/` tree with one line per file; tooling (pyproject, pytest, ruff, uv.lock) | When creating files |
+| [DATA_MODEL.md](DATA_MODEL.md) | The 23 SQLAlchemy tables column by column, what is not built (Alembic, PostGIS, partitions) | Before touching models |
+| [API.md](API.md) | Every registered route with parameters, real response examples, status codes and data source; errors, CORS, headers, auth; planned endpoints listed separately | Before touching routes or clients |
+| [EVENTS.md](EVENTS.md) | What the contracts declare (topics, groups, envelope, events) vs what is wired (nothing on Kafka; optional SNS/Kinesis helpers) | Before adding a producer or consumer |
+| [CACHING.md](CACHING.md) | What actually caches (in-process TTLs, DynamoDB, `lru_cache`) vs the planned Redis design | Before adding caching |
+| [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) | `core/logging.py` and `core/context.py` exactly; what is logged today; planned metrics and tracing | Before adding logs or metrics |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | `docker-compose.yml`, every environment variable, how to run, the AWS layer, what is not built for deployment | When running or shipping |
+| [PLAN.md](PLAN.md) | Milestones with their current status and the remaining work in priority order | At every checkpoint |
+
+Phase-by-phase build notes live next to the code: [../../backend/PHASES.md](../../backend/PHASES.md) and `backend/docs/PHASE_*.md`.
 
 ## 3. Reading order
 
-**Humans (backend lead and reviewers):** `../SYSTEM_OVERVIEW.md` → `../CONTRACTS.md` → CONTEXT → ARCHITECTURE → EVENTS → DATA_MODEL → API → CACHING → LOGGING_AND_OBSERVABILITY → STRUCTURE → DEPLOYMENT → PLAN.
+**Humans:** this README → [API.md](API.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → the rest as needed.
 
-**AI coding agents:** treat `../CONTRACTS.md` as binding and do not invent topic names, table names, Redis keys or enums.
+**AI coding agents:** treat the code and this README's status table as the truth; treat `../CONTRACTS.md` as binding for names that already exist in `hawa_contracts`. Do not assume any **Planned** item exists.
 
-**Frontend and app developers:** API.md (endpoints, auth, WebSocket) and `../CONTRACTS.md` §6. You never read Kafka.
+**Frontend and app developers:** [API.md](API.md). Responses use the camelCase shapes in `frontend/src/lib/api.ts`, not the snake_case shapes in the planned spec.
 
-**AI-ML developers:** EVENTS.md §4, §7 (envelope, consumer groups), DATA_MODEL.md (tables you own), CACHING.md §2 (`ml:*`, `lock:plan:*`, `dedupe:evt:*`), and `backend/contracts/`.
+**AI-ML developers:** [ARCHITECTURE.md](ARCHITECTURE.md) §4 (exactly which `hawa_ml` symbols and HTTP paths the backend uses) and `backend/contracts/`.
 
-## 4. Quick start (local, golden path)
+## 4. Quick start (verified)
 
-Prerequisites: Docker Desktop (8 GB RAM allocated), `uv` (latest stable), `make` (optional), Git Bash or WSL on Windows.
+Prerequisites: Python 3.11 or newer (`.python-version` pins 3.11; verification below ran on 3.12.3). Docker is optional: nothing in the running backend connects to Postgres, Redis or Kafka yet.
 
 ```bash
-# from the repo root
-cp .env.example .env                     # host-oriented defaults; compose overrides hostnames inside containers
-docker compose up -d                     # infra only (default profile): postgres, redis, kafka, schema-registry,
-                                         # kafka-ui, mosquitto, minio (+ minio-init)
 cd backend
-uv sync                                  # creates .venv from uv.lock (workspace: root + contracts + simulator)
-uv run alembic upgrade head              # schema hawa, PostGIS, all tables, first reading partitions
-uv run hawa kafka-init                   # creates every topic from hawa_contracts.topics (idempotent)
-uv run hawa seed                         # = hawa seed all: wards, grid, POIs, schools, stations, assets, devices, sites, users (DATA_MODEL §18)
-uv run hawa api                          # terminal 1: http://localhost:8000/docs
-uv run hawa worker mqtt-bridge           # terminal 2: Mosquitto -> hawa.telemetry.raw.v1
-uv run hawa worker ingest                # terminal 3: raw -> reading + hawa.telemetry.clean.v1
-uv run hawa worker outbox-relay          # terminal 4: outbox_event -> Kafka
-uv run hawa-sim run --devices 50 --tags 10 --scenario golden   # terminal 5: virtual fleet over real MQTT
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e contracts            # hawa-contracts
+pip install -e ".[dev,aws]"         # hawa-backend + test tools + boto3
+pip install -e ../AI-ML             # REQUIRED: api/routes/citizen.py imports hawa_ml at import time
 ```
 
-Check that it works:
+The verification environment was built with exactly these three editable installs (backend `[dev,aws]`, contracts, AI-ML). Without the AI-ML package, `hawa_backend.api.app` cannot be imported (Known issue 1).
+
+Run the API (port 8000 by default; any free port works):
 
 ```bash
-docker compose exec postgres psql -U hawa -d hawa \
-  -c "select count(*), max(ts), bool_and(is_simulated) from hawa.reading where ts > now() - interval '5 minutes';"
-curl -s localhost:8000/readyz | jq
-open http://localhost:8080               # Kafka UI: watch hawa.telemetry.clean.v1
+uvicorn hawa_backend.api.app:app --host 0.0.0.0 --port 8000 --reload
+# OpenAPI UI: http://localhost:8000/docs   ReDoc: /redoc   schema: /openapi.json
 ```
 
-Tests:
+Optional: run the AI-ML service so the backend uses its HTTP path instead of the in-process fallback. The backend expects it on port 8100 (`HAWA_AIML_SERVICE_URL`), but AI-ML's own `make api` binds 8000, so pass the port explicitly:
 
 ```bash
-uv run pytest -m "not integration and not e2e"   # unit + contract, < 30 s, no Docker needed
-uv run pytest -m integration                     # testcontainers: PostGIS, Redis, Kafka
-uv run pytest -m e2e                             # golden path against the running compose stack
+cd ../AI-ML && uvicorn hawa_ml.api.main:app --port 8100
 ```
 
-The whole stack in containers, with AI-ML, web and observability: `make up && make migrate && make seed && make sim`. See [DEPLOYMENT.md](DEPLOYMENT.md) §3 for all Makefile targets and §5.2 for `make demo-reset`.
+CLI:
+
+```bash
+hawa --help            # or: python -m hawa_backend.cli --help
+hawa version           # HawaCommand Backend v0.1.0
+hawa config            # prints env, debug, database URL, redis URL, kafka brokers
+hawa check             # [OK] Configuration validated successfully.
+```
+
+Tests (from `backend/`; `pyproject.toml` already sets `pythonpath = ["src", "contracts"]` and both test paths):
+
+```bash
+pytest -q -W ignore
+```
+
+Result on 2026-10-10: **65 tests, 64 passed, 1 failed** (`tests/integration/test_end_to_end.py::test_full_mission_air_pipeline`, Known issue 2). The suite needs no Docker; database tests use in-memory SQLite and AWS tests use moto.
 
 ## 5. Services and ports (local)
 
-Host ports. Inside the compose network, services use service names (for example `postgres:5432`, `kafka:19092`).
+| Service | Port | Started by | Used by the backend today |
+|---|---|---|---|
+| Backend API (`hawa_backend.api.app:app`) | 8000 (`HAWA_PORT` is informational; uvicorn's `--port` decides) | `uvicorn` by hand | — |
+| AI-ML service (`hawa_ml.api.main:app`) | expected at 8100 (`HAWA_AIML_SERVICE_URL`) | `uvicorn` by hand | Yes, over HTTP when reachable; otherwise in process |
+| PostgreSQL 16 + PostGIS 3.4 (`hawa-postgres`) | 5432 | `docker compose up -d` in `backend/` | No |
+| Redis 7 (`hawa-redis`) | 6379 | same | No |
+| Kafka 3.8 KRaft (`hawa-kafka`) | 9092 host, 29092 in-network, 9093 controller | same | No |
+| WAQI (`api.waqi.info`) and OpenAQ (`api.openaq.org`) | HTTPS | — | Yes, for live station readings |
+| AWS (DynamoDB, Step Functions, SageMaker, SNS, Kinesis) | — | — | Only with `HAWA_AWS_ENABLED=true` |
 
-| Service | Owner | Host port(s) | Profile | Notes |
-|---|---|---|---|---|
-| postgres (PostGIS 16-3.4) | backend | 5432 | default | DB `hawa`, schema `hawa`; DB `mlflow` for MLflow |
-| redis 7 | backend | 6379 | default | `maxmemory-policy volatile-lru` |
-| kafka (Apache Kafka, KRaft) | backend | 9092 (host listener) | default | internal listener `kafka:19092`, controller 9093 |
-| schema-registry | backend | 8081 | default | only for logifyx Avro on `hawa.logs.v1` |
-| kafka-ui | backend | 8080 | default | topics, groups, lag, message browser |
-| mosquitto 2 | backend | 1883 | default | username/password per device, ACL by topic |
-| minio (S3) | backend | 9000 (API), 9001 (console) | default | buckets `hawa-local-lake`, `-media`, `-reports`, `-models` |
-| api | backend | 8000 | app | REST `/v1`, `/open/v1`, WebSocket `/v1/ws`, `/healthz`, `/readyz`, `/metrics` |
-| ingest-worker | backend | 9101 | app | ops port: `/healthz` `/readyz` `/metrics` |
-| feeds-worker | backend | 9102 | app | |
-| scheduler | backend | 9103 | app | |
-| dispatch-worker | backend | 9104 | app | |
-| notifier | backend | 9105 | app | |
-| outbox-relay | backend | 9106 | app | |
-| mqtt-bridge | backend | 9107 | app | local and demo only |
-| audit-writer | backend | 9108 | app | |
-| alert-engine | backend | 9109 | app | |
-| evidence-report | backend | 9110 | app | |
-| archiver | backend | 9111 | app | |
-| simulator | backend | 9112 | sim | virtual fleet |
-| intel-service | AI-ML | 8100 | ml | internal only (`/internal/v1/*`) |
-| intel-worker | AI-ML | 9120 | ml | |
-| mlflow | AI-ML | 5000 | ml | |
-| web (Next.js) | frontend | 3000 | web | |
-| jaeger | backend | 16686 (UI), 4317/4318 (OTLP) | obs | |
-| prometheus | backend | 9090 | obs | |
-| grafana | backend | 3001 | obs | golden-path dashboard |
-| kafka-exporter, redis-exporter, postgres-exporter | backend | 9308, 9121, 9187 | obs | |
+The web console (`frontend/`, `NEXT_PUBLIC_API_URL=http://localhost:8000`) and the Flutter app (`app_frontend/`, `HAWA_API_URL`, default `http://10.0.2.2:8000`) call the backend.
 
-Every backend worker listens on container port 9100 for its ops endpoints. The host ports above are the defaults when a worker runs on the host with `uv run hawa worker <name>`.
+## 6. Request path in one line
 
-## 6. Golden path in one line
+Client → `GET /v1/hotspots` → `IntelClient.get_hotspots` → AI-ML `GET {HAWA_AIML_SERVICE_URL}/hotspots` (circuit breaker) → else in-process `hawa_ml` exposure engine on a twin kriged from live WAQI stations → else `api/fixtures.py` → reshaped to the frontend contract with readable place names (`core/places.py`). Details in [ARCHITECTURE.md](ARCHITECTURE.md) §3.
 
-`hawa-sim` → Mosquitto → `mqtt-bridge` → `hawa.telemetry.raw.v1` → `ingest-worker` → `reading` + `hawa.telemetry.clean.v1` → `scheduler` `cmd.twin.rebuild` → intel-worker → `twin.updated` → `api` cache + WebSocket → officer drafts plan → intel-worker `plan.drafted` → officer approves → `dispatch-worker` → `notifier` (push + SMS to a test phone) → simulated HawaTag `spray.stopped` → task `done` → `cmd.verify.run` → `impact.verified` → `/console/impact`. Details in [ARCHITECTURE.md](ARCHITECTURE.md) §5 and `../SYSTEM_OVERVIEW.md` §10.
+## 7. Known issues
 
-## 7. Proposed contract additions (summary)
+Defects found while reconciling these documents with the code (verified 2026-10-10 at commit `a33e043`). Paths are relative to `backend/` unless they start with another top-level directory. None of them are fixed here.
 
-The backend docs define a few items that `../CONTRACTS.md` does not yet contain. Each is marked **Proposed contract addition (PCA-nn)** where it is used. The lead merges them into CONTRACTS.md and `hawa_contracts` in one PR.
+### 7.1 Build, packaging and tests
 
-| ID | Summary | Defined in |
-|---|---|---|
-| PCA-01 | AWS streaming uses **MSK provisioned** (SASL/SCRAM for the IoT Rule, IAM for services), not MSK Serverless | DEPLOYMENT §6.3 |
-| PCA-02 | Raw ingress accepts an envelope (bridge) or a bare packet plus headers (IoT Rule). The raw `is_simulated` is advisory only | EVENTS §3.3 |
-| PCA-03 | Topic `hawa.cmd.dispatch.v1` (`cmd.dispatch.release`, `cmd.dispatch.sweep`) | EVENTS §8 |
-| PCA-04 | Topic `hawa.cmd.alert.v1` (`cmd.alert.school_run`) | EVENTS §8 |
-| PCA-05 | Topic `hawa.cmd.maintenance.v1` (`cmd.partitions.maintain`, `cmd.snapshot.freeze`) | EVENTS §8 |
-| PCA-06 | Group `dispatch` also on `hawa.task.lifecycle.v1`; group `api-live` also on `hawa.alert.requested.v1` | EVENTS §7 |
-| PCA-07 | intel-worker produces `device.calibrated` / `device.trust_changed`; api produces `alert.delivered` / `alert.read` | EVENTS §7 |
-| PCA-08 | Event types `plan.partially_completed` and `task.failed` | EVENTS §9 |
-| PCA-09 | Schedule changes: every-minute dispatch sweep, command topics for release, school run and maintenance | EVENTS §8 |
-| PCA-10 | Extra DLQ headers (`hawa-dlq-partition`, `-offset`, `-attempts`, `-failed-at`, `-error-type`) | EVENTS §5.4 |
-| PCA-11 | Deterministic UUIDv7 `event_id` for ingest-derived events | EVENTS §3.4 |
-| PCA-12 | CONTRACTS wording: `reading` uniqueness is `(device_id, seq, ts)` (the partition key is required; DATA_MODEL already uses it as the PK) | ARCHITECTURE §5.1 |
-| PCA-13 | Redis keys `idem:*`, `lock:cache:*`, `cache:open:*`, `cache:grap:*`, `ws:user:*`, and `rl` scope names | CACHING §2.2 |
-| PCA-14 | Hash phone numbers in Redis keys (`otp:{phone_hash}`) | CACHING §8 |
-| PCA-15 | Table `calibration_pair` (drive-by pairing), written by group `ingest-calibration` | ARCHITECTURE §5.1 |
-| PCA-16 | `intervention.verify_requested_at`, `verify_attempts`, `flags`. Saga state is derived (no `dispatch_saga` table), and the scheduler writes `verification_status` + `verify_*` | ARCHITECTURE §5.2, EVENTS §9–10 |
-| PCA-17 | `inspection.proposed_asset_id` + `POST /v1/inspections/{id}/assign` (officer approval for Citizen Eyes) | ARCHITECTURE §5.4 |
-| PCA-18 | Internal `POST /internal/v1/narrative` for the evidence report | ARCHITECTURE §4 |
-| PCA-19 | `device.spike` data fields `confirmed_by_cloud` (same name as the `device_event` column) and `late` | ARCHITECTURE §5.1 |
-| PCA-20 | `alert.requested` data field `delivery: first_success \| all` | ARCHITECTURE §5.5 |
-| PCA-21 | `simulated_share` on `twin_run` / `twin.updated`. A derived event's `is_simulated` is true if any input was simulated | CONTEXT §6 |
-| PCA-22 | Tile URLs carry `?v={tile_version}`, with ETag and immutable caching | CACHING §4 |
-| PCA-23 | Every worker exposes `/healthz`, `/readyz`, `/metrics` on container port 9100 | LOGGING_AND_OBSERVABILITY §15 |
-| PCA-24 | logifyx needs a Kafka security passthrough before `hawa.logs.v1` can run on MSK | LOGGING_AND_OBSERVABILITY §2.4 |
-| PCA-25 | Optional group `archiver-raw` for a raw S3 archive | EVENTS §7 |
-| PCA-26 | Group hosting: `device-health` runs in alert-engine; `audit` and `audit-writer` both run in audit-writer | EVENTS §7 |
-| PCA-27 | Open-data simulated policy `HAWA_OPEN_INCLUDE_SIMULATED` | CONTEXT §6 |
-| PCA-28 | DB login users for the processes DATA_MODEL §20.5 doesn't list: `hawa_alerts` (alert-engine), `hawa_audit` (audit-writer), `hawa_reports` (evidence-report), all members of `app_rw`. The archiver's partition job uses the owner login | DEPLOYMENT §2.2–2.3 |
-| PCA-29 | `intervention` writers include the **api** (manual fallback, API.md §7). CONTRACTS §8 and DATA_MODEL §9.1 name only ingest/dispatch | ARCHITECTURE §5.2 |
+1. **Undeclared AI-ML dependency.** `src/hawa_backend/api/routes/citizen.py:7-9` imports `hawa_ml` at module level, and `api/app.py:8-19` imports that router, but `pyproject.toml:7-20` does not declare `hawa-ml`. Without `pip install -e ../AI-ML`, the app cannot be imported, 4 test modules fail at collection (`tests/api/test_api.py`, `tests/api/test_all_routes_comprehensive.py`, `tests/integration/test_aiml_integration.py`, `tests/integration/test_end_to_end.py`) and the 2 tests in `tests/aws/test_aws_integration.py` that import the app inside the test fail.
+2. **Failing end-to-end test.** `tests/integration/test_end_to_end.py:321` asserts `GET /v1/hotspots` returns `"simulated": true`. When the AI-ML HTTP service is not running and `hawa_ml` is installed (the normal test setup), `IntelClient.get_hotspots` takes the in-process path, which sets `"simulated": False` (`src/hawa_backend/core/intel_client.py:494`). The HTTP path (`:425`) and the fixture path (`:514`) set `True`. The test passes only when the AI-ML service is reachable or `hawa_ml` is absent.
+3. **Packaging.** `pyproject.toml` has no `[build-system]`, so `uv.lock:682` records `hawa-backend` as a virtual project: `uv sync` installs the dependencies but not `hawa_backend` or the `hawa` script (`pip install -e .` does work, with setuptools' default backend). `api/`, `api/routes/`, `core/`, `db/` and `workers/` have no `__init__.py` (implicit namespace packages).
+4. **Stale lock.** `uv.lock:704` locks `moto` with only the `dynamodb` extra while `pyproject.toml:30` asks for `moto[dynamodb,sns,kinesis]`; `uv lock --check` will report the lock as out of date.
+5. **Lint.** No ruff or mypy configuration exists. `ruff check src` with ruff 0.17.0 defaults reports 357 findings; with the classic `--select E4,E7,E9,F` set, `src contracts tests` report 96 (93 unused imports, 2 unused variables, 1 multiple-imports line).
 
-Where these documents overlap with [DATA_MODEL.md](DATA_MODEL.md) (schema, roles, grants, partitions, seed, demo reset, retention) or [API.md](API.md) (endpoints, error codes, auth, rate limits, idempotency, HTTP caching), **those two are authoritative**, and the docs here have been aligned to them.
+### 7.2 Data honesty and consistency
+
+6. **`simulated` flag is inconsistent.** Hotspots from AI-ML over HTTP are labelled `simulated: true` (`core/intel_client.py:425`) although AI-ML computes them from the same live feeds, while the in-process path says `false` (`:494`). The twin fallback returns fixture hotspots labelled `simulated: false` (`:334-340`).
+7. **Ward vocabularies do not match.** The live path uses AI-ML ward names (`Ward-1`, `Ward-3`, …), fixtures use zone names (`West`, `North West`, `East Delhi` …), the seed plan uses `ward-084`. A `?ward=` value that matches nothing on the live path silently falls back to fixtures (`core/intel_client.py:420-421, 489-490, 506-510`); for example `GET /v1/forecast?ward=North West` returns a fixture-based Stage IV outlook.
+8. **Cell id vocabularies do not match.** Ingest produces `g500-062-052` style ids (`workers/ingest.py:17-19, 36-42`, using a 0.0045° step for both latitude and longitude), AI-ML returns `G-050-072`, fixtures use slugs (`ghazipur`) and `g500-041-077`, and `IntelClient` defaults to `C-2863-7721` (`core/intel_client.py:1037`). `GET /v1/hotspots/{cell_id}` only finds ids from whichever source answered.
+9. **Effectiveness library confidence intervals.** When a record's reduction is positive, the effect is negated but the CI is not (`core/intel_client.py:1115-1124, 1140-1149`); observed: `effectPct -14.0` with `ci [9.0, 19.0]`. Every non-dust cause is labelled `Burning`.
+10. **OpenAQ fallback invents values.** Every OpenAQ location is given `pm25 78.0`, `pm10 135.0` (`core/intel_client.py:256-262`); only the coordinates are real.
+
+### 7.3 API behaviour
+
+11. **Draft id collisions.** The AI-ML planner names plans `PLAN-YYYYMMDD-HHMM` (`AI-ML/src/hawa_ml/agents/planner_agent.py:47-50`) and `api/routes/plans.py:141-142` stores drafts by that id, so two drafts in the same minute overwrite each other (observed with `ward-084` then `All wards`).
+12. **Plans have no lifecycle rules or persistence.** State is the module dict `_ACTIVE_PLANS` (`api/routes/plans.py:27`), lost on restart and not shared between workers. Approve and request-changes work from any status (`:146-166`); applying an unknown comment id returns 200 (`:169-175`); compare/simulate do not check that the plan exists (`:178-183`).
+13. **RFC 9457 is not what clients receive.** The `HawaException` handler (`api/app.py:58-66`) is never triggered: 404s are `HTTPException` with `{"detail": "..."}` (`api/routes/hotspots.py:26`, `api/routes/plans.py:116`) and 422s are FastAPI's default `{"detail": [...]}`. `AimlUnavailableError` and `AimlTimeoutError` are imported (`core/intel_client.py:26`) but never raised; AI-ML failures degrade silently to fallbacks.
+14. **No authentication.** Every route is anonymous; `core/security.py` is not used by any route. CORS is `allow_origins=["*"]` with `allow_credentials=True` (`api/app.py:36-42`), so Starlette reflects any `Origin` with credentials allowed.
+15. **Readiness lies.** `/readyz` returns `database: ok` and `redis: ok` without contacting either (`api/routes/health.py:16-25`).
+16. **Ids not echoed.** `X-Request-Id` / `X-Correlation-Id` are echoed only when the client sent them (`api/app.py:52-55`); generated ids are never returned.
+17. **Ignored parameters.** `GET /v1/forecast/{cell_id}` ignores `pollutant` and `issued_at` (`api/routes/forecast.py:28-34`). `IntelClient.draft_plan` ignores `windowStart` and always labels the window `Thu 06:00 – 10:00` (`core/intel_client.py:695-709, 755, 909`). `verify_intervention` ignores `cell_id`, `asset` and `action` (`:1034-1041`). `simulate_plan` posts empty `hotspots`/`assets` and returns hard-coded rows (`:931-959`).
+18. **Plan formatting heuristics.** `_format_drafted_plan` labels every task whose action lacks "dust"/"sprink" as cause `Traffic`, fixes `causeConf` at 0.82, and flags the second task `auditor` regardless of content (`core/intel_client.py:818-819, 838, 842-843`).
+19. **Blocking I/O in async handlers.** WAQI and OpenAQ are fetched with blocking `urllib.request.urlopen` (5 s timeout each, `core/intel_client.py:208, 251`) and the GP twin is fitted synchronously (`:281-293`) inside async route handlers; the first `/v1/hotspots` after a cache expiry took about 3 s and blocks the event loop meanwhile.
+20. **Shared mutable state in citizen routes.** `safe_route_optimizer.default_bg_pm25` and `safe_window_calculator.baseline_pm25` are module-level `hawa_ml` singletons overwritten on every request (`api/routes/citizen.py:42, 65`). `/v1/citizen/live-operations` returns a fixed `as_of` of `2026-10-08T03:00:00Z` (`:118`).
+21. **Secrets in source.** Default WAQI and OpenAQ API keys are hard-coded (`core/intel_client.py:200, 246`).
+
+### 7.4 Not wired
+
+22. **Workers are library code only.** `workers/ingest.py`, `simulator.py`, `dispatch.py` are not run by any process or CLI command. The dedupe set grows without bound (`workers/ingest.py:27`), the spike baseline is a caller-supplied default of 80 (`:63`), `confirmed_by_cloud` is always `True` (`:134`), and the saga matches the first open task for an asset with no location or time check (`workers/dispatch.py:46-49`).
+23. **Unused settings and helpers.** `HAWA_REDIS_URL`, `HAWA_KAFKA_*`, `HAWA_HOST`, `HAWA_PORT` are read but nothing connects or binds with them; `db/session.get_db` is never used by a route; `aws.publish_alert` and `aws.publish_sensor_reading` are only called by tests; `core/logging.get_logger` is never called.
+24. **Context default is shared.** `_CURRENT_CONTEXT` defaults to one module-level `RequestContext()` (`core/context.py:19`, ruff B039), so code running outside a request shares one request id.
+
+### 7.5 Cross-component mismatches
+
+25. **AI-ML port.** The backend expects AI-ML on 8100 (`core/config.py:42`, `.env.example:26`) but `AI-ML/Makefile:35` and `AI-ML/src/hawa_ml/api/main.py:45` start it on 8000, the backend's own port.
+26. **Flutter app expects endpoints that do not exist.** `/v1/auth/*` (`app_frontend/lib/core/network/api_paths.dart:3`) and the WebSocket `/v1/ws` (`app_frontend/lib/app/env.dart:11`) are **Planned** here.

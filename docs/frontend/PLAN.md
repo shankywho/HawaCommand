@@ -1,5 +1,8 @@
 # Web Frontend Build Plan
 
+> **Status (2026-10-10).** All console pages exist, and `pnpm typecheck` and `pnpm build` pass. `pnpm lint` fails because no ESLint config is committed. Open items: map overlays still use demo data, the What-If delta sign differs between backend and mocks, some copy is fixed, there is no sign-out, and the open-data portal, WebSocket and tests are Planned. Next steps: [TEAM_REMAINING_WORK_AND_PROMPTS.md](../TEAM_REMAINING_WORK_AND_PROMPTS.md#5-web-frontend-engineer). Milestones below are the original plan.
+
+
 Purpose: the hour-by-hour plan for the frontend developer across the 24-hour hackathon. It covers milestones with acceptance criteria, backend dependencies, the mock-first strategy, cut rules, the demo-day checklist and the roadmap afterwards.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md)
@@ -51,7 +54,7 @@ H = hours since the start. "Agent" = AI coding agent lane.
 
 ## 4. Backend and AI-ML dependencies
 
-Expected availability comes from [SYSTEM_OVERVIEW §11](../SYSTEM_OVERVIEW.md#11-hackathon-plan-24-h-team-of-four-16). "Proposed" items are in [ARCHITECTURE §18](ARCHITECTURE.md#18-contract-additions-requested-by-the-web). They must be raised with the backend lead at H0, because the mock serves them from the start.
+Expected availability comes from [SYSTEM_OVERVIEW §11](../SYSTEM_OVERVIEW.md#11-hackathon-plan-24-h-team-of-four-16). "Proposed" items are in [ARCHITECTURE §18](ARCHITECTURE.md). They must be raised with the backend lead at H0, because the mock serves them from the start.
 
 | Web need | Endpoint / channel | Owner | Expected real | Mock fixture | Web milestone |
 |---|---|---|---|---|---|

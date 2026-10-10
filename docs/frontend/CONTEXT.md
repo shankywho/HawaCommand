@@ -1,5 +1,8 @@
 # Web Frontend Context
 
+> **Status (reconciled 2026-10-10).** Product context from the proposal. As built, `frontend/` has the landing page, eight console pages (`/map`, `/forecast`, `/plans`, `/plans/[id]`, `/what-if`, `/impact`, `/fleet`, `/alerts`), `/login` and the `/route` driver view. With `NEXT_PUBLIC_API_URL` empty, the in-browser mock API in `src/mocks/` answers every call. The public open-data portal, WebSocket updates, deck.gl, next-intl i18n and alert compose are Planned. See [docs/frontend/README.md](README.md#1-implementation-status).
+
+
 Purpose: explains why the web app exists, who it serves, what it must show, and the product rules every screen follows. Drawn from `HawaCommand_Proposal.pdf` (cited as §n).
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md)
@@ -147,7 +150,7 @@ Seed requirement (flag to the backend/demo owner): the script says the outlook "
 The web implements it as follows:
 
 1. **`<SimulatedBadge>`** (violet `#7C3AED`, flask icon, text "Simulated" / "सिम्युलेटेड") is shown on every entity with `is_simulated: true`: devices, vehicles, assets, pod trails, fleet icons (violet ring), interventions, impacts, and plan tasks whose asset is simulated. It appears in tables, cards, drawers, tooltips, chart titles and dialog summaries. Badges are text, not only colour.
-2. **Derived data** (twin cells, hotspots) is labelled "Includes simulated sensor data" when its simulated share is above 0 (proposed field `sim_share`, [ARCHITECTURE §18](ARCHITECTURE.md#18-contract-additions-requested-by-the-web)). The cell drawer states the evidence, for example "7 readings: 5 simulated pods, 2 reference stations".
+2. **Derived data** (twin cells, hotspots) is labelled "Includes simulated sensor data" when its simulated share is above 0 (proposed field `sim_share`, [ARCHITECTURE §18](ARCHITECTURE.md)). The cell drawer states the evidence, for example "7 readings: 5 simulated pods, 2 reference stations".
 3. **Real hardware is called out.** The one physical HawaPod-M gets a "Real device" chip, so the honesty works in both directions.
 4. **Console demo banner** (`NEXT_PUBLIC_DEMO_BANNER=true`): "Demo environment: the device fleet is simulated in the exact firmware packet format; the pipeline, models and agents are real." It is dismissible per session and never hidden in recordings.
 5. **Verification with injected effects.** For simulated interventions, the impact page shows the injected effect beside the recovered estimate ("Injected −20 %, recovered −18.2 % (95 % CI −26.0 to −9.9)"). This is the proof that the verifier works (proposed field `injected_effect_pct`).
@@ -221,7 +224,7 @@ WCAG 2.2 AA is the target. Full spec: [DESIGN_SYSTEM §13](DESIGN_SYSTEM.md#13-a
 | Browser | Current Chrome or Edge. Firefox is supported. No IE or legacy Edge |
 | Network | Shared office broadband or leased line, 10–50 Mbps, RTT 100–300 ms, sometimes a 4G hotspot. **HTTP proxies may block or strip WebSocket upgrades** |
 
-Commitments (details in [ARCHITECTURE §12](ARCHITECTURE.md#12-performance-budget)):
+Commitments (details in [ARCHITECTURE §12](ARCHITECTURE.md)):
 - Map pan and zoom at ≥ 50 fps with the full 500 m grid (~6,000 cells), ~150 fleet icons and ~100 trails on the machine above.
 - Marketing: LCP ≤ 2.5 s on a slow-4G profile. Console shell interactive in ≤ 3.5 s. First twin paint ≤ 3 s after the map route loads at 10 Mbps / 150 ms.
 - deck.gl and MapLibre are code-split and load only on map routes.

@@ -1,94 +1,111 @@
 # HawaCommand AI-ML
 
-Index and entry point for everything the `AI-ML/` folder owns: models, optimiser, verifier, agents, and the processes that run them.
+Index and entry point for everything the `AI-ML/` folder owns: models, optimiser, verifier, agents, and how they are run. These documents describe the code as it exists, and keep the original blueprint as clearly labelled **Planned** target design.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
+Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../../AI-ML/README.md](../../AI-ML/README.md) · [../../AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
 
 ---
 
-## 1. What AI-ML owns
+## 1. What AI-ML is today
 
-AI-ML is the "Think" and "Decide" layers of HawaCommand (§9.1). It turns cleaned readings into state and state into a plan, and it proves whether each action worked. Concretely, it owns: drive-by calibration of low-cost sensors (F3); the 500 m digital twin with a confidence value per cell (F4); hotspot detection, source fingerprinting and back-trajectory (F7); the 72 h P10/P50/P90 forecaster (F5) and GRAP outlook (F6); the exposure engine (F12); the OR-Tools dispatch optimiser and What-If simulator (F13); the Strands multi-agent command room on Amazon Bedrock (F14) and the Communicator that writes pollutant-specific alerts (F16); synthetic-control causal verification and the Intervention Effectiveness Library (F18); plus the STRETCH/VISION items: anti-gaming guard (F15), active sensing router (F11), site compliance score (F9), school safe-window scheduler (F19), Citizen Eyes photo verification (F20), evidence narrative (F22), power-proxy (F10) and HawaEye/TinyML edge models (F8, spike detector). AI-ML never changes the database schema (backend Alembic owns DDL), writes only the tables listed for it in [CONTRACTS §8](../CONTRACTS.md#8-database-table-ownership), and is reached only through Kafka `hawa.cmd.*` topics and a small internal HTTP service. Every output carries its uncertainty and its `model_version`.
+AI-ML is the "Think" and "Decide" layer of HawaCommand (§9.1 of the proposal). In code it is one Python package, `hawa_ml` (`AI-ML/src/hawa_ml/`), plus a FastAPI app (`hawa_ml.api.main:app`), eleven scripts and 38 tests. It runs as a single process with file-based state; there is no Kafka, database, Redis, object store or MLflow. The backend reaches it over HTTP (default `http://localhost:8100`) and, as a fallback, by importing `hawa_ml` in-process.
+
+Status vocabulary used in every AI-ML document: **Implemented** (works as described), **Partial** (works, gap stated), **Stub/Mock** (fixture, hard-coded or synthetic output), **Planned** (not in code).
+
+### 1.1 Implementation status by loop step
+
+| Loop step | Feature | What exists | Status |
+|---|---|---|---|
+| 1 Sense | F2/F17 fleet, telemetry schema | `TelemetryPacket`; simulator for HawaPod-M (buses), HawaPod-S (schools), HawaTag (sprayers) writing JSONL | Implemented (simulated fleet only) |
+| 1 Sense | F3 drive-by calibration | Huber fit `ref = a·raw + b·RH + c`, trust score, JSON profiles; no co-location pairing | Partial |
+| 1 Sense | External feeds | CPCB CSVs, OpenAQ stations, Open-Meteo + CAMS, FIRMS, OSM, WorldPop, each with synthetic fallback; only CPCB, OSM and WorldPop feed models | Partial |
+| 2 Map | F1 grid | 500 m (10,600 cells) and 1 km (2,650) grids with population, POI distances, vulnerability, synthetic wards | Partial |
+| 2 Map | F4 digital twin | sklearn GP (constant x RBF + white noise) on lat/lon with a downwind shift of observations; LOSO evaluation | Implemented (loses to baselines) |
+| 3 Attribute | F7 fingerprint | Rule engine from `config/fingerprint_rules.yaml`; weak-label LightGBM classifier trained but unused | Partial |
+| 3 Attribute | F7 back-trajectory | Single straight-line upwind pin | Implemented |
+| 4 Forecast | F5 72 h forecaster | 21 LightGBM quantile models (7 horizons x P10/P50/P90), metrics vs persistence | Partial (inference ignores cell and history) |
+| 4 Forecast | F6 GRAP | CPCB AQI and CAQM stage lookup with mandated actions | Implemented (AQI bug between breakpoints) |
+| 4 Forecast | F19 safe window | Fixed diurnal curve with persona thresholds | Stub/Mock |
+| 5 Decide | F12 exposure | `max(0, C − 60) × Pop × diurnal × V × dt`, top-N ranking | Implemented (ranking Partial) |
+| 5 Decide | F13 optimiser | Greedy cause-compatible dispatch; OR-Tools CVRP not built | Partial |
+| 5 Decide | F13 What-If | Baseline fixed at 32 % of the AI plan | Stub/Mock |
+| 5 Decide | F14 agents | Forecaster, Planner, Auditor, Communicator as Python classes; Groq or Bedrock only rephrases; template fallback | Partial |
+| 6 Act | F16 alerts | English and Hindi template alerts and narratives | Partial |
+| 7 Verify | F18 synthetic control + placebo | Algorithm implemented and tested on a seeded synthetic panel; API always returns that panel's result | Implemented (algorithm), Stub/Mock (endpoint) |
+| 7 Verify | F18 effectiveness library | JSON running average with 5 priors | Partial |
+| Citizen | Safe route, ghost-worker audit | Synthetic route multipliers; hard-coded fleet telemetry | Stub/Mock |
+| — | F8, F9, F10, F11, F15, F20, F22, TinyML spike | — | Planned |
+| — | Kafka workers, internal service with auth, trainer CLI, MLflow, Postgres/Redis/S3 | — | Planned |
+
+The per-module table, the endpoint list and 18 known defects are in [AI-ML/README.md](../../AI-ML/README.md#1-implementation-status).
 
 ## 2. Reading order
 
 | # | Document | Read it when | Lines (approx.) |
 |---|---|---|---|
-| 1 | [CONTEXT.md](CONTEXT.md) | First. Problem, what ML does in each loop step, data realities, honesty rule, KPIs, non-goals | ~170 |
-| 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | Before writing any process code. Processes, topics, tables, Redis keys, sequences, failure modes, observability, **proposed contract additions** | ~600 |
-| 3 | [STRUCTURE.md](STRUCTURE.md) | Before creating files. Full folder tree and tooling | ~430 |
-| 4 | [MODELS.md](MODELS.md) | When building any algorithm. Inputs, outputs, maths, defaults, metrics, fallbacks, tests | ~1200 |
-| 5 | [AGENTS.md](AGENTS.md) | When building `hawa_agents`. Orchestration, full system prompts, tool schemas, Pydantic outputs, guardrails, eval suite | ~1050 |
-| 6 | [DATA_AND_TRAINING.md](DATA_AND_TRAINING.md) | When acquiring data or training. Sources, licences, grid, feature store, simulator contract, splits, MLflow, gates | ~250 |
-| 7 | [PLAN.md](PLAN.md) | To schedule work. Hour-by-hour hackathon plan, milestones with acceptance criteria, cut rules, pilot roadmap | ~150 |
-
-AI coding agents: read `CONTEXT` → `ARCHITECTURE` → `STRUCTURE`, then the `MODELS`/`AGENTS` section for your module.
+| 1 | [AI-ML/README.md](../../AI-ML/README.md) | First. Install, run, test, endpoints, scripts, Make targets, measured results, known issues | ~330 |
+| 2 | [CONTEXT.md](CONTEXT.md) | Problem, what ML does in each loop step (built vs planned), data realities, honesty rule, KPIs, non-goals | ~180 |
+| 3 | [ARCHITECTURE.md](ARCHITECTURE.md) | Runtime as built (process, singletons, flows, state files, failure behaviour) and the Planned event-driven architecture | ~380 |
+| 4 | [STRUCTURE.md](STRUCTURE.md) | File-by-file tree of `AI-ML/`, tooling, Make targets, config | ~300 |
+| 5 | [MODELS.md](MODELS.md) | Every algorithm as implemented (formulas, parameters, fallbacks, metrics) with its target design | ~700 |
+| 6 | [AGENTS.md](AGENTS.md) | Agents, LLM providers, runtime prompts, fallbacks; Planned Strands/Bedrock design | ~600 |
+| 7 | [DATA_AND_TRAINING.md](DATA_AND_TRAINING.md) | Data sources, dataset build, training, evaluation, runtime state files; Planned feature store and MLflow | ~330 |
+| 8 | [PLAN.md](PLAN.md) | Milestone status, remaining work, cut rules, roadmap | ~170 |
+| 9 | [AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) | Exact HTTP request/response shapes, in-process Python API, file formats | ~450 |
 
 ## 3. Processes at a glance
 
-| Process | Entry point | Role |
-|---|---|---|
-| `intel-worker` | `uv run intel-worker --groups <list>` | aiokafka consumer groups: `intel-twin`, `intel-twin-live`, `intel-forecast`, `intel-plan`, `intel-verify`, `intel-verify-scheduler`, `intel-spike`, `intel-attribution`, `intel-vision`, `intel-trainer` (+ proposed `intel-report`) |
-| `intel-service` | `uv run intel-service` | Internal FastAPI: `/internal/v1/simulate`, `/optimize`, `/exposure`, `/models`, `/healthz` |
-| `trainer` | `uv run hawa-trainer run --model <name>` | Nightly and on-demand training, evaluation, promotion gates, MLflow registry |
-| `hawa_agents` | library | Strands agents (Forecaster, Planner, Auditor, Communicator, Citizen Eyes verifier) called by `intel-worker` and `intel-service` |
+| Process | Entry point | Role | Status |
+|---|---|---|---|
+| AI-ML API | `uvicorn hawa_ml.api.main:app --port 8100` | 13 routes mounted at `/`, `/v1`, `/internal/v1`; no auth | Implemented |
+| Operational cycle | `python scripts/run_cycle.py [--loop --interval-sec 10800]` | Simulate, twin, rank, forecast, insights, plan, audit; logs only | Partial |
+| Evening master plan | `python -m hawa_ml.pipelines.master_plan` | Cycle plus a school alert | Partial |
+| Post-action verification | `python -m hawa_ml.pipelines.verify` | Synthetic injected-effect recovery | Stub/Mock |
+| Data and training | `scripts/fetch_all.py`, `build_dataset.py`, `train_all.py` | Fetch or synthesise data, build grids, train 22 boosters | Implemented |
+| Fleet simulator | `python -m hawa_ml.simulation.device_sim --mode file --steps 60` | JSONL telemetry | Implemented |
+| `intel-worker` (Kafka consumer groups) | `intel-worker --groups ...` | Asynchronous twin, forecast, plan, verify, spike, vision, trainer | Planned |
+| `intel-service` (internal FastAPI with token) | `intel-service` | `/internal/v1/simulate`, `/optimize`, `/exposure`, `/models`, `/healthz`, `/alerts/draft` | Planned |
+| `hawa-trainer` | `hawa-trainer run --model <m>` | Training, gates, MLflow registry | Planned |
+| `hawa_agents` (Strands on Bedrock) | library | Tool-using agents with schema-validated outputs | Planned |
 
-## 4. Quick start
-
-Prerequisites: Python 3.12, [`uv`](https://docs.astral.sh/uv/), Docker. The whole local stack (Postgres + PostGIS, Redis, Kafka, Schema Registry, MinIO, MLflow, Jaeger, Prometheus) is started from the repo root by the backend's compose file.
+## 4. Quick start (verified 2026-10-10, Python 3.12.3)
 
 ```bash
-# 0. From the repo root: bring up shared infrastructure and apply backend migrations
-make up            # docker compose up -d (backend-owned)
-make seed          # grid, wards, POIs, assets (backend seed; grid built by AI-ML build_grid)
-
-# 1. Install AI-ML (hawa-contracts is a uv path dependency on ../backend/contracts)
 cd AI-ML
-uv sync --all-extras
-cp .env.example .env          # fill HAWA_INTERNAL_TOKEN, AWS profile/region, Bedrock model ids
-uv run pre-commit install
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+pip install -e ".[dev]"                        # required: make setup does not install hawa_ml
+cp .env.example .env                           # optional; everything has a fallback
+python scripts/check_env.py                    # masked key and data checklist (read-only)
 
-# 2. One-off data preparation (see DATA_AND_TRAINING.md)
-uv run python scripts/build_grid.py --out s3://hawa-local-lake/grid/
-uv run python scripts/fetch_cpcb.py --from 2022-10-01 --to 2026-09-15
-uv run python scripts/fetch_weather.py --source open-meteo --from 2022-10-01
-uv run python scripts/fetch_firms.py --days 10
+python -m pytest -q                            # 37 passed, 1 failed on a clean checkout (needs data/processed/stations_hourly.parquet)
+OFFLINE_MODE=true python scripts/fetch_all.py  # offline synthetic data, about 1 s
+OFFLINE_MODE=true python scripts/build_dataset.py
+python -m pytest -q                            # 38 passed once stations_hourly.parquet exists
 
-# 3. Run the processes
-uv run intel-worker --groups all                      # or: --groups intel-twin,intel-forecast
-uv run intel-service                                  # uvicorn on :8100, internal network only
-HAWA_LLM_MODE=stub uv run intel-worker --groups intel-plan   # agents without Bedrock (deterministic stub)
-
-# 4. Tests and quality gates
-uv run ruff check . && uv run ruff format --check .
-uv run mypy src
-uv run pytest -m "unit or property"                   # fast, no services
-uv run pytest -m contract                             # needs the live DB (reflects schema)
-uv run pytest -m eval_agents                          # golden agent scenarios (Bedrock or stub)
-
-# 5. Train and evaluate a model (writes to MLflow, applies promotion gates)
-uv run hawa-trainer run --model forecaster
-uv run hawa-trainer run --model calibration --device-ids HPM-0142,HPM-0143
-uv run hawa-trainer evaluate --model twin --holdout-stations REF-CPCB-site_301
+uvicorn hawa_ml.api.main:app --host 127.0.0.1 --port 8100   # the port the backend expects
 ```
 
-`make` wrappers exist for all of the above (`make sync`, `make lint`, `make test`, `make train MODEL=forecaster`, `make worker`, `make service`); see [STRUCTURE.md §4](STRUCTURE.md#4-makefile-targets).
+Do not use `make test` (plain `pytest` cannot import `scripts`) or `make api` (port 8000 collides with the backend). The test suite rewrites four tracked files under `AI-ML/data/`; see [AI-ML/data/README.md](../../AI-ML/data/README.md#2-tracked-files). `scripts/train_all.py` overwrites the committed models with ones trained on whatever data is present (synthetic offline).
 
-## 5. Non-negotiables (summary)
+## 5. Design rules and how far the code follows them
 
-1. Use the exact names in [CONTRACTS.md](../CONTRACTS.md): topics, event types, tables, Redis keys, IDs, enums, units.
-2. Every model output carries uncertainty (`*_var`/`confidence`, `p10/p50/p90`, `ci_low/ci_high`, `cause_conf`) and `model_version`.
-3. The optimiser decides, LLM agents explain and critique, a human officer approves. Agents cannot bypass constraints. Agent failure falls back to a deterministic plan; the pipeline never blocks.
-4. Cause → asset matrix (CONTRACTS §3) is a hard constraint: no water on smoke, no trucks for regional smoke.
-5. Simulated data is always flagged `is_simulated = true`. The verifier is demonstrated on simulated interventions with injected, known effects (§12.5).
-6. AI-ML never runs DDL, never writes backend-owned tables, and never sends personal data to an LLM beyond what the task needs.
-7. Never drop the What-If simulator or causal verification (§16 cut rule).
+| Rule (from the blueprint) | Status in code |
+|---|---|
+| Every output carries uncertainty | Partial: twin variance/confidence, forecast P10/P50/P90, verifier CI; hotspots, plans and What-If have none |
+| The optimiser decides, LLM agents explain, a human approves | Implemented in spirit: numbers come from Python and the LLM only rephrases; plans are returned as `draft`, but nothing persists or approves them in AI-ML |
+| Cause → asset matrix is a hard constraint (no water on smoke, no trucks for regional smoke) | Implemented in `optimization/greedy.py` (compatibility table, regional smoke and traffic skipped) and checked again by `AuditorAgent` |
+| Simulated data is always flagged | Partial: documented in the README; no `is_simulated` field on outputs |
+| Verifier demonstrated on injected known effects | Implemented on one seeded synthetic panel; not on simulator twin data |
+| Every output carries a `model_version` | Planned |
+| AI-ML never runs DDL or writes backend tables | Trivially true (no database access) |
+| Never drop the What-If simulator or causal verification (§16) | Both endpoints exist; What-If is Stub/Mock |
 
 ## 6. Links
 
-- Proposal (source of truth): `../../HawaCommand_Proposal.pdf` — especially §6 (features), §8 (execution flow), §9.4 (algorithms), §12.5 (what is real), §16 (build plan).
+- Proposal (source of truth for intent): `../../HawaCommand_Proposal.pdf`, especially §6 (features), §8 (execution flow), §9.4 (algorithms), §12.5 (what is real), §16 (build plan).
+- Runbook, endpoints and known issues: [../../AI-ML/README.md](../../AI-ML/README.md)
+- Contracts as built: [../../AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md); system-wide target contracts: [../CONTRACTS.md](../CONTRACTS.md)
+- Data directory: [../../AI-ML/data/README.md](../../AI-ML/data/README.md); model cards: [forecaster](../../AI-ML/models/forecaster_model_card.md), [attribution](../../AI-ML/models/attribution_model_card.md)
 - Whole-system context: [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
-- Binding contracts: [../CONTRACTS.md](../CONTRACTS.md)
-- Proposed contract additions from AI-ML: [ARCHITECTURE.md §12](ARCHITECTURE.md#12-proposed-contract-additions)
 - Sibling teams: [../backend/](../backend/) · [../frontend/](../frontend/) · [../app/README.md](../app/README.md)
-- Logging library: `logifyx` 2.x (PyPI `logifyx`, github.com/Madhur-Prakash/Logifyx-Py)

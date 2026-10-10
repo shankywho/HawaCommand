@@ -1,5 +1,8 @@
 # Logging and Observability
 
+> **Status: Partial.** `src/hawa_backend/core/logging.py` provides a JSON formatter with PII masking and `get_logger`, and `core/context.py` holds request and correlation ids. The app middleware binds `x-request-id` and `x-correlation-id` and echoes them back. However, almost nothing in `src/` logs through `get_logger`: `core/intel_client.py` uses the standard `logging` module. logifyx, the Kafka `hawa.logs.v1` topic, OpenTelemetry, Prometheus metrics and Grafana dashboards are Planned. See [docs/backend/README.md](README.md#1-implementation-status).
+
+
 How every backend process logs (with **logifyx**), traces (OpenTelemetry), exports metrics (Prometheus), and reports health. Also covers the dashboards and alerts that prove the loop works during the demo.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [DEPLOYMENT](DEPLOYMENT.md) · [STRUCTURE](STRUCTURE.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

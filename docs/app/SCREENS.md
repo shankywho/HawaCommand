@@ -1,5 +1,13 @@
 # Screens
 
+> **Status per screen.** Data sources for each screen:
+> - **Live against the backend:** the citizen air map (`/v1/twin`, `/v1/hotspots`, `/v1/forecast`), air near me (`/v1/twin`, `/v1/hotspots`, `/v1/citizen/safe-window`), alerts (`/v1/alerts`) and the school 72 h forecast (`/v1/forecast/{cell_id}`).
+> - **In-app fake backend and `assets/fixtures/`:** login, driver, inspector, school today and indoor/outdoor, Citizen Eyes reports, and the site score.
+> - **Hard-coded demo data:** the citizen safe route, live operations, ward scorecard and missed-machine screens. The backend's `/v1/citizen/*` endpoints for these exist but are not called.
+>
+> Broken navigation: "Flag Missed Machine" and the citizen "72-Hour AI Air Forecast" tile ([docs/app/README.md](README.md#9-known-issues), issue 5). The en/hi copy below is the design copy; the shipped strings are in `app_frontend/lib/app/l10n/arb/app_en.arb` and `app_hi.arb`.
+
+
 Purpose: a screen-by-screen spec for every role. Each screen lists its route, data, wireframe, widgets, interactions, states, en/hi copy and acceptance criteria. The push notification catalogue is in §9.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)

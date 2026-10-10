@@ -1,5 +1,8 @@
 # Events (Kafka)
 
+> **Status: Planned.** `backend/contracts/hawa_contracts/` declares the envelope (`envelope.py`), topics and consumer groups (`topics.py`) and the event payload models (`events/*.py`), and the contract tests validate them. No running code produces to or consumes from Kafka. `aiokafka` is not a dependency, the outbox table (`db/models/outbox.py`) is written only by tests, and there is no outbox relay. The only live publishing paths are the optional AWS helpers in `src/hawa_backend/aws/events.py` (SNS, Kinesis), which are off unless `HAWA_AWS_ENABLED=true`, and the Step Functions dispatch started on plan approval (`aws/dispatch.py`). `backend/docker-compose.yml` starts a Kafka 3.8 broker that nothing connects to. Everything below is the target design. See [docs/backend/README.md](README.md#1-implementation-status).
+
+
 Kafka in depth for HawaCommand: clusters, topic bootstrap, envelope and serde, producer and consumer design, the transactional outbox, the consumer group map, scheduler commands, the dispatch saga as choreography, replay, lag, schema evolution and debugging.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [CACHING](CACHING.md) · [DATA_MODEL](DATA_MODEL.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md) §5 · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

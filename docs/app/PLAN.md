@@ -1,5 +1,8 @@
 # Hackathon plan: the app slice
 
+> **Status (2026-10-10).** The app shell, five role shells, en/hi localisation, the outbox and the fake backend are built. The air map, air near me, alerts and school forecast are live against the backend. Every other flow waits on backend endpoints. Next steps: [TEAM_REMAINING_WORK_AND_PROMPTS.md](../TEAM_REMAINING_WORK_AND_PROMPTS.md#4-mobile-app-engineer-flutter); defects: [docs/app/README.md](README.md#9-known-issues). Milestones below are the original plan.
+
+
 Purpose: an hour-by-hour plan for the app developer, who also owns the agents. Covers milestones with acceptance criteria, backend dependencies with a mock-first fallback, cut rules, the demo-day checklist, the post-hackathon roadmap, and the contract proposals to raise.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
@@ -131,7 +134,7 @@ Cut in this order when behind (first line goes first):
 | Risk | Mitigation |
 |---|---|
 | Firebase/FCM setup takes an hour (SHA-1, per-flavor config) | §3 prep. Test with a console message before writing app code |
-| Android 14 foreground-service rules crash Start shift (missing typed permission) | Test on the API 34 emulator in the M3 hour. Check the merged manifest ([STRUCTURE §8](STRUCTURE.md#8-android-notes)) |
+| Android 14 foreground-service rules crash Start shift (missing typed permission) | Test on the API 34 emulator in the M3 hour. Check the merged manifest ([STRUCTURE §8](STRUCTURE.md)) |
 | Venue Wi-Fi blocks FCM or WebSocket upgrades | Mobile hotspot for the demo phone. WS → polling fallback. SMS fallback on the test SIM |
 | OpenAPI not ready or changes late | Mappers isolate the generated types. Fixtures + fakes keep the UI moving |
 | `build_runner` gets slow | `generate_for` scoping in `build.yaml`. `make watch` during feature work |

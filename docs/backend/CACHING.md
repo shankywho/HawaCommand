@@ -1,5 +1,8 @@
 # Caching and Coordination (Redis)
 
+> **Status: Planned (Redis).** No code connects to Redis; `redis` is a declared dependency and `hawa_contracts/redis_keys.py` defines the key builders. Caching that actually runs: live station data is cached in process for 15 minutes in `core/intel_client.py`; settings use `functools.lru_cache`; when `HAWA_AWS_ENABLED=true`, `aws/cache.py` caches twin and forecast payloads in DynamoDB (`HAWA_AWS_CACHE_TABLE`, default `hawa-cache`, TTL `HAWA_AWS_CACHE_TTL_SECONDS`, default 3600). Rate limiting, idempotency keys, OTP storage and GEO fleet sets below are the target design. See [docs/backend/README.md](README.md#1-implementation-status).
+
+
 Redis in depth for HawaCommand: the client, key conventions and TTLs, versioned cache-aside, stampede protection, HTTP caching, rate limiting, OTP and token state, idempotency keys, locks, WebSocket fan-out, live fleet, eviction, sizing, failure behaviour and metrics.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [EVENTS](EVENTS.md) · [API](API.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md) §9 · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

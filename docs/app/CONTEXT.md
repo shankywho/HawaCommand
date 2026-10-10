@@ -1,5 +1,12 @@
 # App context: users, flows and field realities
 
+> **Status (reconciled 2026-10-10).** Product context from the proposal. As built:
+> - Live against the backend (`REAL_FEATURES`): the citizen air map, air near me, alerts and the school 72 h forecast.
+> - In-app fake backend: login, driver, inspector, reports and site flows, because the backend does not serve `/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign` or `/v1/ws`.
+>
+> See [docs/app/README.md](README.md#2-implementation-status).
+
+
 Purpose: the product context the app is built for, drawn from the proposal (§6, §7, §8, §10, §12.4, §15). Read it before designing any screen.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [PLAN](PLAN.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)

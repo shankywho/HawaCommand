@@ -1,5 +1,8 @@
 # AI-ML Context
 
+> **Status (reconciled 2026-10-10, commit `a33e043`).** This is the product context from the proposal. What is actually built is in [AI-ML/README.md](../../AI-ML/README.md#1-implementation-status). In short: every sensor is simulated; the agents are plain Python classes (no Strands SDK); the optimiser is greedy (OR-Tools is Planned); the What-If baseline is a constant 0.32 ratio; causal verification has only been validated on a seeded synthetic panel.
+
+
 The problem, the closed loop and the constraints that every AI-ML component in HawaCommand is designed around, drawn from the proposal.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

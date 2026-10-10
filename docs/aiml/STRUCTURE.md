@@ -1,435 +1,166 @@
 # AI-ML Folder Structure
 
-The complete layout of `AI-ML/`, one line of responsibility per file or package, plus the tooling that keeps it consistent.
+The layout of `AI-ML/` as committed (commit `a33e043`), one line per file. Every file listed here exists.
 
-Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
+Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [AI-ML runbook](../../AI-ML/README.md) · [AI-ML contracts](../../AI-ML/CONTRACTS.md)
 
 ---
 
 ## 1. Tree
 
-Five importable packages live under `src/`: `hawa_ml` (algorithms and I/O), `hawa_agents` (Strands agents), `hawa_intel_service` (internal FastAPI), `hawa_intel_worker` (Kafka consumers) and `hawa_trainer` (training CLI). Dependency direction is strict: `hawa_intel_worker`, `hawa_intel_service`, `hawa_trainer` → `hawa_agents` → `hawa_ml` → `hawa_contracts`. `hawa_ml` never imports the other AI-ML packages (checked by `tests/unit/test_import_boundaries.py`).
+There is one importable package, `hawa_ml`, under `src/`. Subpackages have no `__init__.py` (implicit namespace packages); install with `pip install -e .` from `AI-ML/`. `settings.BASE_DIR` is computed from the source location, so `config/`, `data/`, `models/`, `reports/` and `agents/prompts/` are read from the checkout.
 
-```text
+The blueprint's separate `hawa_agents`, `hawa_intel_service`, `hawa_intel_worker` and `hawa_trainer` packages, Kafka consumers, notebooks and import-boundary tests are **Planned**.
+
+```
 AI-ML/
-├── pyproject.toml                 # uv project; deps; console scripts; ruff/mypy/pytest config; path dep on ../backend/contracts
-├── uv.lock                        # fully pinned lockfile (committed)
-├── README.md                      # 10-line pointer to docs/aiml/README.md
-├── Dockerfile                     # multi-stage uv build; one image, entrypoint chooses intel-worker | intel-service | hawa-trainer
-├── Makefile                       # dev, lint, test, train, data targets (see §4)
-├── logifyx.yaml                   # lowest-priority logging defaults (env and configure_logging() override)
-├── .env.example                   # every env var with safe placeholders (see §6)
-├── .pre-commit-config.yaml        # ruff, ruff-format, mypy, nbstripout, uv-lock check, end-of-file, detect-private-key
-├── configs/
-│   ├── base.yaml                  # runtime defaults: time zone, bbox, windows, budgets, feature flags (advection, agents)
-│   ├── grid.yaml                  # CRS EPSG:32643, cell sizes 500/1000 m, Delhi boundary source, origin snapping
-│   ├── calibration.yaml           # pairing rules (CONTRACTS §10.3), Huber epsilon, coefficient bounds, trust weights
-│   ├── twin.yaml                  # super-obs slot, kernels and bounds, advection caps, fallback chain, confidence mapping
-│   ├── fingerprint_rules.yaml     # v1 rule table thresholds and soft-membership widths per cause
-│   ├── trajectory.yaml            # back-trajectory step, horizons per cause, ensemble size, perturbations, candidate priors
-│   ├── hotspots.yaml              # top-5 % / AQI ≥ 301 / confidence ≥ 0.5 rules, connectivity, tracking IoU
-│   ├── forecaster.yaml            # horizon buckets, quantiles, LightGBM hyperparameters, feature list, conformal window
-│   ├── grap_thresholds.yaml       # AQI → stage bands (CONTRACTS §10.2), early-action probability triggers, MC draws
-│   ├── vulnerability_weights.yaml # V per population group (residential 1.0; school, hospital, elder-care higher)
-│   ├── population_profiles.yaml   # hourly occupancy profiles by POI type and day type
-│   ├── cause_asset_matrix.yaml    # CONTRACTS §3 matrix + P-08 confidence gating (hard constraints)
-│   ├── optimizer.yaml             # service times, capacities, speeds, time limits per mode, penalties, value scaling
-│   ├── effectiveness_priors.yaml  # literature-informed priors per cause × asset type (clearly marked as priors)
-│   ├── verifier.yaml              # windows, donor rules, K min/max, spillover buffer, verdict thresholds
-│   ├── integrity.yaml             # station-clustering radius and ratios, outlier sigma, drift CUSUM
-│   ├── coverage.yaml              # VOI weights, GTFS route matching, suggestion limits
-│   ├── site_score.yaml            # component weights and A/B/C cut-offs, minimum data
-│   ├── school_window.yaml         # school hours, safe thresholds, seal/ventilate CO₂ and I/O rules
-│   ├── vision.yaml                # image limits, match radius/time, decision thresholds
-│   ├── advice_matrix.yaml         # pollutant × cause × audience → advice codes (Communicator content source)
-│   ├── alert_templates.yaml       # reviewed en/hi fallback templates keyed by advice code
-│   ├── alert_limits.yaml          # SMS (GSM-7 / UCS-2), WhatsApp, push length limits per language
-│   └── agents.yaml                # per-role model env var names, effort, max_tokens, timeouts, tool budgets
-├── src/
-│   ├── hawa_ml/
-│   │   ├── __init__.py
-│   │   ├── config.py              # pydantic-settings Settings (env) + YAML config loader with schema validation
-│   │   ├── version.py             # model_version string builder `{model}@{semver}+{git_sha7}`
-│   │   ├── cli.py                 # `hawa-ml` utility CLI (inspect run, replay event, export fixtures)
-│   │   ├── io/
-│   │   │   ├── db.py              # SQLAlchemy 2 Core async engine (asyncpg), sessions, COPY helper, statement timeouts
-│   │   │   ├── tables.py          # Core Table objects mirroring the Alembic schema for read and owned-write tables
-│   │   │   ├── queries.py         # named read queries (readings window, cell_state series, forecasts, assets)
-│   │   │   ├── writers.py         # owned-table writers (bulk cell_state, forecast, impact …) with model_version stamping
-│   │   │   ├── s3.py              # boto3 client (MinIO/S3), Parquet read/write via pyarrow, snapshot manifests
-│   │   │   ├── kafka.py           # aiokafka producer/consumer factories, envelope (de)serialisation, header propagation
-│   │   │   ├── redis.py           # redis.asyncio client, key builders (ml:, lock:plan:, dedupe:evt:), token lock
-│   │   │   └── mlflow_registry.py # load champion by alias, register challenger, promote, mirror to model_version
-│   │   ├── common/
-│   │   │   ├── ids.py             # UUIDv7 generation, id format validators (cell, device, asset, ward)
-│   │   │   ├── timeutil.py        # UTC/IST conversion, slot flooring, school-day calendar
-│   │   │   ├── geo.py             # pyproj transformers 4326↔32643, distances, bearings, point-in-cell
-│   │   │   ├── units.py           # unit constants and conversions (µg/m³, ppb, km/h ↔ m/s)
-│   │   │   ├── aqi.py             # CPCB sub-index breakpoints (CONTRACTS §10.1), indicative AQI, GRAP stage
-│   │   │   ├── idempotency.py     # processed_event + dedupe:evt: helpers, replay-on-duplicate support
-│   │   │   ├── logging.py         # logifyx init, named loggers, ContextLoggerAdapter factory
-│   │   │   ├── telemetry.py       # OpenTelemetry setup, Kafka context propagation, span helpers
-│   │   │   ├── metrics.py         # Prometheus metric definitions (ARCHITECTURE §9.3)
-│   │   │   └── errors.py          # typed errors (DataInsufficient, ModelUnavailable, ConstraintViolation …)
-│   │   ├── validation/
-│   │   │   └── schemas.py         # pandera schemas for every input frame and output frame
-│   │   ├── grid/
-│   │   │   ├── build.py           # build 500 m / 1 km grid in EPSG:32643, ids g500-/g1k-, grid_meta
-│   │   │   ├── cells.py           # row/col ↔ geometry ↔ id, parent g1k, neighbours
-│   │   │   ├── index.py           # fast point → cell lookup (vectorised floor on UTM coords)
-│   │   │   ├── features.py        # cell covariates: road density, construction, industrial/green share, distances
-│   │   │   └── key_cells.py       # F1 key-cell pre-ranking score
-│   │   ├── calibration/
-│   │   │   ├── pairing.py         # drive-by pairs: ≤ 200 m, < 10 km/h, wind ≤ 3 m/s, 1-min device means vs reference
-│   │   │   ├── fit.py             # Huber regression ref = a·raw + b·RH + c, fleet-prior shrinkage, bounds
-│   │   │   ├── drift.py           # coefficient stability, residual CUSUM, device_drift flags
-│   │   │   ├── trust.py           # trust score and band (CONTRACTS §3 TrustBand)
-│   │   │   └── job.py             # nightly/on-demand calibration job (writes device_calibration, emits events)
-│   │   ├── twin/
-│   │   │   ├── superobs.py        # weighted cell × 10-min aggregation, noise variance per super-obs, TAG spray exclusion
-│   │   │   ├── weights.py         # reading weight curve (P-07) and flag handling
-│   │   │   ├── trend.py           # weighted linear trend on cell covariates (regression kriging stage 1)
-│   │   │   ├── gp.py              # sklearn GaussianProcessRegressor residual model, heteroscedastic alpha, warm start
-│   │   │   ├── kriging.py         # PyKrige ordinary/universal kriging fallback
-│   │   │   ├── idw.py             # inverse-distance fallback
-│   │   │   ├── advection.py       # wind field interpolation and semi-Lagrangian shift of the background field
-│   │   │   ├── confidence.py      # posterior sd → confidence, lognormal back-transform, variance
-│   │   │   ├── run.py             # twin pipeline + fallback chain; returns CellState frame and run metrics
-│   │   │   └── validate.py        # leave-station-out evaluation vs nearest-station and IDW baselines
-│   │   ├── attribution/
-│   │   │   ├── features.py        # per-cell and per-hotspot fingerprint features (ratio, gases, VOC index, fires, wind)
-│   │   │   ├── rules.py           # v1 soft rule table (§9.4) → class probabilities
-│   │   │   ├── classifier.py      # v2 LightGBM multiclass + probability calibration, safe fallback to rules
-│   │   │   ├── fingerprint.py     # facade: pick champion (rules or classifier), apply P-08 gating metadata
-│   │   │   ├── trajectory.py      # back-trajectory ensemble, suspect scoring against sites/POIs/fires
-│   │   │   ├── hotspots.py        # thresholding, connected components / DBSCAN, ranking, hotspot records
-│   │   │   └── tracking.py        # hotspot identity across runs (track_id by overlap)
-│   │   ├── forecast/
-│   │   │   ├── calendar.py        # holidays, Diwali window, stubble season, school days
-│   │   │   ├── features.py        # lags, rolling stats, NWP weather, calendar, upwind FIRMS, static covariates
-│   │   │   ├── dataset.py         # training matrix builder from the feature store (station and cell targets)
-│   │   │   ├── model.py           # 6 horizon buckets × 3 quantiles LightGBM wrapper, save/load
-│   │   │   ├── baselines.py       # persistence, seasonal persistence, climatology, no-NWP variant
-│   │   │   ├── quantiles.py       # crossing fix (sorting), minimum width, conformal widening
-│   │   │   ├── predict.py         # run-time prediction for all g1k cells and horizons
-│   │   │   ├── downscale.py       # g1k → g500 ratio downscaling for exposure
-│   │   │   └── evaluate.py        # pinball, MAE vs persistence, coverage, CRPS approximation, reports
-│   │   ├── grap/
-│   │   │   ├── stages.py          # AQI bands → stage (CONTRACTS §10.2)
-│   │   │   └── outlook.py         # Monte Carlo daily AQI per ward, stage probabilities, early-action flag
-│   │   ├── exposure/
-│   │   │   ├── population.py      # WorldPop base + hourly POI profiles → Pop(cell, hour, day_type)
-│   │   │   ├── vulnerability.py   # V(cell, t) from population groups and weights
-│   │   │   └── engine.py          # E(cell, t) (CONTRACTS §10.4), quantile propagation, totals
-│   │   ├── optimizer/
-│   │   │   ├── problem.py         # PlanningProblem dataclasses (assets, depots, shifts, nodes, windows)
-│   │   │   ├── nodes.py           # candidate service nodes from hotspots, time-window copies, node values
-│   │   │   ├── travel.py          # travel-time matrix (haversine × detour / speed; OSRM optional)
-│   │   │   ├── constraints.py     # single source of hard constraints; check_plan() used by optimiser, agents, API
-│   │   │   ├── cvrptw.py          # OR-Tools routing model: prize-collecting CVRPTW with allowed vehicles
-│   │   │   ├── greedy.py          # millisecond greedy insertion fallback
-│   │   │   └── solution.py        # routes → tasks (spray/sweep/inspect/protect_alert), ETAs, expected effects
-│   │   ├── whatif/
-│   │   │   ├── baseline.py        # "usual routes" baseline from asset_usual_route (P-10)
-│   │   │   └── simulate.py        # paired Monte Carlo of plan vs baseline, person-hours avoided with uncertainty
-│   │   ├── verifier/
-│   │   │   ├── windows.py         # pre/post windows per stage (P-02), series extraction at 15-min resolution
-│   │   │   ├── donors.py          # donor pool rules: untreated, buffer, land use, pre-trend, weather, data quality
-│   │   │   ├── synthetic_control.py # constrained least squares weights (w ≥ 0, Σw = 1), de-meaned, log space
-│   │   │   ├── placebo.py         # placebo-in-space, RMSPE ratios, p-value, CI
-│   │   │   ├── did.py             # diff-in-diff and naive before/after fallbacks
-│   │   │   ├── verdict.py         # verdict rules and evidence level
-│   │   │   └── run.py             # verification pipeline returning Impact records
-│   │   ├── effectiveness/
-│   │   │   ├── strata.py          # cause × asset type × land use × season × hour band keys
-│   │   │   ├── priors.py          # prior loading and validation
-│   │   │   ├── hierarchical.py    # normal–normal partial pooling up the hierarchy (empirical Bayes)
-│   │   │   └── update.py          # incremental update on impact, nightly refit
-│   │   ├── integrity/
-│   │   │   ├── station_clustering.py # F15 anti-gaming: spray concentration near stations vs exposure, divergence test
-│   │   │   ├── outliers.py        # implausible_jump from leave-one-out twin residuals
-│   │   │   └── flags.py           # integrity_flag records and events
-│   │   ├── coverage/
-│   │   │   ├── voi.py             # value of information per cell (variance × people × threshold proximity)
-│   │   │   ├── gtfs.py            # GTFS shapes/trips → cells traversed per time window
-│   │   │   ├── router.py          # suggest routes, riders and post-spray passes; coverage_gap records
-│   │   │   └── road_coverage.py   # KPI: share of pilot road-km observed daily
-│   │   ├── sites/
-│   │   │   └── score.py           # F9 site compliance score and A/B/C grade
-│   │   ├── schools/
-│   │   │   └── safe_window.py     # F19 safe windows, seal vs ventilate
-│   │   ├── power/
-│   │   │   └── proxy.py           # F10 (VISION) interface stub and expected-load check design
-│   │   ├── vision/
-│   │   │   ├── preprocess.py      # EXIF strip, resize, perceptual hash, format checks
-│   │   │   ├── consistency.py     # time/location/duplicate checks
-│   │   │   ├── matcher.py         # spike and hotspot matching within radius/time
-│   │   │   └── decide.py          # deterministic decision rule combining model output and checks
-│   │   ├── reports/
-│   │   │   ├── facts.py           # weekly structured facts (hotspots, sources, actions, impact per rupee)
-│   │   │   └── number_check.py    # every number in generated text must exist in the facts
-│   │   └── eval/
-│   │       └── sim_truth.py       # evaluation-only access to simulator ground truth (import-guarded)
-│   ├── hawa_agents/
-│   │   ├── __init__.py
-│   │   ├── llm.py                 # BedrockModel factory per role, stub model, stop-reason normalisation, timeouts
-│   │   ├── schemas.py             # Pydantic outputs: ForecastBrief, PlanReview, AuditorVerdict, AlertDraft, PhotoVerification
-│   │   ├── context.py             # frozen PlanContext snapshot and read-only views for tools
-│   │   ├── orchestrator.py        # deterministic draft pipeline: optimiser → Planner → Auditor → resolve ≤ 2 → revalidate
-│   │   ├── fallback.py            # templated reasons, deterministic pre-audit, template alerts
-│   │   ├── preaudit.py            # deterministic Auditor rules (water on smoke, regional smoke trucks, …)
-│   │   ├── summarise.py           # transcript → plan_review record (deterministic officer summary)
-│   │   ├── agents/
-│   │   │   ├── forecaster.py      # Forecaster agent builder
-│   │   │   ├── planner.py         # Planner agent builder
-│   │   │   ├── auditor.py         # Auditor agent builder
-│   │   │   ├── communicator.py    # Communicator agent builder + length validators
-│   │   │   ├── citizen_eyes.py    # vision verifier builder (image content)
-│   │   │   └── narrator.py        # F22 evidence narrative writer
-│   │   ├── prompts/
-│   │   │   ├── _shared_context.md # shared operating context (cached prefix)
-│   │   │   ├── forecaster.md      # role prompt
-│   │   │   ├── planner.md         # role prompt
-│   │   │   ├── auditor.md         # role prompt
-│   │   │   ├── communicator.md    # role prompt + style guide + Hindi glossary
-│   │   │   ├── citizen_eyes.md    # role prompt
-│   │   │   └── narrator.md        # role prompt
-│   │   └── tools/
-│   │       ├── read_tools.py      # get_hotspots, get_forecast, get_grap_outlook, get_effectiveness, get_school_windows, get_cell_context, get_plan_candidate, get_station_proximity
-│   │       ├── compute_tools.py   # run_optimizer, check_constraints (wrap hawa_ml.optimizer)
-│   │       ├── submit_tools.py    # submit_forecast_brief, submit_plan_review, submit_audit, draft_alert, submit_photo_verification
-│   │       └── budget.py          # per-agent tool-call budget and call log
-│   ├── hawa_intel_service/
-│   │   ├── __init__.py
-│   │   ├── app.py                 # FastAPI app factory, lifespan (load models, population profiles), middleware
-│   │   ├── main.py                # `intel-service` entry point (uvicorn, port 8100)
-│   │   ├── auth.py                # bearer HAWA_INTERNAL_TOKEN check (constant-time)
-│   │   ├── problems.py            # RFC 9457 problem+json helpers
-│   │   ├── deps.py                # DB/Redis/model dependencies
-│   │   ├── schemas.py             # request/response models for /internal/v1/*
-│   │   └── routes/
-│   │       ├── simulate.py        # POST /internal/v1/simulate
-│   │       ├── optimize.py        # POST /internal/v1/optimize
-│   │       ├── exposure.py        # POST /internal/v1/exposure
-│   │       ├── alerts.py          # POST /internal/v1/alerts/draft (P-05)
-│   │       ├── models.py          # GET /internal/v1/models
-│   │       └── health.py          # GET /internal/v1/healthz, GET /metrics
-│   ├── hawa_intel_worker/
-│   │   ├── __init__.py
-│   │   ├── main.py                # `intel-worker --groups …` entry point, signal handling, graceful drain
-│   │   ├── registry.py            # group name → topics, handler, consumer settings
-│   │   ├── consumer.py            # base consumer loop: decode, idempotency, retries, DLQ, offsets, spans, metrics
-│   │   ├── publisher.py           # outbox writer (P-06) / direct producer with replay-on-duplicate
-│   │   ├── executor.py            # process pool for CPU-bound work
-│   │   └── handlers/
-│   │       ├── twin.py            # intel-twin: cmd.twin.rebuild
-│   │       ├── twin_live.py       # intel-twin-live: reading.cleaned → cell aggregates
-│   │       ├── attribution.py     # intel-attribution: fire.detected
-│   │       ├── forecast.py        # intel-forecast: cmd.forecast.run
-│   │       ├── plan.py            # intel-plan: cmd.plan.draft, twin.updated spike detection
-│   │       ├── verify.py          # intel-verify: cmd.verify.run
-│   │       ├── verify_scheduler.py# intel-verify-scheduler: spray.* and task.* bookkeeping
-│   │       ├── spike.py           # intel-spike: device.spike / tamper / health
-│   │       ├── vision.py          # intel-vision: report.submitted
-│   │       ├── trainer.py         # intel-trainer: cmd.train.run → subprocess
-│   │       └── report.py          # intel-report (P-04): cmd.evidence_report.build
-│   └── hawa_trainer/
-│       ├── __init__.py
-│       ├── cli.py                 # `hawa-trainer run|evaluate|promote|snapshot` (Typer)
-│       ├── snapshot.py            # freeze training data snapshot + manifest
-│       ├── gates.py               # promotion gates per model (DATA_AND_TRAINING §9)
-│       ├── registry.py            # MLflow logging conventions, alias moves, model_version mirror, Redis pointer
-│       └── jobs/
-│           ├── forecaster.py      # train/evaluate forecaster
-│           ├── fingerprint.py     # train/evaluate classifier v2 vs rules
-│           ├── calibration.py     # fleet calibration run
-│           ├── effectiveness.py   # nightly library refit
-│           ├── site_score.py      # nightly site scores
-│           ├── twin_eval.py       # leave-station-out twin evaluation (P-03)
-│           └── verifier_eval.py   # injected-effect recovery suite (P-03)
+├── .env.example                 # All optional keys: OPENAQ_API_KEY, WAQI_TOKEN, DATA_GOV_IN_API_KEY, NASA_FIRMS_MAP_KEY,
+│                                #   CDS_API_KEY, LLM_PROVIDER, GROQ_API_KEY, AWS_*, BEDROCK_MODEL_ID, OFFLINE_MODE, LOG_LEVEL
+├── .gitignore                   # Secrets, data/{cache,external,raw,interim,processed}/, venvs, caches, *.egg-info
+├── .gitkeep
+├── CONTRACTS.md                 # HTTP routes, in-process API used by the backend, schemas, file contracts
+├── Makefile                     # setup, env-check, data, train, demo, test, api (port 8000), clean
+├── README.md                    # Runbook: status, install, run, endpoints, tests, metrics, known issues
+├── pyproject.toml               # Package hawa-ml 0.1.0, Python >= 3.11, deps; [dev] pytest/httpx; pytest pythonpath=src
+├── requirements.txt             # pyproject deps + urllib3, shapely, groq, openai, python-dotenv, pytest
+├── config/
+│   ├── cpcb_breakpoints.yaml    # IND-AQI categories and PM2.5/PM10/NO2/CO breakpoints (read by forecasting/grap.py)
+│   ├── fingerprint_rules.yaml   # Per-cause ratio, gas and hour thresholds (read by attribution/rules.py)
+│   ├── grap.yaml                # GRAP Stage 1-4 thresholds, lead times, mandated actions (read by forecasting/grap.py)
+│   ├── settings.yaml            # Grid, forecasting, calibration, twin, optimisation parameters (not read by any code)
+│   └── weights.yaml             # c_safe_pm25=60, vulnerability weights (unused), diurnal multipliers (read by exposure/engine.py)
+├── data/
+│   ├── README.md                # Data layout, tracked vs generated files, writers and readers
+│   ├── fixtures/
+│   │   ├── bus_routes_delhi.json    # 6 synthetic bus corridors (654 waypoints); rewritten by `make data`
+│   │   ├── demo_scenario.json       # Demo scenario; rewritten by scripts/demo_seed.py and the tests
+│   │   ├── sample_requests.http     # REST Client requests for the API (base URL port 8000)
+│   │   └── stations_fallback.csv    # 25 Delhi stations: id, name, latitude, longitude, verified
+│   └── internal/                # Runtime-mutable state (tracked, rewritten by tests and API calls)
+│       ├── calibration_profiles.json        # Per-device Huber calibration profiles
+│       ├── effectiveness_library.json       # cause:action -> expected effect, CI, sample count
+│       └── synthetic_data/known_interventions.json  # Injected interventions with known effects (appended)
+├── models/
+│   ├── attribution_classifier.txt           # LightGBM multiclass booster (5 sources); trained, not used at runtime
+│   ├── attribution_model_card.md            # Regenerated by attribution/classifier.py on training
+│   ├── forecaster_model_card.md             # Regenerated by forecasting/train.py on training
+│   └── lgb_pm25_{1,3,6,12,24,48,72}h_{p10,p50,p90}.txt   # 21 LightGBM quantile boosters
+├── reports/
+│   ├── HawaCommand_AI_ML_Model_Evaluation_Report.pdf  # Generated by scripts/generate_ai_ml_report_pdf.py (hard-coded content)
+│   ├── figures/fig1..fig8_*.png             # Generated by scripts/generate_report_assets.py (hard-coded/illustrative data)
+│   ├── forecast_metrics.json                # Per-horizon MAE, RMSE, persistence MAE, skill, coverage, pinball
+│   ├── twin_metrics.json                    # Leave-one-station-out GP vs nearest-station vs IDW
+│   └── verifier_metrics.json                # Injected-effect recovery result
 ├── scripts/
-│   ├── build_grid.py              # grid + grid_meta + cell/cell_1k seed files (backend seeds them)
-│   ├── build_cell_features.py     # cell_feature covariates from OSM, permits, land use
-│   ├── fetch_cpcb.py              # CPCB/DPCC historical + recent station data → feature store
-│   ├── fetch_openaq.py            # OpenAQ v3 locations and measurements → feature store
-│   ├── fetch_firms.py             # NASA FIRMS VIIRS/MODIS area CSV → feature store
-│   ├── fetch_weather.py           # Open-Meteo historical/forecast and ERA5 (CDS) → feature store
-│   ├── fetch_osm_pois.py          # schools, hospitals, elder-care, markets, bus stops, roads, construction
-│   ├── fetch_gtfs.py              # Delhi OTD static GTFS → routes, shapes, trips
-│   ├── fetch_wards.py             # MCD ward boundaries → ward seed
-│   ├── worldpop_to_cells.py       # WorldPop 100 m raster → population per cell (area-weighted)
-│   ├── backfill_twin_history.py   # stations-only twin reanalysis for past days (forecaster lags at demo start)
-│   ├── seed_usual_routes.py       # demo usual-route baseline (is_simulated) for What-If (P-10)
-│   └── export_fixtures.py         # capture golden fixtures for tests and agent evals
-├── notebooks/                     # numbered; outputs stripped by nbstripout; never imported by src
-│   ├── 00_data_audit.ipynb
-│   ├── 01_grid_population.ipynb
-│   ├── 02_calibration.ipynb
-│   ├── 03_twin_kriging.ipynb
-│   ├── 04_fingerprint_rules.ipynb
-│   ├── 05_forecaster.ipynb
-│   ├── 06_exposure.ipynb
-│   ├── 07_optimizer_whatif.ipynb
-│   ├── 08_verifier_injected_effects.ipynb
-│   ├── 09_effectiveness_library.ipynb
-│   └── 10_agents_eval.ipynb
-├── edge/
-│   └── tinyml/
-│       ├── data.py                # windowing of 1 Hz PM traces, labels (true spike / exhaust / fog / bump)
-│       ├── model.py               # tiny 1D-CNN (Keras) with ratio features
-│       ├── train_spike.py         # training + evaluation vs the 3× rule
-│       ├── export_tflite.py       # full-integer int8 quantisation with representative dataset
-│       ├── gen_c_array.py         # .tflite → C array header for ESP-IDF
-│       ├── eval_spike.py          # quantised-model evaluation, latency/size report
-│       └── out/                   # generated spike_model.tflite, spike_model.h (git-ignored except releases)
+│   ├── build_dataset.py         # CPCB CSVs (or synthetic) -> stations_hourly.parquet; 500 m and 1 km grids
+│   ├── check_env.py             # Masked key checklist, data-file presence, mode summary
+│   ├── demo_seed.py             # Injects a known sprinkler effect, writes telemetry JSONL and demo_scenario.json
+│   ├── eval_metrics.py          # Attribution and "PM2.5 >= 150" alert metrics (in-sample; needs editable install)
+│   ├── fetch_all.py             # OpenAQ stations, Open-Meteo weather + CAMS, FIRMS fires, OSM POIs, bus corridors
+│   ├── generate_ai_ml_report_pdf.py   # ReportLab whitepaper (needs reportlab)
+│   ├── generate_citizen_app_pdf.py    # ReportLab HawaCitizen blueprint -> docs/ relative to CWD (needs reportlab)
+│   ├── generate_report_assets.py      # Matplotlib figures fig1..fig8 (needs matplotlib)
+│   ├── run_cycle.py             # One 3-hour cycle (--once) or a loop (--loop --interval-sec 10800)
+│   └── train_all.py             # Forecaster (21 models) + attribution classifier
+├── src/hawa_ml/
+│   ├── __init__.py              # __version__ = "0.1.0"
+│   ├── settings.py              # pydantic-settings Settings (reads AI-ML/.env), paths, mask_secret(), singleton `settings`
+│   ├── logging_conf.py          # configure_logging() with SecretSanitizingFilter (Groq, AWS, bearer, key=value patterns)
+│   ├── geo.py                   # Haversine, local metric projection, cell id G-RRR-CCC, centroid, polygon
+│   ├── schemas.py               # TelemetryPacket (§10.6), SourceClass, CellState, Hotspot, SuspectPin, ForecastPoint,
+│   │                            #   AssetSpec, PlanTask, PlanDraft, SyntheticControlResult, Insight, Narrative
+│   ├── api/
+│   │   ├── main.py              # FastAPI app, CORS *, router mounted at /, /v1 and /internal/v1
+│   │   ├── routes.py            # 13 routes: health, twin, forecast, hotspots, plans draft/simulate, interventions
+│   │   │                        #   verify/impact, insights, ingest/telemetry, effectiveness library
+│   │   └── deps.py              # Singletons and getters (twin, forecaster, GRAP, exposure, VRP, What-If, library, grid,
+│   │                            #   agents, insight engine, narrative generator, calibrator); imported by the backend
+│   ├── agents/
+│   │   ├── llm_provider.py      # GroqLLMClient, BedrockLLMClient, TemplateFallbackClient; `llm_client` chosen at import
+│   │   ├── tools.py             # tool_get_forecast, tool_get_hotspots, tool_run_optimizer, tool_simulate_whatif,
+│   │   │                        #   tool_get_effectiveness
+│   │   ├── forecaster_agent.py  # ForecasterAgent.analyze_forecast -> peak, GRAP stage, summary, points
+│   │   ├── planner_agent.py     # PlannerAgent.draft_plan -> plan dict with tasks, hotspots, reasoning
+│   │   ├── auditor_agent.py     # AuditorAgent.audit_plan -> ("approved" | "revise", critique)
+│   │   ├── communicator_agent.py# CommunicatorAgent.draft_school_alert -> english, hindi, safe_window
+│   │   └── prompts/{forecaster,planner,auditor,communicator}.md   # Runtime system prompts
+│   ├── attribution/
+│   │   ├── rules.py             # RuleBasedAttribution.classify_source (used for every hotspot)
+│   │   ├── classifier.py        # Weak proxy labels + LightGBM AttributionClassifier (train/predict)
+│   │   └── backtrajectory.py    # calculate_upwind_suspect_pin (straight-line upwind pin + spread)
+│   ├── calibration/
+│   │   └── drive_by.py          # DriveByCalibrator: Huber fit ref = a*raw + b*RH + c, trust score, JSON profiles
+│   ├── causal/
+│   │   ├── synthetic_control.py # SLSQP donor weights (w >= 0, sum 1), effect %, pre-RMSPE, duration
+│   │   ├── placebo.py           # In-space placebo CI and p-value; verify_injected_intervention_recovery()
+│   │   └── effectiveness_library.py  # EffectivenessLibrary with 5 priors, running-average update, JSON persistence
+│   ├── exposure/
+│   │   ├── engine.py            # ExposureEngine: E = max(0, C - 60) * Pop * diurnal * V * dt; ranked Hotspot list
+│   │   └── routing.py           # SafeRouteOptimizer: fastest/cleanest/balanced heuristic routes (synthetic geometry)
+│   ├── forecasting/
+│   │   ├── features.py          # 37 features (cyclic, wind u/v, weather, 7 lags x PM2.5/PM10, rolling stats, fire proxy)
+│   │   ├── train.py             # 21 LightGBM quantile models, 45-day holdout, metrics + model card
+│   │   ├── predict.py           # ForecastPredictor.predict_cell_forecast (7 horizons, AQI, GRAP); analytic fallback
+│   │   ├── grap.py              # GRAPEngine: CPCB sub-index, composite AQI, GRAP stage and actions
+│   │   ├── evaluate.py          # MAE, RMSE, pinball loss, P10-P90 coverage, skill vs persistence/CAMS
+│   │   ├── baselines.py         # Persistence and seasonal-naive baselines
+│   │   └── safe_window.py       # SafeWindowCalculator: fixed 24 h diurnal curve, 4 personas
+│   ├── ingestion/
+│   │   ├── cpcb.py              # CPCB CSV cleaning, hourly resample, station match; synthetic 60-day generator
+│   │   ├── openaq.py            # OpenAQ v3 /locations for Delhi; fallback stations_fallback.csv
+│   │   ├── openmeteo.py         # Open-Meteo forecast and CAMS air quality; synthetic fallbacks
+│   │   ├── firms.py             # NASA FIRMS VIIRS fires; upwind 100/300/500 km counts and FRP
+│   │   ├── osm.py               # Overpass schools/hospitals/markets; synthetic POIs around 8 hubs
+│   │   ├── worldpop.py          # WorldPop GeoTIFF clip to Delhi; parametric synthetic density
+│   │   └── bus_routes_osm.py    # 15 hubs, 6 corridors, interpolated waypoints
+│   ├── insights/
+│   │   ├── triggers.py          # InsightTriggerEngine: GRAP crossing, school exposure, blind spots, spikes
+│   │   └── narratives.py        # NarrativeGenerator: WHAT/WHERE/WHY/WHO/WHAT TO DO/EFFECT templates, en + hi
+│   ├── optimization/
+│   │   ├── greedy.py            # GreedyDispatchOptimizer: cause-compatible assignment by exposure value
+│   │   ├── vrp.py               # VRPOptimizer: detects OR-Tools, always calls the greedy solver
+│   │   └── whatif.py            # WhatIfSimulator: AI plan vs "usual routes" (= AI x 0.32)
+│   ├── pipelines/
+│   │   ├── cycle.py             # run_3hour_cycle: simulate, twin, exposure, forecast, insights, plan, audit
+│   │   ├── master_plan.py       # run_evening_master_plan: cycle + school alert
+│   │   └── verify.py            # run_post_action_verification (replays the injected-effect test)
+│   ├── simulation/
+│   │   ├── device_sim.py        # FleetSimulator: buses (HPM-*), school sentinels (HPS-*), HawaTags; JSONL output
+│   │   ├── noise_models.py      # SensorNoiseModel: humidity growth, gain/offset, speed bias, noise
+│   │   ├── packet.py            # create_telemetry_packet (§10.6 packet builder)
+│   │   ├── interventions.py     # InterventionManager: injected effects, spatial/temporal attenuation
+│   │   └── audit.py             # IoTAuditor + hard-coded FLEET_TELEMETRY (3 assets); used by backend citizen route
+│   └── twin/
+│       ├── grid.py              # build_delhi_grid / load_grid (10,600 cells at 500 m, 2,650 at 1 km) with covariates
+│       ├── kriging.py           # DigitalTwinEngine: GP fit/predict, confidence, leave-one-station-out evaluation
+│       ├── advection.py         # shift_coordinates_downwind
+│       └── fusion.py            # fuse_and_build_twin (not called by any route or pipeline)
 └── tests/
-    ├── conftest.py                # fixtures: synthetic grid, fields, fleets, frozen PlanContext, stub LLM
-    ├── fixtures/                  # small Parquet/JSON fixtures, golden agent scenarios
-    ├── unit/                      # pure-function tests per module (calibration, twin, rules, aqi, exposure …)
-    ├── property/                  # hypothesis tests: verifier, optimiser/constraints, quantiles, exposure monotonicity
-    ├── contract/                  # reflect live DB schema vs tables.py; envelope/payload round-trips with hawa_contracts
-    ├── integration/               # docker-compose services: consumer idempotency, end-to-end twin/plan/verify
-    └── agents_eval/               # golden scenarios (Bedrock or stub), graders, reports
+    ├── test_phase0_scaffold.py              # 4 tests: settings masking, log scrubbing, packet, geometry
+    ├── test_phase1_data.py                  # 5 tests: stations parquet, grids, Open-Meteo, FIRMS, OSM + bus routes
+    ├── test_phase2_forecast.py              # 3 tests: AQI/GRAP, forecast metrics, live prediction
+    ├── test_phase3_twin_sim.py              # 4 tests: noise, simulator, calibration, twin
+    ├── test_phase4_attribution_exposure.py  # 3 tests: rules, back-trajectory, exposure ranking
+    ├── test_phase5_optimization_causal.py   # 4 tests: recovery, library, cause compatibility, What-If
+    ├── test_phase6_agents_insights.py       # 5 tests: four agents, insights + narratives
+    └── test_phase7_api_pipelines.py         # 10 tests: every API route, demo seed + cycle
 ```
 
-## 2. Package responsibilities
+## 2. Generated, gitignored directories
 
-| Package | Owns | Must not |
-|---|---|---|
-| `hawa_ml` | All numeric algorithms, data access, validation, versioning | Import `hawa_agents`, FastAPI or aiokafka consumer loops; read `sim/truth` outside `hawa_ml.eval` |
-| `hawa_agents` | Prompts, tools, orchestration, output schemas, fallbacks | Write to the DB directly; compute numbers the tools did not return |
-| `hawa_intel_worker` | Kafka plumbing, idempotency, retries, publishing | Contain algorithm logic (handlers call `hawa_ml`/`hawa_agents`) |
-| `hawa_intel_service` | Internal HTTP surface | Trigger asynchronous work (use Kafka) |
-| `hawa_trainer` | Training, evaluation, gates, registry | Serve predictions |
+Created at runtime under `data/`: `cache/` (API responses: `openaq/`, `openmeteo/`, `firms/`, `osm/`), `external/` (manual CPCB CSVs in `cpcb/`, WorldPop GeoTIFF in `worldpop/`, `stations.csv`), `interim/` (`simulated_telemetry.jsonl`), `processed/` (`stations_hourly.parquet`, `grid_covariates_500m.parquet`, `grid_covariates_1000m.parquet`, `delhi_population_clipped.npz`), and `raw/` (unused).
 
-## 3. Tooling
+## 3. Conventions in the code
 
-| Tool | Purpose | Configuration |
-|---|---|---|
-| `uv` | Environments, locking, running | `pyproject.toml`, `uv.lock`; `uv sync --all-extras`; path dependency `hawa-contracts = { path = "../backend/contracts", editable = true }` |
-| `ruff` | Lint + format (replaces black, isort, flake8) | `[tool.ruff]` line length 100, target py312; rules `E,F,W,I,B,UP,SIM,N,S,PL,RUF,ASYNC,PD,NPY`; `ruff format` |
-| `mypy` | Static types | `strict = true` on `src/`, `pydantic.mypy` plugin, `warn_unreachable`; third-party stubs or `ignore_missing_imports` per module (ortools, pykrige, lightgbm) |
-| `pytest` | Tests | markers `unit`, `property`, `contract`, `integration`, `eval_agents`, `slow`; `pytest-asyncio` (auto mode); `pytest-cov` (fail under 80 % for `hawa_ml`) |
-| `hypothesis` | Property-based tests | profiles `ci` (200 examples) and `dev` (50); deadline 2 s |
-| `pandera` | DataFrame validation at every I/O boundary | `hawa_ml/validation/schemas.py`; lazy validation, failures → metric + typed error |
-| `pre-commit` | Local gates | ruff, ruff-format, mypy (src only), nbstripout, `uv lock --check`, end-of-file-fixer, detect-private-key |
-| Jupyter | Exploration only | notebooks read from the feature store; promote code into `src/` before use |
-| `pip-audit` | Vulnerability scan | CI job |
+- Each module exposes a module-level singleton (`twin_engine`, `forecaster`, `grap_engine`, `exposure_engine`, `vrp_optimizer`, `whatif_simulator`, `effectiveness_library`, `drive_by_calibrator`, the four agents, `llm_client`), created at import time.
+- Secrets are read only through `hawa_ml.settings.settings`.
+- Every external source has a synthetic or fixture fallback, and `OFFLINE_MODE=true` forces it.
+- Each module has a `__main__` block that runs a small demo (`python -m hawa_ml.<module>`).
 
-Library versions: Python 3.12; numpy, pandas and/or polars, pyarrow, scikit-learn, PyKrige, LightGBM, SciPy, statsmodels, geopandas, shapely, pyproj, ortools, strands-agents, boto3, mlflow, fastapi, uvicorn, aiokafka, sqlalchemy[asyncio] 2.x, asyncpg, redis (asyncio), pydantic v2, pydantic-settings, pandera, typer, prometheus-client, opentelemetry-sdk + instrumentations, `logifyx[kafka]` 2.x, and `hawa-contracts`. All at the latest stable versions, pinned in `uv.lock`. Edge extras (`tensorflow` for TFLite export) live in an optional `edge` dependency group so the runtime image stays small.
+## 4. Tooling
 
-## 4. Makefile targets
-
-| Target | Does |
+| Tool | Status |
 |---|---|
-| `make sync` | `uv sync --all-extras` |
-| `make lint` / `make fmt` | `ruff check .` / `ruff format .` |
-| `make typecheck` | `mypy src` |
-| `make test` | `pytest -m "unit or property"` |
-| `make test-contract` | `pytest -m contract` (needs `make up` at repo root) |
-| `make test-integration` | `pytest -m integration` |
-| `make eval-agents` | `pytest -m eval_agents` (uses `HAWA_LLM_MODE`) |
-| `make worker` / `make service` | run `intel-worker --groups all` / `intel-service` |
-| `make train MODEL=forecaster` | `hawa-trainer run --model $(MODEL)` |
-| `make data` | fetch scripts for the configured date range |
-| `make grid` | `scripts/build_grid.py` + `build_cell_features.py` + `worldpop_to_cells.py` |
-| `make tinyml` | train, quantise and export the spike model (edge group) |
-| `make docker` | build the image |
-| `make ci` | lint + typecheck + test + contract (as in CI) |
-
-## 5. `pyproject.toml` sketch
-
-```toml
-[project]
-name = "hawa-aiml"
-version = "0.1.0"
-requires-python = ">=3.12,<3.13"
-dependencies = [
-  "hawa-contracts",
-  "numpy", "pandas", "polars", "pyarrow", "scikit-learn", "pykrige", "lightgbm", "scipy", "statsmodels",
-  "geopandas", "shapely", "pyproj", "ortools",
-  "strands-agents", "boto3", "mlflow",
-  "fastapi", "uvicorn[standard]", "aiokafka", "sqlalchemy[asyncio]", "asyncpg", "redis",
-  "pydantic", "pydantic-settings", "pandera", "typer", "prometheus-client",
-  "opentelemetry-sdk", "opentelemetry-exporter-otlp", "opentelemetry-instrumentation-fastapi",
-  "opentelemetry-instrumentation-asyncpg", "opentelemetry-instrumentation-redis", "opentelemetry-instrumentation-botocore",
-  "logifyx[kafka]", "pillow", "imagehash", "pyyaml",
-]
-
-[project.scripts]
-intel-worker = "hawa_intel_worker.main:cli"
-intel-service = "hawa_intel_service.main:run"
-hawa-trainer = "hawa_trainer.cli:app"
-hawa-ml = "hawa_ml.cli:app"
-
-[dependency-groups]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "hypothesis", "ruff", "mypy", "pre-commit", "jupyterlab", "nbstripout", "pip-audit"]
-edge = ["tensorflow"]
-
-[tool.uv.sources]
-hawa-contracts = { path = "../backend/contracts", editable = true }
-
-[tool.pytest.ini_options]
-markers = ["unit", "property", "contract", "integration", "eval_agents", "slow"]
-asyncio_mode = "auto"
-```
-
-Versions are resolved by `uv lock`; do not hand-pin minor versions in the docs.
-
-## 6. `.env.example`
-
-```dotenv
-# --- environment ---
-HAWA_ENV=local                         # local | demo | aws
-HAWA_TZ=Asia/Kolkata
-HAWA_INTERNAL_TOKEN=change-me          # shared with backend api for /internal/v1/*
-
-# --- data stores ---
-HAWA_DB_URL=postgresql+asyncpg://hawa_ml:hawa_ml@localhost:5432/hawa
-HAWA_REDIS_URL=redis://localhost:6379/0
-HAWA_KAFKA_BOOTSTRAP=localhost:9092
-HAWA_S3_ENDPOINT=http://localhost:9000  # empty in AWS
-HAWA_S3_LAKE_BUCKET=hawa-local-lake
-HAWA_S3_MODELS_BUCKET=hawa-local-models
-HAWA_S3_AGENTS_BUCKET=hawa-local-agents
-MLFLOW_TRACKING_URI=http://localhost:5000
-
-# --- LLM / Bedrock (see AGENTS.md §3) ---
-HAWA_LLM_MODE=bedrock                  # bedrock | stub | disabled (deterministic fallback only)
-HAWA_BEDROCK_REGION=ap-south-1
-AWS_PROFILE=hawa-dev                   # local only; ECS uses the task role
-HAWA_LLM_PLANNER_MODEL=anthropic.claude-opus-5        # or the inference-profile id shown in the Bedrock console
-HAWA_LLM_AUDITOR_MODEL=anthropic.claude-opus-5
-HAWA_LLM_FORECASTER_MODEL=anthropic.claude-opus-5
-HAWA_LLM_VISION_MODEL=anthropic.claude-opus-5
-HAWA_LLM_NARRATOR_MODEL=anthropic.claude-opus-5
-HAWA_LLM_COMMUNICATOR_MODEL=anthropic.claude-haiku-4-5
-
-# --- feature flags ---
-HAWA_TWIN_ADVECTION=true
-HAWA_AGENTS_ENABLED=true
-HAWA_CITIZEN_EYES_ENABLED=true
-
-# --- logging (logifyx) ---
-LOG_LEVEL=INFO
-LOG_OUTPUT=console
-LOG_JSON=true
-LOG_MASK=true
-LOG_KAFKA_SERVERS=                     # set in demo/aws
-LOG_KAFKA_TOPIC=hawa.logs.v1
-LOG_SCHEMA_REGISTRY=                   # e.g. http://localhost:8081
-
-# --- tracing ---
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
-OTEL_SERVICE_NAME=intel-worker
-
-# --- external data (scripts only) ---
-OPENAQ_API_KEY=
-FIRMS_MAP_KEY=
-CDS_API_KEY=                           # ERA5 via Copernicus CDS
-```
-
-## 7. `Dockerfile`, `logifyx.yaml`
-
-- `Dockerfile`: stage 1 `uv sync --frozen --no-dev` into `/app/.venv` (copies `../backend/contracts` via build context at repo root); stage 2 slim Python 3.12 runtime, non-root user, `ENTRYPOINT ["/app/.venv/bin/python", "-m"]` with `CMD ["hawa_intel_worker.main", "--groups", "all"]`. Compose and ECS override the command for `intel-service` and `hawa-trainer`. LightGBM needs `libgomp1` in the runtime stage.
-- `logifyx.yaml`: lowest-priority defaults mirroring the `configure_logging()` kwargs (level INFO, output console, json_mode true, mask true, Kafka topic `hawa.logs.v1`). Confirm the exact key names against the logifyx README before relying on the file; env vars and `configure_logging()` take precedence anyway.
+| pytest (`python -m pytest -q`) | Implemented (38 tests) |
+| Ruff, mypy, pre-commit, import-boundary tests, CI | Planned |
+| MLflow, DVC | Planned |

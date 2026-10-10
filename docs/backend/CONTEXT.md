@@ -1,5 +1,8 @@
 # Backend Context
 
+> **Status (reconciled 2026-10-10).** Product context from the proposal. As built, the backend is one FastAPI process that bridges to AI-ML, serves live WAQI/OpenAQ stations, keeps plans in memory and returns fixtures for devices, alerts and the driver route. Postgres, Kafka, Redis, WebSocket, auth endpoints and workers are Planned. See [docs/backend/README.md](README.md#1-implementation-status).
+
+
 What the backend must do for HawaCommand and why, taken from the proposal (Proposal v3, 27 Sep 2026) and turned into backend requirements.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [EVENTS](EVENTS.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

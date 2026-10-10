@@ -1,5 +1,7 @@
 # HawaCommand — final frontend prototype
 
+> **Status (2026-10-10).** Historical export notes. The prototype was ported into `frontend/src/` (route groups `(marketing)`, `(console)`, `(driver)`); it was **not** copied into `frontend/public/prototype/`, so the `/prototype/*.html` URLs below do not exist. The design sources live in `frontend/design/source/` (`*.dc.html` pages plus `hawa.js`, `hawa-gl.js`, `pixel.js` and helpers); `hawa.js`, `hawa-gl.js` and `pixel.js` are vendored into `frontend/src/lib/visuals/`. The paths `apps/web/...` and `hawacommand/apps/web/...` refer to an earlier monorepo layout.
+
 Copy `apps/web/public/prototype/` into `hawacommand/apps/web/public/`.
 Next.js serves it statically:
 

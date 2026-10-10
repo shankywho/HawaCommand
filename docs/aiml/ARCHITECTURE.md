@@ -1,5 +1,8 @@
 # AI-ML Runtime Architecture
 
+> **Status: target architecture (Planned).** As built, AI-ML is a single FastAPI process, `hawa_ml.api.main:app`, served on port 8100. It has 13 routes, mounted at `/`, `/v1` and `/internal/v1`, with no authentication. There are no Kafka consumers, no Postgres/Redis/S3/MLflow access and no separate trainer or worker processes. Models load from `AI-ML/models/*.txt` at import time, and mutable state lives in JSON files under `AI-ML/data/internal/`. The backend calls the engine over HTTP via `HAWA_AIML_SERVICE_URL`, or imports `hawa_ml` in process when the HTTP call fails. The pipelines (`pipelines/cycle.py`, `master_plan.py`, `verify.py`) run only from `scripts/run_cycle.py` or `python -m`; there is no scheduler. Sections 2-12 below describe the target design. For the as-built routes, scripts and defects, see [AI-ML/README.md](../../AI-ML/README.md#1-implementation-status); for the HTTP and in-process contracts, see [AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md).
+
+
 How the AI-ML processes run: what each consumes and produces, which tables and Redis keys it touches, the sequence of every loop flow, and how it fails safely.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

@@ -1,5 +1,19 @@
 # Multi-Agent Command Room (F14)
 
+> **Status (as implemented).** There is no Strands SDK and no tool-calling loop. `AI-ML/src/hawa_ml/agents/` has four plain classes that each compute their numbers with deterministic code and then ask an LLM only to phrase a summary:
+> - `ForecasterAgent.analyze_forecast`: 72 h forecast and GRAP summary
+> - `PlannerAgent.draft_plan`: hotspots, the greedy optimiser and a rationale
+> - `AuditorAgent.audit_plan`: programmatic water-on-smoke and water-on-regional-smoke checks, giving `approved` or `revise` plus a critique
+> - `CommunicatorAgent.draft_school_alert`: English and Hindi school advisory; the Hindi text is always the template
+>
+> `agents/llm_provider.py` picks the provider once, at import time:
+> - `GroqLLMClient`: model `openai/gpt-oss-120b`, temperature 0.2, 600 tokens; used when `LLM_PROVIDER=groq` and `GROQ_API_KEY` is set
+> - `BedrockLLMClient`: `BEDROCK_MODEL_ID`, default `anthropic.claude-3-5-sonnet-20241022-v2:0`, 800 tokens; used when `LLM_PROVIDER=bedrock`. It needs `boto3`, which is not declared.
+> - `TemplateFallbackClient`: returns empty text so each agent uses its deterministic template; also used whenever `OFFLINE_MODE=true`
+>
+> The runtime system prompts are the four files in `AI-ML/src/hawa_ml/agents/prompts/` (`forecaster.md`, `planner.md`, `auditor.md`, `communicator.md`), each 10-13 lines. The longer prompts below are the target design (Planned). Tools are plain functions in `agents/tools.py`. The insight engine (`insights/triggers.py`) implements 4 of 7 triggers: GRAP crossing, school morning exposure, twin blind spots, sudden spike.
+
+
 How HawaCommand's Strands agents on Amazon Bedrock explain, critique and communicate a plan that a deterministic optimiser produced and a human officer approves: orchestration, model configuration, full system prompts, tools, output schemas, guardrails, failure handling, evaluation and cost.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)

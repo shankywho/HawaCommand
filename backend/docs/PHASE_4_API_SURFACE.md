@@ -1,5 +1,8 @@
 # Phase 4: API Command Surface
 
+> **Status (2026-10-10).** Implemented and extended: the route list is now larger (33 operations, including `/v1/twin`, `/v1/citizen/*`, `/open/v1/air`); see [docs/backend/API.md](../../docs/backend/API.md). Devices, alerts and driver route return fixtures. Overview: [backend/README.md](../README.md#implementation-status).
+
+
 ## Overview
 Phase 4 implements the complete REST command surface required by the Next.js officer console (`frontend/`) and the Flutter mobile driver application (`app_frontend/`). Every endpoint strictly adheres to [`docs/backend/API.md`](../../docs/backend/API.md) and the Zod contracts defined in `frontend/src/contracts/`.
 

@@ -1,40 +1,55 @@
 # Team Remaining Work, Task Checklist, and Role-Specific Prompts
 
-This document provides a comprehensive operational breakdown of remaining integration, scaling, and production-hardening tasks across all engineering disciplines for the HawaCommand and HawaCitizen ecosystem.
+Remaining integration, correctness and production-hardening work for each discipline, reconciled with the code at commit `a33e043` (2026-10-10). Every path below exists in the repository unless the task is to create it.
 
 Each section contains:
-1. Role ownership and primary responsibilities
-2. Actionable, prioritized task checklist
-3. Execution prompt tailored for an AI assistant or human engineer to execute the work directly
+1. Role ownership
+2. Prioritised checklist (correctness first, then integration, then scale)
+3. An execution prompt for an AI assistant or engineer
+
+How to run the stack locally: [root README](../README.md#local-development-and-setup). Known defects per component: [AI-ML](../AI-ML/README.md#9-known-issues), [backend](../backend/README.md#known-issues), [web](frontend/README.md), [app](app/README.md#9-known-issues).
+
+---
+
+## 0. Cross-cutting (whoever gets there first)
+
+- [ ] Remove the hard-coded WAQI and OpenAQ tokens from `backend/src/hawa_backend/core/intel_client.py` (lines 200, 246), rotate both tokens, and read them through `core/config.py` settings.
+- [ ] Declare `hawa-ml` as a backend dependency (`backend/pyproject.toml`, path dependency on `../AI-ML`).
+- [ ] Change `AI-ML/Makefile` `api` target to port 8100 and `test` to `python -m pytest`.
+- [ ] Make the AI-ML tests hermetic: stop them rewriting `AI-ML/data/fixtures/demo_scenario.json` and the three files in `AI-ML/data/internal/`.
+- [ ] Add CI (`.github/workflows/`) per folder: `python -m pytest` for AI-ML, `pytest` for backend, `pnpm typecheck && pnpm build` for web, `make lint test` for Flutter.
 
 ---
 
 ## 1. Cloud and DevOps Engineer
 
 ### Role Responsibilities
-Owns AWS cloud infrastructure, serverless deployments, managed database migrations, Kinesis telemetry ingestion streams, Redis ElastiCache clusters, and secure S3 presigned URL pipelines.
+AWS infrastructure, deployment of the two Python services and the web console, secrets, monitoring.
 
 ### Task Checklist
-- [ ] Deploy S3 production bucket (`hawa-citizen-evidence-prod`) with KMS encryption, CORS headers, and 30/90/180-day lifecycle transitions.
-- [ ] Provision DynamoDB tables (`hawa-citizen-grievances` with `WardStatusIndex` GSI and `hawa-fleet-telemetry` with TTL auto-expiry).
-- [ ] Configure AWS ElastiCache Redis cluster (`cache.t4g.small`) for 500m grid spatial caching and live fleet tracking (`geo:fleet:active`).
-- [ ] Set up AWS Kinesis Data Stream (`hawa-sensor-data`) with on-demand capacity and Lambda consumers for streaming pod telemetry.
-- [ ] Configure Amazon ECS Fargate cluster with Application Load Balancer (ALB) and ACM SSL/TLS certificates for the FastAPI backend and AI-ML service.
-- [ ] Automate CI/CD pipelines via GitHub Actions for automated Docker builds, container vulnerability scanning, and blue-green deployments.
-- [ ] Set up AWS CloudWatch alarms and SNS notification topics for API error rates exceeding 2% and SLA breach notifications.
+- [ ] Deploy `infrastructure/cloudformation/hawa-integration.yaml` in `ap-south-1` and wire its outputs into the backend `HAWA_AWS_*` variables (see [CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md)).
+- [ ] Write Dockerfiles for `backend/` (must also install `../AI-ML`) and `AI-ML/` (Planned: none exist).
+- [ ] Run both services on ECS Fargate behind an ALB with TLS; the backend reaches AI-ML through `HAWA_AIML_SERVICE_URL`.
+- [ ] Host `frontend/` on Amplify (`frontend/amplify.yml` exists) with `NEXT_PUBLIC_API_URL` pointing at the ALB.
+- [ ] Move `WAQI_TOKEN`, `OPENAQ_API_KEY`, `NASA_FIRMS_MAP_KEY`, `GROQ_API_KEY` into Secrets Manager.
+- [ ] CloudWatch alarms on API 5xx rate and AI-ML latency.
+- [ ] Planned, only once the backend uses them: RDS PostgreSQL + PostGIS, ElastiCache Redis, MSK.
 
 ### Execution Prompt for Cloud Engineer
 ```text
-You are the Lead Cloud and DevOps Engineer for Mission_CleanTheAir (HawaCommand).
-Your objective is to complete the production deployment of the HawaCommand infrastructure on AWS (ap-south-1 Mumbai region).
+You are the Lead Cloud and DevOps Engineer for HawaCommand (ap-south-1).
 
-Review docs/AWS_INTEGRATION.md and docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md.
-Execute the following tasks:
-1. Create and validate the Terraform/CloudFormation templates in infrastructure/ for ECS Fargate, DynamoDB tables, ElastiCache Redis, and S3 evidence buckets.
-2. Ensure environment variables are parameterized via AWS SSM Parameter Store and Secrets Manager (WAQI_TOKEN, OPENAQ_API_KEY, NASA_FIRMS_MAP_KEY, GROQ_API_KEY).
-3. Validate that the FastAPI backend running in Docker can communicate with Redis for 500m grid caching and DynamoDB for outbox ingestion.
-4. Set up CloudWatch logging and metrics dashboard for p95 latency, sensor ingestion rates, and fleet active pings.
-Provide infrastructure-as-code manifests and validation commands upon completion.
+Read docs/AWS_INTEGRATION.md, docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md,
+infrastructure/cloudformation/hawa-integration.yaml and backend/src/hawa_backend/aws/.
+
+1. Validate and deploy infrastructure/cloudformation/hawa-integration.yaml; map every output
+   to the HAWA_AWS_* settings in backend/src/hawa_backend/aws/settings.py.
+2. Add Dockerfiles for backend/ (installing ./contracts and ../AI-ML) and AI-ML/ (uvicorn
+   hawa_ml.api.main:app on port 8100), and an ECS Fargate service for each behind an ALB.
+3. Configure frontend/amplify.yml hosting with NEXT_PUBLIC_API_URL set to the backend URL.
+4. Store WAQI_TOKEN, OPENAQ_API_KEY, NASA_FIRMS_MAP_KEY and GROQ_API_KEY in Secrets Manager
+   and inject them as environment variables.
+Deliver the templates and the commands used to validate them.
 ```
 
 ---
@@ -42,27 +57,37 @@ Provide infrastructure-as-code manifests and validation commands upon completion
 ## 2. AI / ML Engineer
 
 ### Role Responsibilities
-Owns spatial interpolation, causal inference verification, LightGBM quantile forecasting models, exposure hotspot ranking, and autonomous agent orchestration.
+`AI-ML/`: digital twin, forecaster, attribution, exposure, optimiser, causal verifier, agents.
 
 ### Task Checklist
-- [ ] Fine-tune Gaussian Process Regressor hyperparameters (length scale, RBF variance, noise level) against multi-year historical Delhi CPCB data.
-- [ ] Retrain LightGBM quantile forecaster models (P10, P50, P90) on updated ERA5 reanalysis and IMD weather forecast features.
-- [ ] Validate Synthetic Control Method (SCM) donor pool selection to prevent spillover bias during anti-smog gun misting interventions.
-- [ ] Optimize OR-Tools Vehicle Routing Problem (VRP) solver to handle road width constraints (restricting large 10,000 L misting trucks to arterial roads).
-- [ ] Calibrate diurnal boundary-layer inversion risk calculator across all 272 Delhi municipal wards.
-- [ ] Export ONNX runtime models for sub-10ms edge inference in the FastAPI backend container.
+- [ ] Fix AQI gaps between integer breakpoints returning 500 (`AI-ML/src/hawa_ml/forecasting/grap.py:41-52`).
+- [ ] Fix the effectiveness-library key mismatch (`sprinkler` vs `water_sprinkler`) so verified effects reach the optimiser (`attribution/rules.py`, `optimization/greedy.py:64`, `causal/placebo.py:144`).
+- [ ] Forecast inference: build real lag and rolling features per cell instead of filling them from one value (`forecasting/predict.py`).
+- [ ] Training: select the latest hours, not the last stations alphabetically (`forecasting/train.py:37-39`).
+- [ ] Digital twin: the committed leave-one-station-out run (`reports/twin_metrics.json`) loses to nearest-station and IDW; tune the kernel on real CPCB data with more than 3 stations.
+- [ ] `/twin`, `/hotspots`, `/insights`: use real observations instead of hard-coded points or synthetic PM fields (`api/routes.py`).
+- [ ] Replace the constant What-If baseline (`optimization/whatif.py:35-36`) with a simulated fixed-route plan.
+- [ ] Implement OR-Tools CVRP in `optimization/vrp.py` (it currently always runs the greedy solver) and add `ortools` to the dependencies.
+- [ ] Verification route: verify the requested intervention instead of replaying the seeded test (`api/routes.py`, `pipelines/verify.py`).
+- [ ] Add `boto3` to the dependencies so the Bedrock provider can load.
+- [ ] Regenerate `reports/` figures and the PDF from the metrics files instead of hard-coded numbers.
 
 ### Execution Prompt for AI/ML Engineer
 ```text
-You are the Principal AI/ML Engineer for HawaCommand.
-Your objective is to scale and validate the machine learning and econometric inference engines in AI-ML/.
+You are the Principal AI/ML Engineer for HawaCommand, working in AI-ML/.
+Read AI-ML/README.md (sections 1, 7 and 9) first.
 
-Key Focus Areas:
-1. In hawa_ml/digital_twin/kriging.py, optimize the spatial interpolation pipeline so fitting across 10,600 500m cells completes in under 2.5 seconds using optimized matrix operations.
-2. In hawa_ml/causal/synthetic_control.py, enforce donor-pool distance exclusion filters (excluding cells within 1.5 km of treated misting zones) to avoid control unit contamination.
-3. In hawa_ml/forecasting/quantile_forecaster.py, evaluate forecast calibration metrics (pinball loss, coverage rates for the 80% P10-P90 prediction interval) across 72-hour forecast horizons.
-4. Ensure all models run deterministically with calibrated unit tests in AI-ML/tests/.
-Deliver benchmark results and clean test suites.
+1. In src/hawa_ml/forecasting/grap.py, make AQI sub-index interpolation continuous across
+   CPCB breakpoint gaps; add tests for 30.5, 60.5 and 250.5 ug/m3.
+2. In src/hawa_ml/optimization/greedy.py and src/hawa_ml/attribution/rules.py, align the
+   asset keys with src/hawa_ml/causal/effectiveness_library.py so verified effects are used.
+3. In src/hawa_ml/forecasting/predict.py, compute lag/rolling features from the cell's recent
+   series; in src/hawa_ml/forecasting/train.py, hold out the latest 45 days across all stations.
+4. In src/hawa_ml/twin/kriging.py, re-run evaluate_leave_one_station_out on real CPCB data and
+   report skill against nearest-station and IDW in reports/twin_metrics.json.
+5. In src/hawa_ml/optimization/vrp.py, implement an OR-Tools CVRP with time windows and keep
+   greedy.py as the fallback.
+Run `python -m pytest -q` from AI-ML/ and restore AI-ML/data with git afterwards.
 ```
 
 ---
@@ -70,26 +95,32 @@ Deliver benchmark results and clean test suites.
 ## 3. Backend Engineer
 
 ### Role Responsibilities
-Owns FastAPI REST API, WebSocket streams, database models, background scheduler tasks, open data interfaces, and authentication.
+`backend/`: FastAPI routes, AI-ML bridge, persistence, auth, events.
 
 ### Task Checklist
-- [ ] Add PostgreSQL + PostGIS database persistence alongside the existing in-process and DynamoDB fallback layers.
-- [ ] Implement database migrations using Alembic for wards, sensors, reports, and intervention records.
-- [ ] Implement JWT authentication with role-based access control (Admin, Officer, Inspector, School, Citizen).
-- [ ] Add rate-limiting middleware (SlowAPI / Redis token bucket) on public endpoints (`/open/v1/air`, `/v1/citizen/safe-window`).
-- [ ] Implement WebSocket connection manager for live fleet telemetry broadcasts to the web command console.
-- [ ] Write integration test coverage for all routes in `backend/src/hawa_backend/api/routes/`.
+- [ ] Fix `delta_gain_pct` handling in `core/intel_client.py` (lines 933, 977) to read AI-ML's `comparison.gain_percentage`.
+- [ ] Make `/readyz` check real dependencies (`api/routes/health.py`).
+- [ ] Persist plans (currently an in-process dict in `api/routes/plans.py`) using the SQLAlchemy models in `db/models/`; add Alembic.
+- [ ] Add auth endpoints and enforce JWT with role scoping (`core/security.py` has the helpers).
+- [ ] Serve the field API the Flutter app expects (`app_frontend/openapi/openapi.json`): `/v1/auth/*`, `/v1/me`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`.
+- [ ] Raise `HawaException` subclasses from routes so clients get RFC 9457 bodies.
+- [ ] Replace fixture routes (`/v1/devices`, `/v1/alerts`, `/v1/driver/route`, `/v1/citizen/live-operations`, `/v1/citizen/wards/leaderboard`) with real data.
+- [ ] Fix or update `tests/integration/test_end_to_end.py::test_full_mission_air_pipeline`.
+- [ ] Planned: Kafka producers/consumers and outbox relay, Redis cache and rate limits, WebSocket.
 
 ### Execution Prompt for Backend Engineer
 ```text
-You are the Senior Backend Engineer for HawaCommand.
-Your task is to harden and expand the FastAPI backend in backend/.
+You are the Senior Backend Engineer for HawaCommand, working in backend/.
+Read backend/README.md and docs/backend/README.md first. Install with
+`pip install -e contracts -e ".[dev]" -e ../AI-ML` and run tests with `pytest -q`.
 
-Tasks to Implement:
-1. In backend/src/hawa_backend/api/app.py, configure Redis-backed rate limiting on all public routes to protect against traffic spikes.
-2. In backend/src/hawa_backend/api/routes/citizen.py, add complete CRUD and filtering endpoints for citizen reports with photo upload presigning.
-3. In backend/src/hawa_backend/core/intel_client.py, verify robust error handling, automated retry with exponential backoff for WAQI and OpenAQ API requests, and graceful fallback when external network calls time out.
-4. Expand test suites in backend/tests/ to verify status codes, contract schema compliance, and performance under simulated concurrency.
+1. In src/hawa_backend/core/intel_client.py, read WAQI_TOKEN and OPENAQ_API_KEY from settings
+   (no hard-coded defaults) and fix the What-If response mapping (delta_gain_pct).
+2. In src/hawa_backend/api/routes/plans.py, persist plans with the SQLAlchemy models in
+   src/hawa_backend/db/models/plan.py; add Alembic migrations for all models.
+3. Add /v1/auth/otp/request, /v1/auth/otp/verify and /v1/me using src/hawa_backend/core/security.py,
+   and require a bearer token on /v1/plans/* writes.
+4. Make tests/integration/test_end_to_end.py pass and add tests for every new route.
 ```
 
 ---
@@ -97,26 +128,31 @@ Tasks to Implement:
 ## 4. Mobile App Engineer (Flutter)
 
 ### Role Responsibilities
-Owns the cross-platform Flutter application for Citizens, Field Drivers, Site Inspectors, and School Administrators.
+`app_frontend/`: one app for drivers, inspectors, school principals, citizens and site managers.
 
 ### Task Checklist
-- [ ] Finalize offline outbox SQLite database drainer with automatic network connectivity listeners.
-- [ ] Implement push notification listeners (Firebase Cloud Messaging) for GRAP alert stage changes and morning thermal inversion warnings.
-- [ ] Complete Inspector Target Outcome screen with mandatory geo-fenced photo capture and EXIF integrity checks.
-- [ ] Complete Driver Route guidance with turn-by-turn waypoint acknowledgment and misting cannon on/off telemetry toggles.
-- [ ] Optimize vector tile basemap rendering on low-end Android hardware.
-- [ ] Run `flutter build apk --release` and verify 0 crash reports and zero memory leaks.
+- [ ] Fix the two legacy tests that import `hawacommand_app` (`test/data_mapping_test.dart`, `test/i18n_test.dart`) or delete them, so `make test` compiles.
+- [ ] Commit `env/dev.json.example` (and fix the root `.gitignore` `env/` rule that hides it) so `make run` works.
+- [ ] Declare the air-map fixtures as assets so the offline fallback loads (`pubspec.yaml`, `lib/features/air_map/data/air_map_remote_source.dart`).
+- [ ] Fix the broken routes for "Flag Missed Machine" and the citizen "72-Hour AI Air Forecast" tile (`lib/features/citizen_air/presentation/air_near_me_screen.dart`).
+- [ ] Move the four citizen screens off the legacy `lib/app/theme.dart`.
+- [ ] Call the backend's existing `/v1/citizen/safe-route`, `/live-operations`, `/wards/leaderboard` and `/reports/missed-machine` instead of hard-coded data.
+- [ ] Fix multi-photo inspection close ordering (`lib/features/inspector/data/inspector_repository_impl.dart:229`).
+- [ ] Switch features from the fake backend to `REAL_FEATURES` as the backend ships each field endpoint.
 
 ### Execution Prompt for Mobile App Engineer
 ```text
-You are the Lead Mobile Application Engineer for the HawaCitizen / HawaCommand Flutter app in app_frontend/.
+You are the Lead Mobile Engineer for the HawaCommand Flutter app in app_frontend/.
+Read app_frontend/README.md and docs/app/README.md (section 9, Known issues) first.
 
-Tasks to Execute:
-1. In app_frontend/lib/features/citizen_reports/, wire camera capture with image compression (target under 800 KB) and outbox synchronization.
-2. In app_frontend/lib/features/citizen_air/presentation/air_near_me_screen.dart, verify smooth 60fps scrolling on Android and iOS devices, ensuring zero RenderFlex overflow across all screen sizes.
-3. In app_frontend/lib/core/sync/outbox_drainer.dart, ensure network state changes trigger background sync without locking the UI thread.
-4. Verify full localization support (English and Hindi) across all citizen navigation screens.
-Provide test verification logs and release APK build metrics.
+1. Make `make lint test` pass: fix or remove test/data_mapping_test.dart and test/i18n_test.dart.
+2. Add env/dev.json.example with FLAVOR, API_BASE_URL, USE_FAKE_API and REAL_FEATURES.
+3. Declare assets/fixtures/air_map/ in pubspec.yaml and confirm the air map works offline.
+4. In lib/features/citizen_air/, wire safe_route_screen.dart, live_operations_screen.dart and
+   ward_scorecard_screen.dart to the backend's /v1/citizen/* endpoints.
+5. In lib/features/inspector/data/inspector_repository_impl.dart, make inspection_close depend
+   on every photo_upload op.
+Provide `make lint test` output and a release APK build log.
 ```
 
 ---
@@ -124,22 +160,25 @@ Provide test verification logs and release APK build metrics.
 ## 5. Web Frontend Engineer
 
 ### Role Responsibilities
-Owns Next.js command console, MapLibre GL 3D geospatial visualizations, What-If simulation playground, and public landing page.
+`frontend/`: Next.js officer console, landing page, driver view.
 
 ### Task Checklist
-- [ ] Connect the Command Console live map to backend WebSocket streams for real-time sweeper and anti-smog gun telemetry.
-- [ ] Implement Deck.gl 3D extruded hexagon layers for displaying 500m cell PM2.5 concentrations and population density.
-- [ ] Connect the What-If simulation slider controls to the backend simulation engine to preview counterfactual emissions reduction in real time.
-- [ ] Finalize the Public Air Portal at `/open` with searchable ward scorecard tables and CSV/GeoJSON export buttons.
-- [ ] Perform WCAG 2.1 AA accessibility audit across all console dashboards and high-contrast color palettes.
+- [ ] Commit an ESLint config so `pnpm lint` runs non-interactively; add Prettier if wanted.
+- [ ] Feed the map's truck routes, bus trails, schools and suspect pin from the API instead of built-in demo data (`src/components/map/`, `src/lib/visuals/hawa-gl.js`).
+- [ ] Fix the What-If delta sign mismatch between backend and mocks.
+- [ ] Replace fixed copy on `/forecast` (day and plan link) and `/fleet` (last-packet age).
+- [ ] Add a sign-out control and send the Cognito token to the backend once it verifies tokens.
+- [ ] Planned: WebSocket live updates, deck.gl layers, `/open` public data portal, alert compose.
 
 ### Execution Prompt for Web Frontend Engineer
 ```text
-You are the Senior Frontend Engineer for the HawaCommand Web Platform in frontend/.
+You are the Senior Frontend Engineer for HawaCommand in frontend/.
+Read frontend/README.md and docs/frontend/README.md first.
 
-Tasks to Execute:
-1. In frontend/src/app/(console)/map/, wire live MapLibre GL and Deck.gl layers to fetch the 500m Kriging digital twin grid from the backend /v1/twin endpoint.
-2. In frontend/src/app/(console)/plans/[id]/, complete the interactive plan approval workflow allowing officers to inspect route geometry, adjust dispatch hours, and approve machine deployments.
-3. In frontend/src/components/impact/SyntheticControlChart.tsx, ensure causal verification charts clearly display pre-treatment fit, treatment intervention point, and post-treatment divergence bands.
-4. Validate that production builds succeed without TypeScript or lint warnings via pnpm build.
+1. Add an ESLint flat config (next, typescript-eslint, react-hooks, jsx-a11y) and make
+   `pnpm lint`, `pnpm typecheck` and `pnpm build` pass.
+2. In src/app/(console)/map/ and src/components/map/HawaMap.tsx, render hotspots, assets and
+   suspect pins from /v1/hotspots and /v1/devices instead of the component's demo data.
+3. In src/app/(console)/what-if/page.tsx, align the delta sign with the backend's compare response.
+4. Run scripts/verify_backend_contracts.ts against a local backend and keep it passing.
 ```

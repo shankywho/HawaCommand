@@ -3,6 +3,34 @@
 > Source of truth: [`HawaCommand_Proposal.pdf`](../HawaCommand_Proposal.pdf) (Proposal v3, 27 Sep 2026, Environmental Hacks 2026 · Bharat Builds Tour · Track 01: Air).
 > Section references such as **§9.4** point to that PDF. Where this document changes the proposal's stack (for example Kafka replacing SQS/Kinesis, or FastAPI replacing Node Lambdas), the change is listed in [§8 Deviations from the proposal](#8-deviations-from-the-proposal).
 
+> **Reconciled with the code at commit `a33e043` (2026-10-10).** Sections 5-11 describe the target design from the proposal. Section 0 below describes what actually runs today; every feature in §4 carries its real status. Status words: **Implemented**, **Partial**, **Stub/Mock**, **Planned**.
+
+---
+
+## 0. The system as built today
+
+Three processes and two clients. No database, broker or cache is in the running path.
+
+```
+ Web console (Next.js, :3000) ──┐                      ┌── WAQI / OpenAQ (live stations)
+                                ├──HTTP──> Backend (FastAPI, :8000) ──HTTP──> AI-ML engine (FastAPI, :8100)
+ Flutter app (REAL_FEATURES) ───┘              │   └── in-process hawa_ml fallback, then fixtures
+                                               └── optional AWS layer (HAWA_AWS_ENABLED=true):
+                                                   DynamoDB, Step Functions, SageMaker, SNS, Kinesis
+```
+
+| Piece | Folder | Status | What it really does |
+|---|---|---|---|
+| AI-ML engine | `AI-ML/` | Partial | GP twin over 10,600 cells, 21 LightGBM quantile forecasters, rule attribution, exposure ranking, greedy dispatcher, synthetic-control verifier, 4 template/LLM agents. Several routes run on hard-coded inputs ([AI-ML/README.md](../AI-ML/README.md)) |
+| Backend API | `backend/` | Partial | 33 operations; AI-ML bridge with circuit breaker; live WAQI/OpenAQ stations; plans in memory; devices, alerts and driver route are fixtures; no auth enforced ([backend/README.md](../backend/README.md)) |
+| Contracts package | `backend/contracts/` | Implemented (declared) | Enums, ids, packets, envelope, topics, events, Redis keys. Few are used by running code |
+| Web console | `frontend/` | Partial | Landing page, 8 console pages, driver view; mock API when no backend URL ([frontend/README.md](../frontend/README.md)) |
+| Flutter app | `app_frontend/` | Partial | 5 role shells; air map, air near me, alerts and school forecast are live; field flows on the in-app fake backend ([app_frontend/README.md](../app_frontend/README.md)) |
+| Device fleet | `AI-ML/src/hawa_ml/simulation/` | Stub/Mock | Simulated HawaPod-M, HawaPod-S and HawaTag packets written to JSONL; no MQTT |
+| Postgres/PostGIS, Redis, Kafka, MQTT, WebSocket, scheduler, notifier | — | Planned | `backend/docker-compose.yml` starts PostGIS, Redis and Kafka, but nothing connects to them |
+| Strands agents on Bedrock, MLflow, nightly trainer | — | Planned | Agents are plain classes; Bedrock is one optional LLM provider |
+| CI/CD, Dockerfiles, CDK | — | Planned | One CloudFormation template exists in `infrastructure/cloudformation/` |
+
 ---
 
 ## 1. The product in one page
@@ -118,30 +146,30 @@ End-to-end budget for this path: **packet → hotspot on the officer map ≤ 60 
 
 Tiers: **BUILD** = must work in the demo · **STRETCH** = build if time allows · **VISION** = pitched with architecture only.
 
-| ID | Feature | Origin | Tier | AI-ML | Backend | Web | App |
-|---|---|---|---|---|---|---|---|
-| F1 | Hotspot Grid Engine (1 km planning, 500 m map, key cells) | CHINA | BUILD | ● | ● | ● | |
-| F2 | Mobile sensing fleet (HawaPod-M) | CHINA | BUILD | | ● (ingest, simulator) | ● (pod trails) | |
-| F3 | Drive-by self-calibration | CHINA | BUILD | ● | ● (pairing) | ● (device view) | |
-| F4 | Air digital twin (GP + advection, confidence) | CHINA | BUILD | ● | ● (tiles, cache) | ● | ○ (citizen map) |
-| F5 | 72 h forecaster (P10/P50/P90) | CHINA | BUILD | ● | ● | ● | ○ |
-| F6 | Graded Response (GRAP) Copilot | CHINA | BUILD | ● | ● | ● | |
-| F7 | Source fingerprint + back-trajectory | ORIGINAL | BUILD | ● | ● | ● | ○ (inspector pin) |
-| F8 | Smoky Vehicle Spotter (HawaEye, YOLO) | CHINA | VISION | ○ | ○ | ○ | |
-| F9 | Site Compliance Score (A/B/C) | CHINA | STRETCH | ● | ● | ● | ○ (site manager) |
-| F10 | Power-proxy compliance | CHINA | VISION | ○ | ○ | | |
-| F11 | Active sensing router (blind spots) | ORIGINAL | STRETCH | ● | ● | ● | |
-| F12 | Exposure engine | ORIGINAL | BUILD | ● | ● | ● | |
-| F13 | Dispatch optimiser + What-If | CHINA | BUILD | ● | ● | ● | |
-| F14 | Multi-agent command room (Strands) | ORIGINAL | BUILD | ● | ● | ● | |
-| F15 | Anti-gaming guard | CHINA | STRETCH | ● | ● | ● | |
-| F16 | Targeted, pollutant-specific alerts | JAPAN | BUILD | ● (Communicator) | ● (notifier) | ● | ● |
-| F17 | HawaTag intervention tracking | ORIGINAL | BUILD | | ● | ● | ● (auto-marked stops) |
-| F18 | Causal verification + effectiveness library | ORIGINAL | BUILD | ● | ● | ● | |
-| F19 | School safe-window scheduler | ORIGINAL | STRETCH | ● | ● | ● | ● |
-| F20 | Citizen Eyes (photo → verify → inspect) | ORIGINAL | STRETCH | ● (vision) | ● | ● | ● |
-| F21 | Open Air Data portal (AEROS-style) | JAPAN | STRETCH | | ● | ● | |
-| F22 | Weekly Evidence report (PDF) | ORIGINAL | VISION→STRETCH | ● (narrative) | ● | ● | |
+| ID | Feature | Origin | Tier | AI-ML | Backend | Web | App | Status today |
+|---|---|---|---|---|---|---|---|---|
+| F1 | Hotspot Grid Engine (1 km planning, 500 m map, key cells) | CHINA | BUILD | ● | ● | ● | | Partial |
+| F2 | Mobile sensing fleet (HawaPod-M) | CHINA | BUILD | | ● (ingest, simulator) | ● (pod trails) | | Stub/Mock (simulated) |
+| F3 | Drive-by self-calibration | CHINA | BUILD | ● | ● (pairing) | ● (device view) | | Partial (fit only, no pairing) |
+| F4 | Air digital twin (GP + advection, confidence) | CHINA | BUILD | ● | ● (tiles, cache) | ● | ○ (citizen map) | Partial |
+| F5 | 72 h forecaster (P10/P50/P90) | CHINA | BUILD | ● | ● | ● | ○ | Partial |
+| F6 | Graded Response (GRAP) Copilot | CHINA | BUILD | ● | ● | ● | | Implemented |
+| F7 | Source fingerprint + back-trajectory | ORIGINAL | BUILD | ● | ● | ● | ○ (inspector pin) | Implemented (rules; classifier unused) |
+| F8 | Smoky Vehicle Spotter (HawaEye, YOLO) | CHINA | VISION | ○ | ○ | ○ | | Planned |
+| F9 | Site Compliance Score (A/B/C) | CHINA | STRETCH | ● | ● | ● | ○ (site manager) | Stub/Mock |
+| F10 | Power-proxy compliance | CHINA | VISION | ○ | ○ | | | Planned |
+| F11 | Active sensing router (blind spots) | ORIGINAL | STRETCH | ● | ● | ● | | Planned |
+| F12 | Exposure engine | ORIGINAL | BUILD | ● | ● | ● | | Implemented |
+| F13 | Dispatch optimiser + What-If | CHINA | BUILD | ● | ● | ● | | Partial (greedy; What-If is a constant ratio) |
+| F14 | Multi-agent command room (Strands) | ORIGINAL | BUILD | ● | ● | ● | | Partial (no Strands) |
+| F15 | Anti-gaming guard | CHINA | STRETCH | ● | ● | ● | | Planned |
+| F16 | Targeted, pollutant-specific alerts | JAPAN | BUILD | ● (Communicator) | ● (notifier) | ● | ● | Partial (drafts only, nothing sent) |
+| F17 | HawaTag intervention tracking | ORIGINAL | BUILD | | ● | ● | ● (auto-marked stops) | Stub/Mock |
+| F18 | Causal verification + effectiveness library | ORIGINAL | BUILD | ● | ● | ● | | Partial (synthetic validation only) |
+| F19 | School safe-window scheduler | ORIGINAL | STRETCH | ● | ● | ● | ● | Partial (fixed diurnal curve) |
+| F20 | Citizen Eyes (photo → verify → inspect) | ORIGINAL | STRETCH | ● (vision) | ● | ● | ● | Stub/Mock (no vision model, no backend) |
+| F21 | Open Air Data portal (AEROS-style) | JAPAN | STRETCH | | ● | ● | | Partial (`/open/v1/air`, no portal page) |
+| F22 | Weekly Evidence report (PDF) | ORIGINAL | VISION→STRETCH | ● (narrative) | ● | ● | | Partial (Markdown report on `/impact`, no weekly PDF) |
 
 ● = owns real work · ○ = consumes / displays / vision only.
 
@@ -150,6 +178,8 @@ Tiers: **BUILD** = must work in the demo · **STRETCH** = build if time allows �
 ---
 
 ## 5. System architecture
+
+> Status: §5 is the **target** architecture. Only the API process, the AI-ML engine (`intel-service` equivalent, unauthenticated, served on :8100) and the web and mobile clients exist; see §0.
 
 ### 5.1 Layered view (adapted from §9)
 
@@ -303,30 +333,29 @@ flowchart TB
 
 ## 7. Repository layout
 
-The repository already has one top-level folder per discipline. Keep these names.
+One top-level folder per discipline (as committed):
 
 ```
-Mission_CleanTheAir/
-├── AI-ML/                 # hawa_ml (twin, fingerprint, forecast, exposure, optimiser, verifier…)
-│                          # hawa_agents (Strands), intel-service, intel-worker, trainer, notebooks
-├── backend/               # hawa_backend (FastAPI api + workers), hawa_contracts (shared Pydantic
-│                          # contracts), Alembic migrations, device simulator, CDK infra
-├── frontend/              # Next.js officer console + public site + open data portal
-├── app_frontend/          # Flutter field & community app
-├── docs/                  # ← you are here
-│   ├── README.md
-│   ├── SYSTEM_OVERVIEW.md
-│   ├── CONTRACTS.md
-│   ├── aiml/  backend/  frontend/  app/
-├── docker-compose.yml     # whole local stack (created by backend team)
-├── .env.example
-├── Makefile               # make up / down / seed / demo-reset / lint / test
-└── HawaCommand_Proposal.pdf
+HawaCommand/
+├── AI-ML/                 # hawa_ml: twin, attribution, forecasting, exposure, optimisation, causal,
+│                          # agents (plain classes), simulation, insights, pipelines, FastAPI app (:8100)
+├── backend/               # hawa_backend (FastAPI api, core, db models, workers, aws), contracts/ (hawa_contracts),
+│                          # docker-compose.yml (PostGIS, Redis, Kafka), docs/PHASE_*.md
+├── frontend/              # Next.js 15 officer console, landing page, driver view, design/ exports
+├── app_frontend/          # Flutter app, openapi/ snapshot, packages/hawa_api generated client
+├── infrastructure/
+│   └── cloudformation/    # hawa-integration.yaml
+├── docs/                  # ← you are here (README, SYSTEM_OVERVIEW, CONTRACTS, AWS docs, aiml/ backend/ frontend/ app/)
+├── HawaCommand_Proposal.pdf
+├── LICENSE
+└── README.md
 ```
 
-**Shared code rule.** `backend/contracts/` is an installable Python package `hawa_contracts` (enums, MQTT packet models, Kafka event envelopes and payloads). `AI-ML/` depends on it as a uv path dependency. The web and mobile apps never read Kafka; they get types generated from the backend's OpenAPI document (`openapi-typescript` for web, `openapi-generator dart-dio` for Flutter).
+There is no root `docker-compose.yml`, `.env.example` or `Makefile` (Planned); each component has its own.
 
-**Schema rule.** Alembic in `backend/` is the **only** thing that changes the database schema. AI-ML writes only to the tables it owns (listed in [CONTRACTS.md §8](CONTRACTS.md#8-database-table-ownership)) and has a contract test that reflects the live schema.
+**Shared code rule.** `backend/contracts/` is an installable Python package `hawa_contracts` (enums, MQTT packet models, Kafka event envelopes and payloads). Today `AI-ML/` does not use it; instead the backend imports `hawa_ml` directly (in-process fallback and citizen routes), so the backend venv needs `pip install -e ../AI-ML`. The web console uses hand-written zod schemas (`frontend/src/contracts/`, alias `@hawa/contracts`) checked by `frontend/scripts/verify_backend_contracts.ts`. The Flutter app's Dart client (`app_frontend/packages/hawa_api`) is generated with `openapi-generator` from a committed spec, `app_frontend/openapi/openapi.json`, which describes the planned field API rather than what the backend serves today.
+
+**Schema rule (Planned: no Alembic migrations exist yet).** Alembic in `backend/` is the **only** thing that changes the database schema. AI-ML writes only to the tables it owns (listed in [CONTRACTS.md §8](CONTRACTS.md#8-database-table-ownership)) and has a contract test that reflects the live schema.
 
 ---
 
@@ -352,6 +381,8 @@ Everything in §9.4 (drive-by calibration, GP twin, fingerprint table, exposure 
 
 ## 9. Environments and deployment
 
+> Status: today only a manual `local` setup exists: three processes started by hand (AI-ML :8100, backend :8000, web :3000), see the [root README](../README.md#local-development-and-setup). The table below is the target.
+
 | Environment | How it runs | Data |
 |---|---|---|
 | `local` | `docker compose up` at the repo root: Postgres+PostGIS, Redis, Kafka (KRaft), Schema Registry, Kafka UI, Mosquitto, MinIO, MLflow, Jaeger, Prometheus, Grafana + all app services | Seeded Delhi grid, POIs, assets; simulator fleet; recorded CPCB history |
@@ -363,6 +394,8 @@ Details: [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md).
 ---
 
 ## 10. Golden path (build this first)
+
+> Status: Planned as written. Today's demo path is: the web console's `/map` reads `/v1/hotspots` (AI-ML exposure ranking over a twin kriged from live WAQI stations); `/plans` drafts a plan through `POST /v1/plans/draft` (Planner + Auditor); approving it updates the in-memory plan (and starts a Step Functions dispatch if AWS is enabled); `/impact` shows the synthetic-control result for the seeded injected intervention.
 
 1. `backend/simulator` (virtual fleet) and the real HawaPod-M publish **the same packet** (see [CONTRACTS.md §4](CONTRACTS.md#4-edge--cloud-mqtt-contracts)) to MQTT.
 2. `mqtt-bridge` → Kafka `hawa.telemetry.raw.v1` → `ingest-worker` validates, dedupes, calibrates → `reading` in Postgres → `hawa.telemetry.clean.v1`.

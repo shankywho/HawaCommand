@@ -1,5 +1,8 @@
 # Phase 5: Ingest Pipeline, Fleet Simulator & Dispatch Saga
 
+> **Status (2026-10-10).** Partial: ingest dedupe and calibration, the simulator and the dispatch saga are classes with unit tests; none is connected to MQTT, Kafka or the database. Overview: [backend/README.md](../README.md#implementation-status).
+
+
 ## Overview
 Phase 5 implements the real-time event workers that close the operational loop: validating and calibrating raw sensor packets, simulating synthetic vehicle fleets and spray tags, tracking active dispatch sagas, and automatically completing driver tasks via HawaTag pump telemetry.
 

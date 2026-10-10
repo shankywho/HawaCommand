@@ -1,5 +1,15 @@
 # HawaCommand — Shared Contracts
 
+> **Status (reconciled 2026-10-10).** The Python source of truth is `backend/contracts/hawa_contracts/` (`ids.py`, `enums.py`, `units.py`, `packets.py`, `envelope.py`, `topics.py`, `redis_keys.py`, `events/*.py`), covered by `backend/contracts/tests/test_contracts.py`. Much of what it declares is not used by running code:
+> - No Kafka producers or consumers exist (§5).
+> - No database is used by the API (§8).
+> - Redis keys are unused (§9).
+> - The internal AI-ML surface in §7 (`/internal/v1/simulate`, `/optimize`, `/exposure`, `/models`, `/alerts/draft`, bearer auth) does not exist. The real AI-ML routes are listed in [AI-ML/CONTRACTS.md](../AI-ML/CONTRACTS.md).
+> - The AI-ML cell ids are `G-RRR-CCC`, not the `g500-...` form below.
+>
+> The REST surface actually served is in [backend/API.md](backend/API.md). The web console validates it with zod (`frontend/src/contracts/`, `frontend/scripts/verify_backend_contracts.ts`). The Flutter client is generated from `app_frontend/openapi/openapi.json`, which describes the planned field API; most of its paths are not served yet.
+
+
 **Every team builds against this file.** It defines the names, IDs, enums, units, packets, events, tables and endpoints that cross a folder boundary. If you need to change something here, open a PR that touches this file **and** the code in `backend/contracts/` (`hawa_contracts`) in the same change, and tag all four leads.
 
 Source: [`HawaCommand_Proposal.pdf`](../HawaCommand_Proposal.pdf) §9 (data model, APIs, algorithms) and §10 (packet format). Context: [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md).

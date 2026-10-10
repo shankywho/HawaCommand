@@ -1,5 +1,8 @@
 # Phase 2: Core Runtime & Security
 
+> **Status (2026-10-10).** Partial: settings, logging, errors and security helpers exist and are unit-tested, but routes do not raise `HawaException`, no route enforces JWT, and `get_logger` is barely used. Overview: [backend/README.md](../README.md#implementation-status).
+
+
 ## Overview
 Phase 2 implements the core infrastructure services required across the backend: strongly-typed Pydantic configuration, structured JSON logging with privacy PII masking, contextual asynchronous tracing (`request_id`, `correlation_id`), RFC 9457 Problem Details error handling, cryptographic hashing, and JWT security tokens.
 

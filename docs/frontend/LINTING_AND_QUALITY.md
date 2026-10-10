@@ -1,5 +1,12 @@
 # Linting, Quality and Testing
 
+> **Status (as built).**
+> - **Configured:** the scripts in `frontend/package.json` are `dev`, `build`, `start`, `lint` (`next lint`) and `typecheck` (`tsc --noEmit`). `tsconfig.json` is strict. `scripts/verify_backend_contracts.ts` checks 14 backend endpoints against the zod schemas.
+> - **Not committed:** there is no ESLint config, so `pnpm lint` opens the interactive setup and exits 1. There is also no Prettier, Husky, lint-staged, commitlint, Vitest, Playwright or `.github/` CI.
+>
+> Everything below that uses those tools is the target setup (Planned).
+
+
 Purpose: the quality gates for `frontend/`. **Linting is a hard requirement.** This file gives the complete config sketches (ESLint 9 flat config, Prettier, tsconfig, git hooks, CI), the testing strategy, the review checklist and the Definition of Done.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md)
@@ -759,7 +766,7 @@ Hygiene
 A change is done when **all** of these hold:
 
 1. `pnpm format:check`, `pnpm lint` (zero warnings), `pnpm typecheck`, `pnpm i18n:check` and `pnpm test` (coverage thresholds) pass locally and in CI.
-2. `pnpm build` succeeds, and the route's first-load JS stays within the budget in [ARCHITECTURE §12](ARCHITECTURE.md#12-performance-budget).
+2. `pnpm build` succeeds, and the route's first-load JS stays within the budget in [ARCHITECTURE §12](ARCHITECTURE.md).
 3. The acceptance criteria of the relevant [PAGES](PAGES.md) section are met and covered by at least one test (unit or e2e). BUILD pages are covered by e2e.
 4. Loading, empty, error, stale, simulated and offline states exist and were exercised against the mock API.
 5. Uncertainty, the "indicative" label and the Simulated badge are present wherever the rules require them.

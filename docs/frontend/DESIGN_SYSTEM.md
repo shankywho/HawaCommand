@@ -1,5 +1,8 @@
 # HawaCommand Design System
 
+> **Status.** The tokens actually used are defined in `frontend/tailwind.config.ts` and `frontend/src/app/globals.css` (Tailwind 3.4, not v4; no shadcn/ui). The AQI scale used by the UI is in `frontend/src/contracts/aqi.ts`. Where a value below differs from those files, the files win. The Flutter app keeps its own copy of the palette in `app_frontend/lib/app/theme/`.
+
+
 Purpose: the visual language, and the **single source of truth for colours** (the Flutter app mirrors this file). It also covers typography, layout tokens, icons, map styling, data-viz rules, motion, components, content style and accessibility.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../app/README.md](../app/README.md)
@@ -297,7 +300,7 @@ No motion loops longer than 5 s, except the live trails, which the user can paus
 | `RealDeviceChip` | — | Brand outline + `BadgeCheck` + "Real device" |
 | `GrapStagePill` | `stage: GrapStage; probability?: number; day?: string; size?: "sm" \| "md"` | §2.4 encodings. "Stage I · 72 %" |
 | `UncertaintyValue` | `value: number; interval: { low: number; high: number; level: number } \| { unavailable: true }; unit: Unit; format?: "full" \| "compact"; signed?: boolean` | `interval` is **required**. Full: "164 µg/m³ (80 %: 137–191)". Compact: "164 ±27" with the full text in a tooltip and `aria-label`. Negative ranges use "to" ("−26.0 to −9.9") |
-| `PlanTaskCard` | see [PAGES §3.7.3](PAGES.md#373-components) | Reason text is never truncated below 4 lines |
+| `PlanTaskCard` | see [PAGES §3.7.3](PAGES.md) | Reason text is never truncated below 4 lines |
 | `AuditorComment` | `objection; taskLabel?; canResolve; onApply(); onOverride(note)` | Severity icon + word, source label, resolution line, actions |
 | `ApproveBar` | `plan; simulation; pendingOps; role` | Sticky, e2 elevation, 72 px, disabled reasons wired via `aria-describedby` |
 | `StaleDataBanner` | `asOf: string; thresholds: {amberMin, redMin}; subject: "twin" \| "forecast"` | Amber/red with `Clock` icon. Text includes the age |
