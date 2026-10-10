@@ -13,7 +13,6 @@ import asyncio
 from datetime import datetime, timezone, timedelta
 import logging
 import math
-import os
 import json
 import urllib.request
 import time
@@ -197,7 +196,7 @@ class IntelClient:
         if self._cached_live_stations and (now - self._cached_live_time < 900):
             return self._cached_live_stations
 
-        token = os.environ.get("WAQI_TOKEN", "80940e1ef33d259fa22cabd365d908536e4ed6da")
+        token = get_settings().waqi_token
         obs: List[Dict[str, Any]] = []
 
         # 1. Query WAQI Real-time Delhi Bounds
@@ -243,7 +242,7 @@ class IntelClient:
 
         # 2. Query OpenAQ fallback if WAQI yielded few stations
         if len(obs) < 3:
-            openaq_key = os.environ.get("OPENAQ_API_KEY", "c6b3833cf46238258d3fced89572ee0c5e696c34154067b9839f58381674adc0")
+            openaq_key = get_settings().openaq_api_key
             if openaq_key:
                 try:
                     url = "https://api.openaq.org/v3/locations?bbox=76.84,28.40,77.35,28.88&limit=15"

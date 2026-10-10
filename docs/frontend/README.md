@@ -103,7 +103,6 @@ All variables are read at build time (`NEXT_PUBLIC_*` are inlined into the clien
 | `NEXT_PUBLIC_API_URL` | `src/lib/api.ts:10`, `src/lib/time.ts:7`, landing `Footer.tsx` | empty | Empty: mock mode (fixtures, demo clock fixed at Tue 10 Nov 2026 14:00 IST, the footer's open-data link is disabled). Set (for example `http://localhost:8000`): real backend, real clock |
 | `NEXT_PUBLIC_COGNITO_USER_POOL_ID` | `src/lib/auth.ts:5` | empty | With the client id, turns on Cognito sign-in and the console guard |
 | `NEXT_PUBLIC_COGNITO_CLIENT_ID` | `src/lib/auth.ts:6` | empty | See above. If either is empty the console opens without sign-in |
-| `NEXT_PUBLIC_MAP_STYLE` | nowhere | `https://tiles.openfreemap.org/styles/positron` in `.env.example` | **Not read by any code.** The basemap URL is hard-coded in `src/lib/visuals/hawa-gl.js:107` |
 | `API_URL` | `scripts/verify_backend_contracts.ts:15` | `http://127.0.0.1:8099` | Backend origin for the contract verifier only |
 
 ## 6. Verification record
@@ -136,7 +135,7 @@ Run on 2026-10-10 in a scratch copy of `frontend/` (no `node_modules` in the rep
 | # | Issue | Where |
 |---|---|---|
 | 1 | `pnpm lint` cannot run: the script is `next lint`, but no ESLint package or config exists; Next prompts interactively and exits 1. `next lint` is also deprecated in Next 15.5 | `frontend/package.json:10` |
-| 2 | `NEXT_PUBLIC_MAP_STYLE` is documented in `.env.example` but never read; the basemap style is hard-coded | `frontend/.env.example:4`, `frontend/src/lib/visuals/hawa-gl.js:107` |
+| 2 | The basemap style is hard-coded (OpenFreeMap positron/dark); there is no env variable for it. `NEXT_PUBLIC_MAP_STYLE` was removed from `.env.example` because nothing read it | `frontend/src/lib/visuals/hawa-gl.js:107` |
 | 3 | The map makes third-party requests at runtime: MapLibre CSS from unpkg (inside the element's shadow DOM), basemap tiles from tiles.openfreemap.org, and road routes from the public OSRM demo server. The map degrades or breaks offline or behind a strict proxy | `frontend/src/lib/visuals/hawa-gl.js:5`, `:59`, `:99`, `:107` |
 | 4 | What-If delta sign mismatch: the backend returns `deltaPct` as a positive gain (42.0) while the mock returns −31. The page prints `fmtPct(deltaPct)` followed by "less exposure", so against the backend it reads "+42% less exposure" | `frontend/src/app/(console)/what-if/page.tsx:57-58`, `frontend/src/mocks/fixtures.ts:147`, `backend/src/hawa_backend/core/intel_client.py:936`, `:977`, `:1006` |
 | 5 | "People reached" on `/alerts` parses `"<n> delivered"` from `delivered`; the mock strings ("3 of 3 read", "4,106") never match, so mock mode always shows 0. Backend strings ("4,120 delivered") work | `frontend/src/components/alerts/AlertStats.tsx:6`, `frontend/src/mocks/fixtures.ts:232-238` |

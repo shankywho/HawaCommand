@@ -212,7 +212,7 @@ The HTTP client is a fresh `httpx.AsyncClient(timeout=HAWA_AIML_TIMEOUT_SECONDS)
 
 Both fetches use blocking `urllib.request` and the GP fit runs synchronously, all inside async handlers (README Known issue 19). On 2026-10-10 WAQI returned 23 Delhi stations from this environment; the first `/v1/hotspots` call took about 3 s and later calls about 0.1 s.
 
-`WAQI_TOKEN` and `OPENAQ_API_KEY` are read from the process environment with `os.environ.get` (no `HAWA_` prefix, not in `Settings`, not in `.env.example`).
+`WAQI_TOKEN` and `OPENAQ_API_KEY` are `Settings.waqi_token` and `Settings.openaq_api_key` (`core/config.py`), read from the environment or `backend/.env` (absolute path) without the `HAWA_` prefix; the prefixed names are aliases. Both default to `None`: an unset or empty key skips that source, and with neither the backend falls back to its 5 baseline stations.
 
 ### 3.5 Shaping hotspots
 
@@ -311,7 +311,7 @@ boto3 clients use adaptive retries (3 attempts), 3 s connect and 10 s read timeo
 | Authentication / authorisation | **Planned**. No route checks a token or role. Helpers in `core/security.py` (JWT HS256, PBKDF2 passwords, dev OTP, webhook HMAC) are unit-tested only. |
 | CORS | Wildcard origins with credentials allowed (`api/app.py:36-42`); any origin is reflected. |
 | Input validation | FastAPI/Pydantic on declared parameters and the six request models; no `extra="forbid"`; free-form strings (ward, mode, cell id) are not pattern-checked. |
-| Secrets | `.env` is read by `pydantic-settings`; `.env.example` contains a development JWT secret; default WAQI and OpenAQ keys are hard-coded in `core/intel_client.py:200, 246`. |
+| Secrets | `backend/.env` is read by `pydantic-settings` by absolute path; `.env.example` contains a development JWT secret (`core/config.py` default too); WAQI and OpenAQ keys have no default and come only from the environment or `backend/.env`. |
 | Rate limiting, body limits, security headers | none |
 | PII | No PII is stored or logged by the running app; `mask_phone` / `mask_token` exist in `core/logging.py` but nothing calls the JSON formatter. |
 

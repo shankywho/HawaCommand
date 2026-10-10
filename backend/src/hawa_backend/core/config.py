@@ -1,15 +1,21 @@
 """Application configuration management with Pydantic Settings."""
 from functools import lru_cache
+from pathlib import Path
 from typing import Optional
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# backend/ (this file is backend/src/hawa_backend/core/config.py). backend/.env is read whatever the working
+# directory is; real environment variables take precedence over it.
+BACKEND_DIR = Path(__file__).resolve().parents[3]
+ENV_FILE = BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
-    """Canonical application settings loaded from environment and .env."""
+    """Canonical application settings loaded from the environment and backend/.env."""
     model_config = SettingsConfigDict(
         env_prefix="HAWA_",
-        env_file=".env",
+        env_file=ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -41,6 +47,19 @@ class Settings(BaseSettings):
     # AI-ML Service
     aiml_service_url: str = Field("http://localhost:8100", description="Internal AI-ML FastAPI URL")
     aiml_timeout_seconds: float = Field(10.0, description="Timeout for synchronous AI-ML calls")
+
+    # Live station feeds. Read without the HAWA_ prefix (WAQI_TOKEN, OPENAQ_API_KEY) from the environment or
+    # backend/.env; the HAWA_-prefixed names also work. Unset or empty disables that source.
+    waqi_token: Optional[str] = Field(
+        None,
+        validation_alias=AliasChoices("WAQI_TOKEN", "HAWA_WAQI_TOKEN"),
+        description="WAQI API token for live Delhi stations",
+    )
+    openaq_api_key: Optional[str] = Field(
+        None,
+        validation_alias=AliasChoices("OPENAQ_API_KEY", "HAWA_OPENAQ_API_KEY"),
+        description="OpenAQ v3 API key, used when WAQI returns fewer than 3 stations",
+    )
 
 
 @lru_cache()

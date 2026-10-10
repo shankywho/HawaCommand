@@ -20,7 +20,6 @@ Status per page, data sources and known issues: [docs/frontend/README.md](../doc
 | Variable | Default | Effect |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | empty | Empty: every `/v1/*` call is answered in the browser by `src/mocks/`. Set to `http://localhost:8000` to use the backend |
-| `NEXT_PUBLIC_MAP_STYLE` | `https://tiles.openfreemap.org/styles/positron` | MapLibre style URL |
 | `NEXT_PUBLIC_COGNITO_USER_POOL_ID`, `NEXT_PUBLIC_COGNITO_CLIENT_ID` | empty | Both set: Cognito sign-in on `/login`. Otherwise demo mode with no sign-in |
 
 | Route | Screen |

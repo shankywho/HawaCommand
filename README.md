@@ -133,7 +133,7 @@ Checks: `curl http://127.0.0.1:8100/health` returns `{"status":"healthy",...}`; 
 - **Database.** `HAWA_DATABASE_URL` defaults to `postgresql+asyncpg://hawa:hawa@localhost:5432/hawa` (set it in `backend/.env` or on the command line). For a quick demo without Postgres: `make db-update db-seed HAWA_DATABASE_URL=sqlite+aiosqlite:///./hawa.db` (relative to `backend/`; `aiosqlite` comes with `make install`). The API does not read the database yet (plans are in memory, other routes use AI-ML or fixtures); the schema and seed data are there for the persistence work.
 - **On a server.** `make aiml-api` listens on `0.0.0.0:8100`. Do not open port 8100 in the security group: only the backend calls the engine, and it has no auth and some GET routes write files. To bind it to localhost instead: `make aiml-api AIML_HOST=127.0.0.1`. Build the web console with the public backend URL: `make frontend API_URL=http://<server-ip>:8000`. `NEXT_PUBLIC_API_URL` is baked in at build time.
 - **AI-ML keys** (all optional) live in `AI-ML/.env` (`cp AI-ML/.env.example AI-ML/.env`): `GROQ_API_KEY` or `LLM_PROVIDER=bedrock` for agent text, `OPENAQ_API_KEY`, `NASA_FIRMS_MAP_KEY`, `OFFLINE_MODE=true` to avoid all network calls. The `llm` extra (groq, openai, boto3) is installed through the backend env.
-- **Backend settings** live in `backend/.env` (`cp backend/.env.example backend/.env`), read from `backend/` (the Make targets `cd` there). `WAQI_TOKEN` and `OPENAQ_API_KEY` for live stations are read with `os.environ`, not from `.env`: export them in the shell before `make backend`.
+- **Backend settings** live in `backend/.env` (`cp backend/.env.example backend/.env`), resolved from the package location, so it is read whatever directory you start from. Set `WAQI_TOKEN` and `OPENAQ_API_KEY` there for live stations; without them the backend uses 5 built-in baseline stations. The optional AWS layer is configured with `HAWA_AWS_*` (listed in `backend/.env.example`). AI-ML keys live in `AI-ML/.env`, which `hawa_ml` resolves the same way.
 - The AI-ML package also has its own `make` targets (`cd AI-ML && make help`); its `make api` uses port 8000, which collides with the backend, so use `make aiml-api` from the root instead.
 
 ### Without Make
@@ -228,14 +228,13 @@ The AI-ML suite is not hermetic: it rewrites four tracked JSON files under `AI-M
 
 ## Known issues (cross-cutting)
 
-Per-component lists with file and line references are in each README.
+Per-component lists with file and line references are in each README. The WAQI and OpenAQ tokens that were hard-coded in commit `fec1f58` (`backend/src/hawa_backend/core/intel_client.py`) have been removed from the code; they remain in git history, so revoke or rotate them.
 
-1. `backend/src/hawa_backend/core/intel_client.py:200` and `:246` contain WAQI and OpenAQ API tokens as hard-coded defaults. Rotate them and remove the defaults.
-2. `AI-ML/Makefile` serves the engine on port 8000, the backend's port; the backend expects 8100.
-3. The backend's What-If HTTP branch looks for a `delta_gain_pct` key that AI-ML never returns, so it always falls back (`intel_client.py:933`).
-4. No route enforces authentication; CORS allows every origin on both Python services.
-5. The Flutter app's field endpoints (`/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`) are not served by the backend.
-6. The committed PDF report and figures hard-code numbers that the code does not produce (for example an OR-Tools CVRP engine and 99.91 % attribution accuracy measured in-sample against rule-generated labels).
+1. `AI-ML/Makefile` serves the engine on port 8000, the backend's port; the backend expects 8100.
+2. The backend's What-If HTTP branch looks for a `delta_gain_pct` key that AI-ML never returns, so it always falls back (`intel_client.py:933`).
+3. No route enforces authentication; CORS allows every origin on both Python services.
+4. The Flutter app's field endpoints (`/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign`, `/v1/ws`) are not served by the backend.
+5. The committed PDF report and figures hard-code numbers that the code does not produce (for example an OR-Tools CVRP engine and 99.91 % attribution accuracy measured in-sample against rule-generated labels).
 
 ---
 

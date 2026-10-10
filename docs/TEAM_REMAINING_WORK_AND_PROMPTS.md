@@ -13,7 +13,7 @@ How to run the stack locally: [root README](../README.md#local-development-and-s
 
 ## 0. Cross-cutting (whoever gets there first)
 
-- [ ] Remove the hard-coded WAQI and OpenAQ tokens from `backend/src/hawa_backend/core/intel_client.py` (lines 200, 246), rotate both tokens, and read them through `core/config.py` settings.
+- [x] Remove the hard-coded WAQI and OpenAQ tokens from the code (now `WAQI_TOKEN` / `OPENAQ_API_KEY` in `backend/.env`). Still to do: revoke the old tokens, which remain in git history (commit `fec1f58`).
 - [x] Declare `hawa-ml` as a backend dependency (`backend/pyproject.toml`, path dependency on `../AI-ML`). Done, together with the root `Makefile` and Alembic.
 - [ ] Change `AI-ML/Makefile` `api` target to port 8100 and `test` to `python -m pytest`.
 - [ ] Make the AI-ML tests hermetic: stop them rewriting `AI-ML/data/fixtures/demo_scenario.json` and the three files in `AI-ML/data/internal/`.

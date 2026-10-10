@@ -51,7 +51,7 @@ uv sync --extra dev          # creates backend/.venv from uv.lock (backend + con
 cp .env.example .env
 ```
 
-Settings use the `HAWA_` prefix and read `.env` from the current directory (`core/config.py`), so run commands from `backend/` (the root Make targets do).
+Settings use the `HAWA_` prefix and read `backend/.env` by absolute path (`core/config.py` `ENV_FILE`, also used by `aws/settings.py`), so the working directory does not matter; real environment variables override the file.
 
 | Variable | Default | Used today |
 |---|---|---|
@@ -62,7 +62,7 @@ Settings use the `HAWA_` prefix and read `.env` from the current directory (`cor
 | `HAWA_REDIS_URL`, `HAWA_KAFKA_BOOTSTRAP_SERVERS`, `HAWA_KAFKA_SECURITY` | Redis/Kafka on localhost | No (Planned) |
 | `HAWA_JWT_SECRET`, `HAWA_JWT_ALGORITHM`, `HAWA_JWT_EXPIRY_MINUTES`, `HAWA_DEV_OTP` | dev values | Helpers only |
 | `HAWA_AWS_*` (`aws/settings.py`) | AWS off | Optional AWS layer, see [docs/AWS_INTEGRATION.md](../docs/AWS_INTEGRATION.md) |
-| `WAQI_TOKEN`, `OPENAQ_API_KEY` | built-in tokens | Read with `os.environ` (not from `.env`); export them in the shell |
+| `WAQI_TOKEN`, `OPENAQ_API_KEY` (aliases `HAWA_WAQI_TOKEN`, `HAWA_OPENAQ_API_KEY`) | unset | Yes: live stations (`Settings.waqi_token` / `openaq_api_key`); unset or empty skips that source, and with neither the backend uses 5 baseline stations |
 
 ### 2a. Database: migrate and seed
 
@@ -148,13 +148,12 @@ Subcommands: `version`, `config`, `check`.
 
 ## Known issues
 
-1. Hard-coded WAQI and OpenAQ tokens as defaults: `src/hawa_backend/core/intel_client.py:200`, `:246`.
-2. The What-If HTTP branch requires a `delta_gain_pct` key that AI-ML never returns, so it always falls back to the in-process path (`intel_client.py:933`, `:977`).
-3. `/readyz` reports database and redis `ok` without checking them (`api/routes/health.py`).
-4. No route enforces a JWT; CORS is `*` with credentials.
-5. `HawaException` handlers exist but no route raises them, so clients get FastAPI's default error bodies.
-6. `tests/integration/test_end_to_end.py::test_full_mission_air_pipeline` fails (see above).
-7. Plan state is lost on restart (in-process dict).
+1. The What-If HTTP branch requires a `delta_gain_pct` key that AI-ML never returns, so it always falls back to the in-process path (`intel_client.py:933`, `:977`).
+2. `/readyz` reports database and redis `ok` without checking them (`api/routes/health.py`).
+3. No route enforces a JWT; CORS is `*` with credentials.
+4. `HawaException` handlers exist but no route raises them, so clients get FastAPI's default error bodies.
+5. `tests/integration/test_end_to_end.py::test_full_mission_air_pipeline` fails (see above).
+6. Plan state is lost on restart (in-process dict).
 
 ---
 

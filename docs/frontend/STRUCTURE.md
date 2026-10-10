@@ -20,7 +20,7 @@ Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITEC
 
 ```
 frontend/
-├── .env.example                          Env template: NEXT_PUBLIC_API_URL (empty = in-browser mocks), NEXT_PUBLIC_MAP_STYLE (not read by any code), Cognito pool and client ids
+├── .env.example                          Env template: NEXT_PUBLIC_API_URL (empty = in-browser mocks), Cognito pool and client ids
 ├── README.md                             Component quick start: commands, routes, backend wiring, layout
 ├── amplify.yml                           AWS Amplify Hosting build spec: appRoot frontend, corepack enable, pnpm install --frozen-lockfile, pnpm build, artifacts from .next
 ├── next-env.d.ts                         Next.js generated type references (do not edit)

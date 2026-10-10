@@ -155,7 +155,7 @@ Defects found while reconciling these documents with the code (verified 2026-10-
 18. **Plan formatting heuristics.** `_format_drafted_plan` labels every task whose action lacks "dust"/"sprink" as cause `Traffic`, fixes `causeConf` at 0.82, and flags the second task `auditor` regardless of content (`core/intel_client.py:818-819, 838, 842-843`).
 19. **Blocking I/O in async handlers.** WAQI and OpenAQ are fetched with blocking `urllib.request.urlopen` (5 s timeout each, `core/intel_client.py:208, 251`) and the GP twin is fitted synchronously (`:281-293`) inside async route handlers; the first `/v1/hotspots` after a cache expiry took about 3 s and blocks the event loop meanwhile.
 20. **Shared mutable state in citizen routes.** `safe_route_optimizer.default_bg_pm25` and `safe_window_calculator.baseline_pm25` are module-level `hawa_ml` singletons overwritten on every request (`api/routes/citizen.py:42, 65`). `/v1/citizen/live-operations` returns a fixed `as_of` of `2026-10-08T03:00:00Z` (`:118`).
-21. **Secrets in source.** Default WAQI and OpenAQ API keys are hard-coded (`core/intel_client.py:200, 246`).
+21. **Secrets in git history.** WAQI and OpenAQ API keys were hard-coded in `core/intel_client.py` in commit `fec1f58`. They are no longer in the code (`core/config.py` defaults are `None`; set `WAQI_TOKEN` / `OPENAQ_API_KEY` in `backend/.env`), but they remain in history and should be revoked.
 
 ### 7.4 Not wired
 

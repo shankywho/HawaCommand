@@ -4,9 +4,11 @@ from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from ..core.config import ENV_FILE
+
 
 class AwsSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="HAWA_AWS_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="HAWA_AWS_", env_file=ENV_FILE, extra="ignore")
 
     enabled: bool = False
     region: str = "ap-south-1"
