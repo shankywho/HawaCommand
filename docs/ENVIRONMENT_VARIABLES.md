@@ -56,18 +56,20 @@ cp frontend/.env.example frontend/.env.local
 
 Everything AWS is off unless `HAWA_AWS_ENABLED=true`. See [AWS_INTEGRATION.md](AWS_INTEGRATION.md); the matching resources are in `infrastructure/cloudformation/hawa-integration.yaml`.
 
-| Variable | Default | What it does |
-|---|---|---|
-| `HAWA_AWS_ENABLED` | `false` | Master switch |
-| `HAWA_AWS_REGION` | `ap-south-1` | AWS region |
-| `HAWA_AWS_ENDPOINT_URL` | unset | Custom endpoint, e.g. LocalStack `http://localhost:4566` |
-| `HAWA_AWS_FORECAST_STATE_MACHINE_ARN` | unset | Step Functions forecast (`aws/forecast.py`) |
-| `HAWA_AWS_FORECAST_ENDPOINT` | unset | SageMaker endpoint name (`aws/forecast.py`) |
-| `HAWA_AWS_DISPATCH_STATE_MACHINE_ARN` | unset | Step Functions dispatch started on plan approval (`aws/dispatch.py`) |
-| `HAWA_AWS_CACHE_TABLE` | `hawa-cache` | DynamoDB cache table (`aws/cache.py`) |
-| `HAWA_AWS_CACHE_TTL_SECONDS` | `3600` | Cache TTL |
-| `HAWA_AWS_ALERTS_TOPIC_ARN` | unset | SNS topic (`aws/events.py`) |
-| `HAWA_AWS_SENSOR_STREAM` | unset | Kinesis stream name (`aws/events.py`) |
+| Variable | Default | Used by running code? | What it does |
+|---|---|---|---|
+| `HAWA_AWS_ENABLED` | `false` | Yes | Master switch |
+| `HAWA_AWS_REGION` | `ap-south-1` | Yes | AWS region |
+| `HAWA_AWS_ENDPOINT_URL` | unset | Yes | Custom endpoint, e.g. LocalStack `http://localhost:4566` |
+| `HAWA_AWS_FORECAST_STATE_MACHINE_ARN` | unset | Yes: `GET /v1/forecast/{cell_id}` | Step Functions **Express** workflow run with `start_sync_execution`; must return the AI-ML forecast shape (a dict with `horizons`) |
+| `HAWA_AWS_FORECAST_ENDPOINT` | unset | Yes: same route, if no state machine is set | SageMaker endpoint name, same input and output |
+| `HAWA_AWS_CACHE_TABLE` | `hawa-cache` | Yes: forecast results only | DynamoDB table (`pk` string key, `ttl` attribute) caching remote forecast results |
+| `HAWA_AWS_CACHE_TTL_SECONDS` | `3600` | Yes | Forecast cache TTL |
+| `HAWA_AWS_DISPATCH_STATE_MACHINE_ARN` | unset | Yes: `POST /v1/plans/{id}/approve` | Step Functions execution started with the approved plan (id, ward, window, task groups); the execution ARN is returned in the plan |
+| `HAWA_AWS_ALERTS_TOPIC_ARN` | unset | **No** | `aws/events.py` `publish_alert` exists but no route calls it |
+| `HAWA_AWS_SENSOR_STREAM` | unset | **No** | `aws/events.py` `publish_sensor_reading` exists but no route calls it |
+
+Any AWS failure is logged and the backend falls back (forecast to the AI-ML engine; plan approval still succeeds). The repository contains no Step Functions definitions, Lambda functions or SageMaker model: the forecast and dispatch workflows must be built separately. The CloudFormation template creates the DynamoDB table, SNS topic, Kinesis stream and an IAM policy only.
 
 ### AWS credentials (shell or instance role only)
 

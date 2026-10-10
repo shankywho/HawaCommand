@@ -56,7 +56,7 @@ Status words used in every doc: **Implemented**, **Partial** (works, with a name
 | Backend API (`backend/`, port 8000) | Partial | 33 operations on 31 paths; plans live in memory; devices, alerts and driver route are fixtures; no auth enforced |
 | Database schema and seed | Partial | 23 SQLAlchemy tables, Alembic migration `0001`, idempotent seed (`make db-update db-seed`); the API does not read or write the database yet |
 | Kafka, Redis, WebSocket | Planned | Contracts exist; nothing is connected |
-| Optional AWS layer | Implemented (off by default) | DynamoDB cache, Step Functions, SageMaker, SNS, Kinesis behind `HAWA_AWS_ENABLED=true` |
+| Optional AWS layer | Partial (off by default) | Wired: forecast via Step Functions/SageMaker with DynamoDB cache, dispatch Step Functions on plan approval. Written but never called: SNS alerts, Kinesis sensor stream. No state machines or SageMaker model in the repo |
 | Web console (`frontend/`, port 3000) | Partial | Next.js 15 + MapLibre; runs on built-in mocks when `NEXT_PUBLIC_API_URL` is empty |
 | Flutter app (`app_frontend/`) | Partial | Air map, air-near-me and school forecast call the backend; auth, tasks, inspections and reports use the in-app fake backend |
 | Safe route ("Safe Air Navigator") | Stub/Mock | Fixed multipliers and synthetic waypoints; the "43 % lower" figure is a literal string, not a computed result |
@@ -242,7 +242,7 @@ Per-component lists with file and line references are in each README. The WAQI a
 
 ## Cloud Integration
 
-The backend has an optional AWS layer (`backend/src/hawa_backend/aws/`, enabled with `HAWA_AWS_ENABLED=true`): DynamoDB twin cache, Step Functions or SageMaker forecast, Step Functions dispatch on plan approval, SNS and Kinesis publishers. `infrastructure/cloudformation/hawa-integration.yaml` provisions the DynamoDB cache table, the SNS alerts topic, the Kinesis sensor stream and an IAM managed policy for the backend; the Step Functions state machines and the SageMaker endpoint are referenced by ARN/name but not created by the template. The web console has an `amplify.yml` for Amplify Hosting. ECS Fargate, ElastiCache, RDS and CI/CD are Planned.
+The backend has an optional AWS layer (`backend/src/hawa_backend/aws/`, enabled with `HAWA_AWS_ENABLED=true`). Two parts are wired to routes: `GET /v1/forecast/{cell_id}` can run a Step Functions Express workflow or SageMaker endpoint with results cached in DynamoDB, and `POST /v1/plans/{id}/approve` starts a Step Functions dispatch execution. The SNS (`publish_alert`) and Kinesis (`publish_sensor_reading`) publishers exist but nothing calls them. The repo contains no state machine definitions, Lambdas or SageMaker model. `infrastructure/cloudformation/hawa-integration.yaml` provisions the DynamoDB cache table, the SNS alerts topic, the Kinesis sensor stream and an IAM managed policy for the backend. The web console has an `amplify.yml` for Amplify Hosting. ECS Fargate, ElastiCache, RDS and CI/CD are Planned.
 
 - [docs/AWS_INTEGRATION.md](docs/AWS_INTEGRATION.md)
 - [docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md](docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md)
