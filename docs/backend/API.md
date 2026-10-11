@@ -1,5 +1,13 @@
 # HawaCommand Backend — REST API
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · **API** · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · **API** · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 Purpose: the exact REST surface served by `hawa_backend.api.app:app` today (every registered route, its parameters, a real response, status codes and where the data comes from), followed by the planned surface that is designed but not built.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../frontend/README.md](../frontend/README.md) · [../app/README.md](../app/README.md) · [../aiml/ARCHITECTURE.md](../aiml/ARCHITECTURE.md)
@@ -815,3 +823,11 @@ JSON frames over one socket per client; JWT via `Sec-WebSocket-Protocol: bearer,
 ### 11.4 Planned internal client to AI-ML
 
 The target replaces today's unprefixed calls with `/internal/v1/simulate`, `/internal/v1/optimize`, `/internal/v1/exposure`, `/internal/v1/models` and `/internal/v1/healthz` (CONTRACTS §7), a shared pooled `httpx.AsyncClient`, `Authorization: Bearer ${HAWA_INTERNAL_TOKEN}`, propagated `X-Request-Id`/`X-Correlation-Id`/`traceparent`, per-endpoint connect/read timeouts, one retry on connect errors, a breaker that also opens on ≥ 50 % failures over 20 calls, and errors surfaced as `503 upstream.aiml_unavailable` / `504 upstream.timeout` instead of silent fallbacks.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-backend--rest-api) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

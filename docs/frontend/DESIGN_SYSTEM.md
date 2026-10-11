@@ -1,5 +1,13 @@
 # HawaCommand Design System
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · **Design system** · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 > **Status.** The tokens actually used are defined in `frontend/tailwind.config.ts` and `frontend/src/app/globals.css` (Tailwind 3.4, not v4; no shadcn/ui). The AQI scale used by the UI is in `frontend/src/contracts/aqi.ts`. Where a value below differs from those files, the files win. The Flutter app keeps its own copy of the palette in `app_frontend/lib/app/theme/`.
 
 
@@ -368,3 +376,11 @@ Target: **WCAG 2.2 AA** for all pages. axe runs in e2e on every route in both lo
 | Language | `<html lang="en|hi">`. Inline `lang` for mixed content |
 | Screen readers | Status changes (WS, approve result) announced politely. Errors announced assertively. Icons are `aria-hidden` with visible text beside them |
 | Zoom | Works at 200 % browser zoom (console reflows to single column) and 400 % on public pages (1.4.10) |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-design-system) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

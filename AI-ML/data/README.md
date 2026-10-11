@@ -1,5 +1,11 @@
 # HawaCommand AI-ML Data Directory
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../../docs/README.md) · [Overview](../../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../../docs/AWS_ARCHITECTURE.md) · [AWS setup](../../docs/AWS_SETUP_GUIDE.md) · [API](../../docs/backend/API.md) · [Environment](../../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../../docs/CONTRACTS.md)
+
+<!-- nav:end -->
+
 What lives under `AI-ML/data/`, which files are tracked in git, which are generated, which code reads and writes each one, and which external downloads are needed. Paths come from `hawa_ml.settings.Settings` (`DATA_DIR`, `RAW_DATA_DIR`, `INTERIM_DATA_DIR`, `PROCESSED_DATA_DIR`, `EXTERNAL_DATA_DIR`, `CACHE_DIR`, `FIXTURES_DIR`), all relative to `AI-ML/`.
 
 Data provenance, the dataset build and training are described in [docs/aiml/DATA_AND_TRAINING.md](../../docs/aiml/DATA_AND_TRAINING.md); file formats are in [CONTRACTS.md §6](../CONTRACTS.md#6-file-contracts).
@@ -65,3 +71,11 @@ CPCB file names are matched to stations by the first token of the station name (
 | `interim/simulated_telemetry.jsonl` | `FleetSimulator.run_file_mode()` | One telemetry packet per line; `demo_seed.py` writes 40 steps x 14 devices = 560 lines |
 
 Caches are not time-limited. Delete a cache file to force a refetch.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-ai-ml-data-directory) · [Docs hub](../../docs/README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

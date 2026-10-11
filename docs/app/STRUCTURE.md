@@ -1,5 +1,13 @@
 # Source tree: `app_frontend/`
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · **Structure** · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 Purpose: the folder and file layout of the Flutter app as it is in the repository, with a one-line responsibility per file, the feature-folder conventions the code actually follows, and the platform and config files.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../../app_frontend/README.md](../../app_frontend/README.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
@@ -659,3 +667,11 @@ Package `hawa_app`, version `0.1.0+1`, Dart `^3.12.0` (Flutter 3.44 per `.fvmrc`
 | Enums | Dart lowerCamel values with a `wire` string and an `unknown` fallback | `TaskStatus.enRoute` ↔ `en_route` |
 | Imports | absolute `package:hawa_app/...`; no relative imports across features | |
 | Tests | under `test/` mirroring the source path where they exist, `_test.dart` suffix | `test/features/driver_route/route_diff_test.dart` |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#source-tree-app_frontend) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

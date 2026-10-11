@@ -1,5 +1,17 @@
 # HawaCommand AI-ML Engine
 
+<!-- nav:start -->
+
+<p align="center">
+<img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python"> <img src="https://img.shields.io/badge/scikit----learn-GP%20twin-F7931E?logo=scikitlearn&logoColor=white" alt="scikit-learn"> <img src="https://img.shields.io/badge/LightGBM-21%20models-02569B" alt="LightGBM"> <img src="https://img.shields.io/badge/FastAPI-13%20routes-009688?logo=fastapi&logoColor=white" alt="FastAPI"> <img src="https://img.shields.io/badge/tests-38%20passing-2EA44F?logo=pytest&logoColor=white" alt="tests"> <img src="https://img.shields.io/badge/port-8100-6E7781" alt="port">
+</p>
+
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+
+**AI-ML docs:** **Runbook** · [Index](../docs/aiml/README.md) · [Context](../docs/aiml/CONTEXT.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · [Models](../docs/aiml/MODELS.md) · [Agents](../docs/aiml/AGENTS.md) · [Data and training](../docs/aiml/DATA_AND_TRAINING.md) · [Engine contracts](CONTRACTS.md) · [Structure](../docs/aiml/STRUCTURE.md) · [Plan](../docs/aiml/PLAN.md)
+
+<!-- nav:end -->
+
 The Python package `hawa_ml` that holds HawaCommand's predictive, spatial, exposure, dispatch and causal-verification logic, plus a FastAPI app that serves it over HTTP. HawaCommand (Environmental Hacks 2026, Air Track) aims to close Delhi's anti-pollution loop: Sense, Map, Attribute, Forecast, Decide, Act, Verify.
 
 This README is the runbook: what is built, how to install, configure, run and test it, every endpoint, script and Make target, and the known defects. Design documents live in [`docs/aiml/`](../docs/aiml/README.md); the HTTP and in-process contracts are in [CONTRACTS.md](CONTRACTS.md); the data layout is in [data/README.md](data/README.md).
@@ -323,3 +335,11 @@ Defects found while documenting. Nothing here has been fixed.
 | [docs/aiml/DATA_AND_TRAINING.md](../docs/aiml/DATA_AND_TRAINING.md) | Data sources, dataset build, training and evaluation |
 | [docs/aiml/PLAN.md](../docs/aiml/PLAN.md) | Milestone status and remaining work |
 | [models/forecaster_model_card.md](models/forecaster_model_card.md), [models/attribution_model_card.md](models/attribution_model_card.md) | Model cards |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-ai-ml-engine) · [Docs hub](../docs/README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

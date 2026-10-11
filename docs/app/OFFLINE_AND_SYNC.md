@@ -1,5 +1,13 @@
 # Offline-first and sync
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · **Offline and sync** · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status: Implemented in the app, unverified end to end.** The drift outbox, drainer, backoff, conflict resolver and background sync live in `app_frontend/lib/core/sync/` and `lib/core/storage/`. Today every outbox write goes to the in-app fake backend, because the backend has none of the write endpoints. Known defects: multi-photo inspection close ordering, and the presign hash after re-compression ([docs/app/README.md](README.md#9-known-issues), issues 10-11). Not run on a device by the reviewer.
 
 
@@ -431,3 +439,11 @@ adb emu geo fix 77.2095 28.6412                     # emulator location (longitu
 | 18 | DB migration fails after app update | migration exception | Keep the old DB file, report non-fatal, block writes, never drop pending ops | "Update problem. Please contact support" | Hotfix release |
 | 19 | Role removed server-side | 403 on ops / `/v1/me` roles changed | Ops `failed`. Role picker or unsupported screen | "Your access changed" | Admin fixes role |
 | 20 | Route re-planned while offline | `route.version` bump on regain | Replace stops, supersede ops on removed tasks | Route-changed banner | automatic |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#offline-first-and-sync) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # Web Frontend Context
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · **Context** · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 > **Status (reconciled 2026-10-10).** Product context from the proposal. As built, `frontend/` has the landing page, eight console pages (`/map`, `/forecast`, `/plans`, `/plans/[id]`, `/what-if`, `/impact`, `/fleet`, `/alerts`), `/login` and the `/route` driver view. With `NEXT_PUBLIC_API_URL` empty, the in-browser mock API in `src/mocks/` answers every call. The public open-data portal, WebSocket updates, deck.gl, next-intl i18n and alert compose are Planned. See [docs/frontend/README.md](README.md#1-implementation-status).
 
 
@@ -258,3 +266,11 @@ Commitments (details in [ARCHITECTURE §12](ARCHITECTURE.md)):
 | Donor cell | An untreated cell used to build the synthetic control |
 | Auditor | Strands agent that argues against the plan. It may object; the optimiser enforces hard constraints; the officer decides (F14) |
 | Indicative AQI | Hourly AQI computed from twin values using CPCB breakpoints. It is not the official 24 h AQI |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#web-frontend-context) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

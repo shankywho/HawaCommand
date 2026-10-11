@@ -1,5 +1,13 @@
 # Web Pages and Components
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · **Pages** · [Design system](DESIGN_SYSTEM.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 Purpose: page by page, what the web app renders today: route, file, components, the hooks and backend endpoints behind each piece, what happens without a backend, and the status. It ends with the pages the original blueprint specified that are not built.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../backend/API.md](../backend/API.md)
@@ -270,3 +278,11 @@ No typing anywhere. "Start route" changes local state only; nothing is sent to t
 | `/hi/...` | Hindi locale for every page | none |
 | Alert compose | Draft and send an alert from the console | none |
 | Plan edit mode | Reassign, retime, remove or add tasks, then re-simulate | Disabled Edit button on `/plans/[id]` |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#web-pages-and-components) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

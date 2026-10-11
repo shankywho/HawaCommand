@@ -1,5 +1,11 @@
 # HawaCommand — Shared Contracts
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · **Contracts**
+
+<!-- nav:end -->
+
 > **Status (reconciled 2026-10-10).** The Python source of truth is `backend/contracts/hawa_contracts/` (`ids.py`, `enums.py`, `units.py`, `packets.py`, `envelope.py`, `topics.py`, `redis_keys.py`, `events/*.py`), covered by `backend/contracts/tests/test_contracts.py`. Much of what it declares is not used by running code:
 > - No Kafka producers or consumers exist (§5).
 > - No database is used by the API (§8).
@@ -668,3 +674,11 @@ The four area doc sets proposed additions while being written. The ones below ar
 | AI-ML | water-machine hard gate: `P(dust) ≥ 0.5`, `P(burning) + P(regional_smoke) < 0.3`, cell confidence ≥ 0.3; shared `hawa_contracts.quality.reading_weight(trust, speed_kmh, flags)`; simulator ground truth at `s3://hawa-{env}-lake/sim/truth/` (read only by evaluation code); `cmd.train.run` adds `twin_eval`, `verifier_eval` | [aiml/MODELS.md](aiml/MODELS.md), [aiml/DATA_AND_TRAINING.md](aiml/DATA_AND_TRAINING.md) |
 | Errors | canonical code catalogue in [backend/API.md §1.5](backend/API.md); problem `type` = `urn:hawa:problem:<code>`; app-branching codes `otp_invalid, otp_expired, otp_rate_limited, already_in_state, transition_already_past, task_already_done, task_cancelled, inspection_already_closed, upload_expired, media_too_large` | [backend/API.md](backend/API.md) |
 | Privacy | the API never returns other users' phone numbers to app roles, not even masked | [app/CONTEXT.md](app/CONTEXT.md) |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand--shared-contracts) · [Docs hub](README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

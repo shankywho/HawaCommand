@@ -1,8 +1,16 @@
 # Environment Variables
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · **Environment** · [Contracts](CONTRACTS.md)
+
+**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup guide](AWS_SETUP_GUIDE.md) · [AWS integration](AWS_INTEGRATION.md) · [Cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md) · **Environment variables**
+
+<!-- nav:end -->
+
 Every setting HawaCommand reads: where it lives, its default, and what it changes. Nothing is strictly required to start; every service runs with no variables set, using fixtures, synthetic data and template text. Variables unlock live data, LLM-written text, AWS and a non-default database.
 
-Related: [root README](../README.md#local-development-and-setup) · [backend/.env.example](../backend/.env.example) · [AI-ML/.env.example](../AI-ML/.env.example) · [frontend/.env.example](../frontend/.env.example) · [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md) (console steps for every AWS variable) · [AWS_INTEGRATION.md](AWS_INTEGRATION.md)
+Related: [root README](../README.md#quick-start) · [backend/.env.example](../backend/.env.example) · [AI-ML/.env.example](../AI-ML/.env.example) · [frontend/.env.example](../frontend/.env.example) · [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md) (console steps for every AWS variable) · [AWS_INTEGRATION.md](AWS_INTEGRATION.md)
 
 ---
 
@@ -258,3 +266,11 @@ Leave `WAQI_TOKEN`, `OPENAQ_API_KEY` and `NEXT_PUBLIC_API_URL` unset: the backen
 - `HAWA_JWT_SECRET` still has a development default in `core/config.py` and `.env.example`; set your own on any shared machine, together with `HAWA_ADMIN_API_KEY` and `HAWA_INGEST_API_KEY` (without them the officer and telemetry write routes are open).
 - Secrets can live in AWS Secrets Manager instead of `.env`: `HAWA_AWS_SECRETS_ID` for backend variables, `HAWA_AWS_FCM_SECRET_ID` for the Firebase service account.
 - On AWS, prefer an IAM role over static keys for both Bedrock (AI-ML) and the backend's AWS layer.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#environment-variables) · [Docs hub](README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

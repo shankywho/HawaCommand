@@ -1,5 +1,13 @@
 # Linting, Quality and Testing
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · **Quality** · [Structure](STRUCTURE.md) · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 > **Status (as built).**
 > - **Configured:** the scripts in `frontend/package.json` are `dev`, `build`, `start`, `lint` (`next lint`) and `typecheck` (`tsc --noEmit`). `tsconfig.json` is strict. `scripts/verify_backend_contracts.ts` checks 14 backend endpoints against the zod schemas.
 > - **Not committed:** there is no ESLint config, so `pnpm lint` opens the interactive setup and exits 1. There is also no Prettier, Husky, lint-staged, commitlint, Vitest, Playwright or `.github/` CI.
@@ -775,3 +783,11 @@ A change is done when **all** of these hold:
 8. MSW handlers and fixtures exist for every endpoint used, shaped per API.md (or ARCHITECTURE §18 for proposed ones), and validate in the contract test.
 9. No new `eslint-disable` without a rule name and reason. No `TODO` without an issue link.
 10. The PR is reviewed against §15 by one other teammate. For UI changes it includes screenshots.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#linting-quality-and-testing) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # HawaCommand AI-ML API and Data Contracts
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](README.md) · [Index](../docs/aiml/README.md) · [Context](../docs/aiml/CONTEXT.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · [Models](../docs/aiml/MODELS.md) · [Agents](../docs/aiml/AGENTS.md) · [Data and training](../docs/aiml/DATA_AND_TRAINING.md) · **Engine contracts** · [Structure](../docs/aiml/STRUCTURE.md) · [Plan](../docs/aiml/PLAN.md)
+
+<!-- nav:end -->
+
 The interfaces the AI-ML engine exposes as built: the telemetry packet schema, every HTTP endpoint with real request and response shapes, the Python symbols the backend imports in-process, the shared Pydantic models, and the JSON files the engine reads and writes. Examples were captured from the running app on 2026-10-10 (offline of any API keys, so LLM text is the deterministic template).
 
 Status vocabulary: **Implemented**, **Partial**, **Stub/Mock**, **Planned** (see [README §1](README.md#1-implementation-status)). The system-wide contracts the AI-ML team was designed against (Kafka topics, database tables, `/internal/v1/*` service endpoints with bearer auth) are in [../docs/CONTRACTS.md](../docs/CONTRACTS.md); none of those are implemented in `AI-ML/` yet (§7).
@@ -426,3 +434,11 @@ These files are read and written at run time. Four of them are tracked in git an
 | Database tables | AI-ML-owned writes to `cell_state`, `hotspot`, `forecast`, `grap_outlook`, `plan`, `plan_task`, `plan_review`, `plan_simulation`, `impact`, `effectiveness_library`, `device_calibration`, `model_version` and others |
 | Identifiers and versions | `g500-RRR-CCC` / `g1k-RRR-CCC` cells on an EPSG:32643 grid, `ward-NNN`, and a `model_version` string `{model}@{semver}+{git_sha7}` on every output |
 | Uncertainty on every output | Twin variance per pollutant, forecast quantiles, cause probabilities, verification CI and placebo p-value, carried end to end |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-ai-ml-api-and-data-contracts) · [Docs hub](../docs/README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # AI-ML Context
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · **Context** · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status (reconciled 2026-10-10, commit `a33e043`).** This is the product context from the proposal. What is actually built is in [AI-ML/README.md](../../AI-ML/README.md#1-implementation-status). In short: every sensor is simulated; the agents are plain Python classes (no Strands SDK); the optimiser is greedy (OR-Tools is Planned); the What-If baseline is a constant 0.32 ratio; causal verification has only been validated on a seeded synthetic panel.
 
 
@@ -167,3 +175,11 @@ Operational ML metrics (not §13.1 KPIs) are in [ARCHITECTURE §9](ARCHITECTURE.
 - No health diagnosis or medical advice beyond standard protective guidance.
 - No deep learning for the twin or forecaster in the hackathon; proven statistical methods first (§12.1).
 - No claims of measured real-world intervention effects until a pilot produces them.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#ai-ml-context) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

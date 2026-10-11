@@ -1,5 +1,13 @@
 # Hackathon plan: the app slice
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · **Plan**
+
+<!-- nav:end -->
+
 > **Status (2026-10-10).** The app shell, five role shells, en/hi localisation, the outbox and the fake backend are built. The air map, air near me, alerts and school forecast are live against the backend. Every other flow waits on backend endpoints. Defects: [docs/app/README.md](README.md#9-known-issues). Milestones below are the original plan.
 
 
@@ -240,3 +248,11 @@ These are the gaps and conflicts the app depends on. Raise them as one PR agains
 **Repo coordination (not a contract)**
 36. One git hook manager: the app's `tool/hooks/pre_commit.sh` is called from the root Husky hook ([LINTING_AND_QUALITY §7](LINTING_AND_QUALITY.md#7-pre-commit-hooks)).
 37. Design tokens: the Flutter theme mirrors `frontend/src/styles/tokens.json`. The web team tags the app dev on token changes (DESIGN_SYSTEM §2).
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hackathon-plan-the-app-slice) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # Web Frontend Architecture
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · **Architecture** · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 Purpose: how `frontend/` is built today: the stack, rendering, data flow, the API client and every endpoint it calls, mock mode, authentication, state, the map and visual components, error behaviour, performance, security and hosting. The last section keeps the original blueprint's target architecture, labelled Planned.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md)
@@ -318,3 +326,11 @@ Ports: `pnpm dev` and `pnpm start` use 3000 (`-p 3000` in the scripts).
 | Security | CSP with an allow-list for the API, tiles and router; self-hosted MapLibre CSS | |
 | Observability | Client error reporting and web-vitals | |
 | Contract additions | Uncertainty on exposure and What-If delta, twin run metadata, fleet trails, POIs, impact `injected_effect_pct` | Raise with the backend lead before building the UI |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#web-frontend-architecture) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

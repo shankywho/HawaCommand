@@ -1,5 +1,13 @@
 # HawaCommand Backend — Documentation Index
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 Entry point for everything under `backend/`: what the backend does today, what is still only designed, which document to read for what, how to run and test it, and the defects that are known.
 
 Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../../backend/README.md](../../backend/README.md)
@@ -12,34 +20,39 @@ Status vocabulary used in every backend document: **Implemented** (works as desc
 
 | Area | Status | What exists in code | Where |
 |---|---|---|---|
-| FastAPI app, CORS, request-context middleware | **Implemented** | One ASGI app, 33 operations on 31 paths, wildcard CORS | `src/hawa_backend/api/app.py` |
+| FastAPI app, CORS, request-context middleware | **Implemented** | One ASGI app, 50 operations on 45 paths plus WebSocket `/v1/ws/fleet`, wildcard CORS | `src/hawa_backend/api/app.py` |
 | AI-ML bridge (`IntelClient`) | **Implemented** | HTTP to the AI-ML service, then in-process `hawa_ml`, then fixtures; in-memory circuit breaker | `src/hawa_backend/core/intel_client.py` |
 | Live station ingestion | **Implemented** | WAQI map-bounds API, then OpenAQ v3 locations, then 5 baseline stations; cached 15 min in process | `IntelClient._fetch_live_stations` |
 | Hotspots, twin, forecast, open air data | **Implemented** | Served from AI-ML (live WAQI data kriged in-process when the HTTP service is down), fixture fallback | `api/routes/hotspots.py`, `forecast.py`, `open_data.py` |
-| Plans (list, draft, approve, request changes, apply suggestion, compare) | **Partial** | Drafts come from the AI-ML planner; all state is an in-process dict; seed plan `214` is a fixture; no state machine, no persistence | `api/routes/plans.py` |
+| Plans (list, draft, approve, request changes, apply suggestion, compare) | **Partial** | Drafts come from the AI-ML planner; state in Redis (`plans:active`) or an in-process dict; seed plan `214` is a fixture; approval can start Step Functions and publish to SNS | `api/routes/plans.py` |
 | Causal impact and effectiveness library | **Partial** | Fixture intervention enriched with an AI-ML verification; library from AI-ML | `api/routes/impact.py` |
-| Citizen endpoints | **Partial** | Safe route, safe window, missed-machine audit call `hawa_ml` in process; live operations and ward leaderboard are hard-coded | `api/routes/citizen.py` |
-| Devices, alerts, driver route | **Stub/Mock** | Return fixtures from `api/fixtures.py` | `api/routes/devices.py`, `alerts.py`, `driver.py` |
-| Health probes | **Stub/Mock** | `/readyz` always reports database and redis `ok` without checking | `api/routes/health.py` |
+| Citizen endpoints | **Partial** | Safe route and safe window call `hawa_ml` in process; live operations and the missed-machine audit use live telemetry; ward leaderboard is hard-coded |
+| Citizen reports (Citizen Eyes) | **Implemented** | `/v1/reports*`: DynamoDB grievances or memory, automated verification, officer ticket/close, FCM push | `services/reports.py`, `api/routes/reports.py` |
+| Live fleet telemetry | **Implemented** | HTTP ingest, Kinesis consumer, Redis GEO, DynamoDB tracks, `/v1/fleet/*`, WebSocket | `services/fleet.py`, `aws/kinesis_consumer.py`, `api/routes/fleet.py` |
+| Alerts and push | **Implemented** | SNS broadcast and subscribers, FCM HTTP v1, push tokens, alert areas | `services/alerts.py`, `services/push.py`, `api/routes/alerts.py`, `me.py` | `api/routes/citizen.py` |
+| Devices, alerts list | **Implemented** | Live telemetry and sent broadcasts first, then fixtures | `api/routes/devices.py`, `alerts.py` |
+| Driver route | **Stub/Mock** | Fixture from `api/fixtures.py` | `api/routes/driver.py` |
+| Health probes | **Implemented** | `/readyz` pings Redis and lists which AWS services and FCM are configured | `api/routes/health.py` |
 | RFC 9457 errors | **Partial** | Model, exception classes and handler exist; no route raises them, so clients get FastAPI's default error bodies | `core/errors.py` |
 | Auth (JWT, OTP, password hashing, webhook HMAC) | **Partial** | Helper functions only; no auth endpoints; no route enforces a token | `core/security.py` |
 | Structured JSON logging with PII masking | **Partial** | Formatter and masking helpers exist; nothing in `src/` uses `get_logger` | `core/logging.py` |
-| Optional AWS layer | **Implemented** | DynamoDB cache, Step Functions or SageMaker forecast, Step Functions dispatch on approve, SNS and Kinesis publishers (not called by any route); off unless `HAWA_AWS_ENABLED=true` | `src/hawa_backend/aws/` |
+| Optional AWS layer | **Implemented** | S3, DynamoDB (grievances, fleet, cache), Kinesis producer and consumer, SNS, Secrets Manager, Step Functions and SageMaker forecast, Step Functions dispatch; off unless `HAWA_AWS_ENABLED=true` ([AWS architecture](../AWS_ARCHITECTURE.md)) | `src/hawa_backend/aws/` |
 | `hawa_contracts` package | **Implemented** | Enums, ids, units, packets, envelope, 26 topics, 12 consumer groups, Redis key builder, 24 event models | `backend/contracts/` |
 | SQLAlchemy models, migrations, seed | **Partial** | 23 tables; Alembic revision `0001` (`alembic.ini`, `migrations/`); idempotent seed (`db/seed.py`); verified on Postgres 16 and SQLite; the API never opens a session | `src/hawa_backend/db/`, `migrations/` |
 | Ingest, simulator, dispatch saga | **Partial** | Plain Python classes, unit-tested; not connected to MQTT, Kafka or the database | `src/hawa_backend/workers/` |
-| CLI `hawa` | **Partial** | `version`, `config`, `check` only | `src/hawa_backend/cli.py` |
-| Local infrastructure | **Implemented** | `docker-compose.yml` with PostGIS 16, Redis 7, Kafka 3.8 (KRaft); the backend does not connect to any of them yet | `backend/docker-compose.yml` |
+| CLI `hawa` | **Implemented** | `version`, `config`, `check`, `aws-check`, `simulate-fleet`, `consume-telemetry` | `src/hawa_backend/cli.py` |
+| Local infrastructure | **Implemented** | `docker-compose.yml` with PostGIS 16, Redis 7, Kafka 3.8 (KRaft); the backend uses the Redis when `HAWA_REDIS_URL` points at it | `backend/docker-compose.yml` |
 | PostGIS geometry, partitions | **Planned** | none (Alembic itself is Implemented) | [DATA_MODEL.md](DATA_MODEL.md) |
 | Kafka producers and consumers, outbox relay | **Planned** | Topic names and event models only | [EVENTS.md](EVENTS.md) |
-| Redis caching, rate limits, idempotency, OTP store | **Planned** | Key builders only | [CACHING.md](CACHING.md) |
-| WebSocket `/v1/ws` | **Planned** | none | [API.md](API.md) §6 |
+| Redis live state | **Implemented** | Fleet geo index, twin snapshot, plans, push tokens, alert log, pub/sub, Kinesis checkpoints | `core/redis_store.py`, [CACHING.md](CACHING.md) |
+| Redis rate limits, idempotency keys, OTP store | **Planned** | Key builders only | [CACHING.md](CACHING.md) |
+| WebSocket `/v1/ws/fleet` | **Implemented** | Snapshot then every ping; task-event socket `/v1/ws` is Planned | `api/routes/fleet.py`, [API.md](API.md) |
 | Auth endpoints, RBAC, ward scoping | **Planned** | none | [API.md](API.md) §6 |
 | Scheduler, notifier, feeds-worker, alert-engine, MQTT bridge, other workers | **Planned** | none | [ARCHITECTURE.md](ARCHITECTURE.md) §8 |
 | Metrics, tracing, dashboards | **Planned** | none | [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) §6 |
 | Dockerfile, image build, IaC | **Implemented** | `backend/Dockerfile` (build from the repo root); `.github/workflows/backend-image.yml` pushes it to ECR (manual trigger); CloudFormation `hawa-integration.yaml`, `hawa-redis.yaml`, `hawa-ecs.yaml` in `infrastructure/cloudformation/`. Test CI and CDK are Planned | [DEPLOYMENT.md](DEPLOYMENT.md), [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md) |
 
-In one sentence: today the backend is a single FastAPI process that serves the web console and the Flutter app by translating AI-ML output (live, in-process or fixture) into the frontend's camelCase contract, keeps plan state in memory, and optionally calls AWS. The event-driven, database-backed design in the rest of these documents is the target, and is labelled **Planned** wherever it appears.
+In one sentence: today the backend is a single FastAPI process that serves the web console and the Flutter app by translating AI-ML output (live, in-process or fixture) into the frontend's camelCase contract, keeps plan, fleet and alert state in Redis or memory, stores citizen reports and telemetry in DynamoDB, and talks to S3, Kinesis and SNS. The event-driven, database-backed design in the rest of these documents is the target, and is labelled **Planned** wherever it appears.
 
 ## 2. Documents
 
@@ -51,7 +64,7 @@ In one sentence: today the backend is a single FastAPI process that serves the w
 | [DATA_MODEL.md](DATA_MODEL.md) | The 23 SQLAlchemy tables column by column, migrations and seed, what is not built (PostGIS, partitions) | Before touching models |
 | [API.md](API.md) | Every registered route with parameters, real response examples, status codes and data source; errors, CORS, headers, auth; planned endpoints listed separately | Before touching routes or clients |
 | [EVENTS.md](EVENTS.md) | What the contracts declare (topics, groups, envelope, events) vs what is wired (nothing on Kafka; optional SNS/Kinesis helpers) | Before adding a producer or consumer |
-| [CACHING.md](CACHING.md) | What actually caches (in-process TTLs, DynamoDB, `lru_cache`) vs the planned Redis design | Before adding caching |
+| [CACHING.md](CACHING.md) | What runs in Redis today (fleet, twin snapshot, plans, alerts) vs the full planned design | Before adding caching |
 | [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) | `core/logging.py` and `core/context.py` exactly; what is logged today; planned metrics and tracing | Before adding logs or metrics |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | `docker-compose.yml`, every environment variable, how to run, the AWS layer, what is not built for deployment | When running or shipping |
 | [PLAN.md](PLAN.md) | Milestones with their current status and the remaining work in priority order | At every checkpoint |
@@ -72,7 +85,7 @@ The code is organised by layer under `backend/src/hawa_backend/` ([STRUCTURE.md]
 
 Prerequisites: [uv](https://docs.astral.sh/uv/) (Python 3.11 from `.python-version`). Docker is optional: it is only needed for `make db-up` (Postgres); nothing in the running API connects to Postgres, Redis or Kafka yet.
 
-From the repo root (see the [root README](../../README.md#make-targets-run-from-the-repo-root)):
+From the repo root (see the [root README](../../README.md#commands)):
 
 ```bash
 make install       # cd backend && uv sync --extra dev   (backend + contracts + AI-ML + alembic)
@@ -167,3 +180,11 @@ Defects found while reconciling these documents with the code (verified 2026-10-
 
 25. **AI-ML port.** The backend expects AI-ML on 8100 (`core/config.py:42`, `.env.example:26`) but `AI-ML/Makefile:35` and `AI-ML/src/hawa_ml/api/main.py:45` start it on 8000, the backend's own port.
 26. **Flutter app expects endpoints that do not exist.** `/v1/auth/*` (`app_frontend/lib/core/network/api_paths.dart:3`) and the WebSocket `/v1/ws` (`app_frontend/lib/app/env.dart:11`) are **Planned** here.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-backend--documentation-index) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # Web Frontend Build Plan
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · **Plan** · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 > **Status (2026-10-10).** All console pages exist, and `pnpm typecheck` and `pnpm build` pass. `pnpm lint` fails because no ESLint config is committed. Open items: map overlays still use demo data, the What-If delta sign differs between backend and mocks, some copy is fixed, there is no sign-out, and the open-data portal, WebSocket and tests are Planned. Milestones below are the original plan.
 
 
@@ -185,3 +193,11 @@ If a milestone is **more than 1.5 h late**, cut from the top of this list. Re-ch
 - Offline-tolerant console views for low-connectivity wards (cached last plan + read-only map snapshot).
 - Cache Components / PPR for public pages. SEO for `/hi` pages.
 - An accessibility audit with real screen-reader users (NVDA on Windows, the government-office default).
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#web-frontend-build-plan) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

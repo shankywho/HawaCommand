@@ -1,5 +1,11 @@
 # Model Card: HawaCommand Source Attribution Classifier (F7)
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../../docs/README.md) · [Overview](../../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../../docs/AWS_ARCHITECTURE.md) · [AWS setup](../../docs/AWS_SETUP_GUIDE.md) · [API](../../docs/backend/API.md) · [Environment](../../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../../docs/CONTRACTS.md)
+
+<!-- nav:end -->
+
 > Status: Partial. The committed artifact `models/attribution_classifier.txt` is trained and loadable, but no runtime path uses it: hotspots, the optimiser and the API all use the rule engine in `src/hawa_ml/attribution/rules.py`. Note: `scripts/train_all.py` regenerates this file from a template in `src/hawa_ml/attribution/classifier.py` (`_write_model_card`), which overwrites these notes.
 
 ## Honest methodological disclosure
@@ -36,3 +42,11 @@ These mappings are what the rule engine and greedy optimiser implement, not the 
 - Not wired into any decision path.
 - Labels encode the same thresholds as the rules, with small differences (for example the rules use a 0.45 dust ratio from `config/fingerprint_rules.yaml` and an upwind-fire requirement for regional smoke that the labels omit).
 - No probability calibration, no `mixed` or `unknown` class.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#model-card-hawacommand-source-attribution-classifier-f7) · [Docs hub](../../docs/README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

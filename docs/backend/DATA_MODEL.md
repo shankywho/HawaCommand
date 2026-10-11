@@ -1,5 +1,13 @@
 # HawaCommand Backend — Data Model
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · **Data model** · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 The SQLAlchemy 2.0 models in `src/hawa_backend/db/`, table by table and column by column, what the database layer does and does not do today, and the planned schema that the blueprint described.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [API](API.md) · [EVENTS](EVENTS.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md) §8
@@ -403,3 +411,11 @@ No relay reads `outbox_event` and no consumer writes `processed_event` ([EVENTS.
 | Auth | `app_user` with email + argon2id hash, `push_token`, `user_ward_scope`; `audit_log` partitioned by month, INSERT-only grant | phone-keyed `app_user`, `refresh_token`, flat `audit_log` |
 | Migrations | Alembic with async `env.py`, numbered baseline revisions, review of autogenerate output, expand/contract for zero downtime, CI check that `alembic check` is clean, AI-ML drift test | none |
 | Operations | `hawa seed` (wards, grid, schools, stations, assets, devices, users), `hawa demo-reset` with golden history, `hawa partitions` job, RDS PITR backups | none |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-backend--data-model) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

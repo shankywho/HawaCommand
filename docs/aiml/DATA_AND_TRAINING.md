@@ -1,5 +1,13 @@
 # Data and Training
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · [Agents](AGENTS.md) · **Data and training** · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status (as implemented).**
 > - **Data:**
 >   - `scripts/fetch_all.py` pulls OpenAQ station metadata, Open-Meteo weather and CAMS (fetched but unused by models), NASA FIRMS fires (unused by models), OSM POIs and synthetic bus corridors.
@@ -269,3 +277,11 @@ Feed-level monitors: per-station missing share, flatlined stations (identical va
 - **Logs** are JSON via logifyx with masking on; prompts, photos and raw payloads are never logged.
 - **Retention.** Feature store kept for model development; raw photos follow backend retention; simulator truth is non-personal.
 - **Open data** (F21) publishes calibrated cell values and methods, never device-level raw tracks of vehicles that could identify operators' schedules beyond what the operator agrees to.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#data-and-training) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

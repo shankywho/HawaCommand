@@ -1,5 +1,17 @@
 # HawaCommand frontend
 
+<!-- nav:start -->
+
+<p align="center">
+<img src="https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white" alt="Next.js"> <img src="https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=white" alt="React"> <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript"> <img src="https://img.shields.io/badge/MapLibre-4.7-396CB2?logo=maplibre&logoColor=white" alt="MapLibre"> <img src="https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind"> <img src="https://img.shields.io/badge/port-3000-6E7781" alt="port">
+</p>
+
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+
+**Web docs:** **Runbook** · [Index](../docs/frontend/README.md) · [Context](../docs/frontend/CONTEXT.md) · [Architecture](../docs/frontend/ARCHITECTURE.md) · [Pages](../docs/frontend/PAGES.md) · [Design system](../docs/frontend/DESIGN_SYSTEM.md) · [Quality](../docs/frontend/LINTING_AND_QUALITY.md) · [Structure](../docs/frontend/STRUCTURE.md) · [Plan](../docs/frontend/PLAN.md) · [Design export](design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 Next.js 15 (App Router) · React 19 · Tailwind 3 · TanStack Query 5 · Zustand 5 · zod · MapLibre GL 4.7.1 · Cognito (aws-amplify 6).
 Ported from the Claude Design prototype in `design/`. There is no deck.gl dependency; the map is a vendored web component on MapLibre.
 
@@ -63,3 +75,11 @@ The map is the design's `<hawa-gl>` web component (`src/lib/visuals`), wrapped b
 The hotspot list, detail and heat field come from `/v1/hotspots`; truck routes, bus trails, schools and the suspect pin are still built-in demo data.
 
 `amplify.yml` builds the app on AWS Amplify Hosting.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-frontend) · [Docs hub](../docs/README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

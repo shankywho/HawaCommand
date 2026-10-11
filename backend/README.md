@@ -1,5 +1,17 @@
 # HawaCommand Backend
 
+<!-- nav:start -->
+
+<p align="center">
+<img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python"> <img src="https://img.shields.io/badge/FastAPI-50%20operations-009688?logo=fastapi&logoColor=white" alt="FastAPI"> <img src="https://img.shields.io/badge/AWS-S3%20%C2%B7%20DynamoDB%20%C2%B7%20Kinesis%20%C2%B7%20SNS-FF9900?logo=amazonwebservices&logoColor=white" alt="AWS"> <img src="https://img.shields.io/badge/Redis-ElastiCache-DC382D?logo=redis&logoColor=white" alt="Redis"> <img src="https://img.shields.io/badge/tests-97%20passing-2EA44F?logo=pytest&logoColor=white" alt="tests"> <img src="https://img.shields.io/badge/port-8000-6E7781" alt="port">
+</p>
+
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+
+**Backend docs:** **Runbook** · [Index](../docs/backend/README.md) · [Context](../docs/backend/CONTEXT.md) · [Architecture](../docs/backend/ARCHITECTURE.md) · [API](../docs/backend/API.md) · [Data model](../docs/backend/DATA_MODEL.md) · [Events](../docs/backend/EVENTS.md) · [Caching](../docs/backend/CACHING.md) · [Logging](../docs/backend/LOGGING_AND_OBSERVABILITY.md) · [Deployment](../docs/backend/DEPLOYMENT.md) · [Structure](../docs/backend/STRUCTURE.md) · [Plan](../docs/backend/PLAN.md)
+
+<!-- nav:end -->
+
 The FastAPI service that the web console and the Flutter app talk to. Today it is a single process that turns AI-ML output (over HTTP, in process, or from fixtures) into the frontends' camelCase contract, keeps plan state in Redis or memory, pulls live Delhi station data from WAQI/OpenAQ, stores citizen reports and live fleet telemetry, and can optionally call AWS (S3, DynamoDB, Kinesis, SNS, Secrets Manager) and Firebase. It also ships the shared `hawa_contracts` package (`contracts/`).
 
 The event-driven, Postgres/Kafka/Redis design in [`docs/backend/`](../docs/backend/README.md) is the target; parts not built are labelled **Planned** there.
@@ -140,7 +152,7 @@ Subcommands:
 
 ### 6. Make targets (repo root)
 
-`make install`, `make db-up`, `make db-update`, `make db-seed`, `make aiml-api`, `make backend`, `make frontend`: see the [root README](../README.md#make-targets-run-from-the-repo-root).
+`make install`, `make db-up`, `make db-update`, `make db-seed`, `make aiml-api`, `make backend`, `make frontend`: see the [root README](../README.md#commands).
 
 ---
 
@@ -192,3 +204,11 @@ Subcommands:
 
 - [docs/backend/](../docs/backend/README.md): architecture, API, data model, events, caching, logging, deployment
 - [docs/CONTRACTS.md](../docs/CONTRACTS.md), [docs/AWS_SETUP_GUIDE.md](../docs/AWS_SETUP_GUIDE.md), [docs/AWS_INTEGRATION.md](../docs/AWS_INTEGRATION.md)
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-backend) · [Docs hub](../docs/README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

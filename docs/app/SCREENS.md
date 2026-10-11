@@ -1,5 +1,13 @@
 # Screens
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · **Screens** · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status per screen.** Data sources for each screen:
 > - **Live against the backend:** the citizen air map (`/v1/twin`, `/v1/hotspots`, `/v1/forecast`), air near me (`/v1/twin`, `/v1/hotspots`, `/v1/citizen/safe-window`), alerts (`/v1/alerts`) and the school 72 h forecast (`/v1/forecast/{cell_id}`).
 > - **In-app fake backend and `assets/fixtures/`:** login, driver, inspector, school today and indoor/outdoor, Citizen Eyes reports, and the site score.
@@ -1002,3 +1010,11 @@ Delivery rules:
 | Offline / stale | Offline: showing saved data from {time} · Last updated {time} | ऑफ़लाइन: {time} का सेव किया डेटा · आखिरी अपडेट {time} |
 | Conflict banners | HawaTag already confirmed this stop. Your manual entry wasn't needed. · The control room removed this stop from your route. | HawaTag ने यह स्टॉप पहले ही पूरा दर्ज कर दिया। आपकी हाथ से एंट्री की ज़रूरत नहीं थी। · कंट्रोल रूम ने यह स्टॉप आपके रूट से हटा दिया। |
 | Unknown enum value (any) | Unknown | पता नहीं |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#screens) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

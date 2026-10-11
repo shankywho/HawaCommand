@@ -1,311 +1,390 @@
+<div align="center">
+
 # HawaCommand
 
-An AI command centre that maps, forecasts and ranks Delhi's air pollution hotspots street by street, drafts dispatch plans for the city's anti-pollution machines, and checks whether each intervention worked.
+**Delhi already owns the machines. We give them a brain.**
 
-Environmental Hacks 2026 · Bharat Builds Tour · Track 01: Air
+An AI command centre for Delhi's air: it maps pollution street by street, forecasts it 72 hours ahead, dispatches the city's anti-smog fleet, and proves whether each intervention worked.
+
+A fully developed prototype, deployed on AWS: every flow runs end to end, from a vehicle ping to a verified impact.
+
+<a href="http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/"><img src="https://img.shields.io/badge/live%20demo-online-2EA44F?logo=googlechrome&logoColor=white" alt="Live demo"></a>
+<img src="https://img.shields.io/badge/status-fully%20developed%20prototype-2EA44F" alt="Fully developed prototype">
+<a href="https://www.wemakedevs.org/aws/env"><img src="https://img.shields.io/badge/WeMakeDevs-AWS%20Environment%20Hackathon-111111" alt="WeMakeDevs AWS hackathon"></a>
+<img src="https://img.shields.io/badge/track-01%20Air-0E7C66" alt="Track 01 Air">
+<a href="#built-on-aws"><img src="https://img.shields.io/badge/AWS%20services-22%20integrated%20%C2%B7%209%20live-FF9900?logo=amazonwebservices&logoColor=white" alt="AWS services"></a>
+<a href="docs/backend/API.md"><img src="https://img.shields.io/badge/API-50%20operations%20%2B%20WebSocket-2563EB?logo=fastapi&logoColor=white" alt="API"></a>
+<a href="#testing"><img src="https://img.shields.io/badge/tests-135%20passing-2EA44F?logo=pytest&logoColor=white" alt="Tests"></a>
+<a href="docs/README.md"><img src="https://img.shields.io/badge/docs-58%20pages-2563EB?logo=readthedocs&logoColor=white" alt="Docs"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-C0392B" alt="MIT licence"></a>
+
+<img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python">
+<img src="https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+<img src="https://img.shields.io/badge/LightGBM-21%20models-02569B" alt="LightGBM">
+<img src="https://img.shields.io/badge/scikit--learn-GP%20kriging-F7931E?logo=scikitlearn&logoColor=white" alt="scikit-learn">
+<img src="https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white" alt="Next.js">
+<img src="https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB" alt="React">
+<img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
+<img src="https://img.shields.io/badge/MapLibre-4.7-396CB2?logo=maplibre&logoColor=white" alt="MapLibre">
+<img src="https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+<img src="https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white" alt="Flutter">
+<img src="https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white" alt="Dart">
+<img src="https://img.shields.io/badge/Riverpod-3-00B4AB" alt="Riverpod">
+<img src="https://img.shields.io/badge/Valkey%20%2F%20Redis-GEO%20%2B%20pub%2Fsub-DC382D?logo=redis&logoColor=white" alt="Redis">
+<img src="https://img.shields.io/badge/Docker-image-2496ED?logo=docker&logoColor=white" alt="Docker">
+<img src="https://img.shields.io/badge/uv-lockfile-DE5FE9?logo=uv&logoColor=white" alt="uv">
+
+[Live demo](#live-demo) · [Problem](#the-problem) · [Solution](#the-solution) · [Built on AWS](#built-on-aws) · [Architecture](#architecture) · [Features](#features) · [For judges](#for-the-judges) · [Quick start](#quick-start) · [Docs](#documentation) · [Team](#team)
+
+Made with ❤️ by **Team Straw Hat Pirates** for the [WeMakeDevs AWS Environment Hackathon](https://www.wemakedevs.org/aws/env)
+
+</div>
 
 ---
 
-## Executive Summary
+## Live demo
 
-The National Capital Territory (NCT) of Delhi runs 376 anti-smog guns, 266 water sprinklers and 91 mechanised road sweepers. They follow static schedules, and there is no routine way to tell whether a given spray run lowered ground-level particulate matter or whether the wind did it.
+Deployed on **Amazon EC2 in ap-south-1 (Mumbai)**, next to its AWS data plane.
 
-HawaCommand is the decision layer for that fleet. It ingests live station data, fits a 500 m digital twin over Delhi (10,600 cells), attributes likely sources, forecasts PM2.5 up to 72 hours ahead with P10/P50/P90 bands, ranks hotspots by human exposure rather than raw AQI, drafts a dispatch plan for officer approval, and verifies interventions with a synthetic-control method.
+| What | Link |
+|---|---|
+| Officer web console (landing page) | [ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/) |
+| Live hotspot map | [/map](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/map) |
+| 72-hour forecast and GRAP | [/forecast](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/forecast) |
+| Plan review and approval | [/plans](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/plans) |
+| What-If vs usual routes | [/what-if](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/what-if) |
+| Verified impact | [/impact](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/impact) |
+| Fleet and HawaTag state | [/fleet](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/fleet) |
+| Alerts | [/alerts](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/alerts) |
+| Hindi-first driver view | [/route](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/route) |
+| Backend API (Swagger UI) | [:8000/docs](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:8000/docs) |
+| Which AWS services are live | [:8000/readyz](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:8000/readyz) |
 
-This is a hackathon build. The pipeline runs end to end, but parts of it run on simulated or hard-coded data. The [Implementation status](#implementation-status) table below says which parts are real.
+- Demo video: **3 minutes**, see the submission page.
+- Android app: build the APK with `make app-apk` ([guide](app_frontend/README.md)).
 
 ---
 
-## The Closed-Loop Architecture
+## The problem
 
+- Delhi runs **376 anti-smog guns, 266 water sprinklers and 91 mechanised road sweepers**.
+- They follow **static schedules**, not where the pollution or the people are.
+- Nobody can tell whether a spray run **lowered PM2.5** or whether the wind did it.
+- Citizens see smoke and dust but have **no channel that leads to action**.
+- Contractors can skip routes; there is **no proof a machine actually worked**.
+
+## The solution
+
+HawaCommand is the decision layer for that fleet: a closed loop that learns which interventions work.
+
+```mermaid
+flowchart LR
+  S["Sense<br/>stations, sensors, citizens"] --> M["Map<br/>500 m digital twin"]
+  M --> A["Attribute<br/>dust, traffic, burning"]
+  A --> F["Forecast<br/>72 h, P10/P50/P90"]
+  F --> D["Decide<br/>exposure-ranked plan"]
+  D --> X["Act<br/>officer approves, fleet sprays"]
+  X --> V["Verify<br/>synthetic control"]
+  V -->|what worked feeds the next plan| D
 ```
-  [Sense] ───────> [Map] ────────> [Attribute] ───────> [Forecast]
-     ▲                                                         │
-     │                                                         ▼
- [Verify] <─────── [Act] <──────────────────────────────── [Decide]
-     │                                                         │
-     └───────────── What Worked Feeds The Next Plan ───────────┘
+
+| Stage | What it does | Where |
+|---|---|---|
+| Sense | Live WAQI / OpenAQ stations, HawaTag vehicle telemetry over **IoT Core + Kinesis**, citizen photo reports to **S3** | [backend](backend/README.md), [AWS architecture](docs/AWS_ARCHITECTURE.md) |
+| Map | Gaussian-process kriging over **10,600 cells** of 500 m, each with PM2.5, PM10 and confidence | [AI-ML models](docs/aiml/MODELS.md) |
+| Attribute | Fingerprint rules label each hotspot: road dust, traffic, burning, regional smoke, industrial | [AI-ML README](AI-ML/README.md) |
+| Forecast | **21 LightGBM quantile models**, 1 to 72 h, with CPCB AQI and the CAQM GRAP stage | [forecaster card](AI-ML/models/forecaster_model_card.md) |
+| Decide | Ranks hotspots by **people exposed** (population, schools, hospitals), not raw AQI; drafts a cause-matched dispatch plan | [AI-ML agents](docs/aiml/AGENTS.md) |
+| Act | Officer approves in the console; drivers get Hindi-first routes; **SNS** alerts and push go out | [web](frontend/README.md), [app](app_frontend/README.md) |
+| Verify | Synthetic control with placebo tests: effect size with a 95 % interval | [causal verifier](docs/aiml/MODELS.md) |
+
+---
+
+## Built on AWS
+
+**22 AWS services integrated: 9 live on the deployment, 4 more wired in code, 9 in the infrastructure-as-code path.**
+Every service is optional and falls back to process memory, so the demo survives any single outage. Deep dive: [AWS architecture](docs/AWS_ARCHITECTURE.md) · Setup: [AWS setup guide](docs/AWS_SETUP_GUIDE.md).
+
+Legend: ![live](https://img.shields.io/badge/-live-2EA44F) running on the deployment (see [/readyz](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:8000/readyz)) · ![wired](https://img.shields.io/badge/-wired-0969DA) in code, switched on by one variable · ![IaC](https://img.shields.io/badge/-IaC-8250DF) template or workflow in the repo
+
+| # | Service | How HawaCommand uses it | Resource / code | Status |
+|---|---|---|---|---|
+| 1 | ![Amazon EC2](https://img.shields.io/badge/Amazon%20EC2-FF9900?logo=amazonec2&logoColor=white) | Hosts the backend, AI-ML engine and web console under PM2 | `infrastructure/ec2/` | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 2 | ![AWS IAM](https://img.shields.io/badge/AWS%20IAM-DD344C?logo=amazoniam&logoColor=white) | Instance role with a least-privilege policy; no access keys on the server | `hawa-backend-ec2-role`, policy `hawa-backend-access` | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 3 | ![Amazon S3](https://img.shields.io/badge/Amazon%20S3-569A31?logo=amazons3&logoColor=white) | Citizen photo evidence: pre-signed POST (type, size, SHA-256 pinned), pre-signed GET, upload check | `hawa-citizen-evidence-prod`, [`aws/uploads.py`](backend/src/hawa_backend/aws/uploads.py) | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 4 | ![Amazon DynamoDB](https://img.shields.io/badge/Amazon%20DynamoDB-4053D6?logo=amazondynamodb&logoColor=white) | Citizen grievances (2 GSIs, PITR) and fleet telemetry (7-day TTL) | `hawa-citizen-grievances`, `hawa-fleet-telemetry`, [`services/`](backend/src/hawa_backend/services/) | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 5 | ![Amazon Kinesis](https://img.shields.io/badge/Amazon%20Kinesis-8C4FFF?logo=amazonaws&logoColor=white) | Telemetry bus: API producer, in-process consumer with Redis checkpoints | `hawa-sensor-data`, [`kinesis_consumer.py`](backend/src/hawa_backend/aws/kinesis_consumer.py) | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 6 | ![AWS IoT Core](https://img.shields.io/badge/AWS%20IoT%20Core-3F8624?logo=amazonaws&logoColor=white) | MQTT topic for HawaTag trackers; rule forwards to Kinesis | `hawa/vehicles/+/telemetry`, rule `hawa_vehicle_telemetry` | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 7 | ![Amazon ElastiCache](https://img.shields.io/badge/Amazon%20ElastiCache-C925D1?logo=redis&logoColor=white) | Live fleet geo index, twin snapshot (15 min TTL), plans, alerts, WebSocket fan-out | `geo:fleet:active`, `grid:pm25:500m:*`, [`redis_store.py`](backend/src/hawa_backend/core/redis_store.py) | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 8 | ![Amazon SNS](https://img.shields.io/badge/Amazon%20SNS-FF4F8B?logo=amazonaws&logoColor=white) | Alert broadcasts with ward filter policies; email/SMS subscribers; plan-approval notices | `hawa-citizen-push-alerts`, [`services/alerts.py`](backend/src/hawa_backend/services/alerts.py) | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 9 | ![AWS KMS](https://img.shields.io/badge/AWS%20KMS-DD344C?logo=amazonaws&logoColor=white) | Server-side encryption of the Kinesis stream and the cache at rest | `aws/kinesis` managed key | ![live](https://img.shields.io/badge/-live-2EA44F) |
+| 10 | ![AWS Secrets Manager](https://img.shields.io/badge/Secrets%20Manager-DD344C?logo=amazonaws&logoColor=white) | Backend secrets loaded at startup; Firebase service-account key for push | `hawa/backend`, `hawa/firebase/service-account` | ![wired](https://img.shields.io/badge/-wired-0969DA) |
+| 11 | ![Amazon Bedrock](https://img.shields.io/badge/Amazon%20Bedrock-01A88D?logo=amazonaws&logoColor=white) | LLM provider for the Planner, Auditor, Forecaster and Communicator agents | `LLM_PROVIDER=bedrock`, [`llm_provider.py`](AI-ML/src/hawa_ml/agents/llm_provider.py) | ![wired](https://img.shields.io/badge/-wired-0969DA) |
+| 12 | ![AWS Step Functions](https://img.shields.io/badge/Step%20Functions-FF4F8B?logo=amazonaws&logoColor=white) | Forecast workflow (sync) and dispatch workflow started on plan approval | [`aws/forecast.py`](backend/src/hawa_backend/aws/forecast.py), [`aws/dispatch.py`](backend/src/hawa_backend/aws/dispatch.py) | ![wired](https://img.shields.io/badge/-wired-0969DA) |
+| 13 | ![Amazon SageMaker](https://img.shields.io/badge/Amazon%20SageMaker-01A88D?logo=amazonaws&logoColor=white) | Forecast endpoint, results cached in DynamoDB | `HAWA_AWS_FORECAST_ENDPOINT` | ![wired](https://img.shields.io/badge/-wired-0969DA) |
+| 14 | ![AWS CloudFormation](https://img.shields.io/badge/CloudFormation-FF4F8B?logo=amazonaws&logoColor=white) | Three templates: data plane, cache, container service | [`infrastructure/cloudformation/`](infrastructure/cloudformation/) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 15 | ![Amazon ECR](https://img.shields.io/badge/Amazon%20ECR-FF9900?logo=amazonaws&logoColor=white) | Backend image registry, pushed by GitHub Actions | [`backend-image.yml`](.github/workflows/backend-image.yml) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 16 | ![Amazon ECS](https://img.shields.io/badge/ECS%20on%20Fargate-FF9900?logo=amazonecs&logoColor=white) | Backend service, 1 vCPU / 2 GB, deployment circuit breaker | [`hawa-ecs.yaml`](infrastructure/cloudformation/hawa-ecs.yaml) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 17 | ![Elastic Load Balancing](https://img.shields.io/badge/Application%20Load%20Balancer-8C4FFF?logo=amazonaws&logoColor=white) | Health check `/health`, WebSocket-friendly idle timeout, HTTPS listener | `hawa-ecs.yaml` | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 18 | ![Application Auto Scaling](https://img.shields.io/badge/Auto%20Scaling-FF4F8B?logo=amazonaws&logoColor=white) | CPU target tracking at 70 %, up to 6 tasks | `hawa-ecs.yaml` | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 19 | ![Amazon CloudWatch](https://img.shields.io/badge/CloudWatch-FF4F8B?logo=amazoncloudwatch&logoColor=white) | Container logs and Container Insights | `/ecs/hawa-command-backend` | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 20 | ![AWS Certificate Manager](https://img.shields.io/badge/Certificate%20Manager-DD344C?logo=amazonaws&logoColor=white) | TLS 1.3 certificate for the load balancer | `CertificateArn` parameter | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 21 | ![Amazon Route 53](https://img.shields.io/badge/Route%2053-8C4FFF?logo=amazonroute53&logoColor=white) | `api.<domain>` record for the API | [setup guide §11](docs/AWS_SETUP_GUIDE.md#11-optional-domain-and-https) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 22 | ![AWS Amplify](https://img.shields.io/badge/Amplify%20Hosting-FF9900?logo=awsamplify&logoColor=white) | Build spec for hosting the web console | [`frontend/amplify.yml`](frontend/amplify.yml) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+
+- One command checks every configured service: `uv run hawa aws-check` ([CLI](backend/README.md#5-cli)).
+- Every call has a fallback: a failing AWS service degrades one feature, never the whole app.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph People
+    OFF["Ward officer<br/>web console"]
+    FLD["Driver, inspector,<br/>school, site manager<br/>Flutter app"]
+    CIT["Citizen<br/>Flutter app"]
+  end
+  subgraph Field
+    TAG["HawaTag trackers<br/>or hawa simulate-fleet"]
+  end
+  subgraph EC2["Amazon EC2 · ap-south-1"]
+    WEB["Next.js console :3000"]
+    API["FastAPI backend :8000"]
+    ML["AI-ML engine hawa_ml"]
+  end
+  subgraph AWS["AWS data plane"]
+    IOT["IoT Core"]
+    KIN["Kinesis"]
+    DDB[("DynamoDB")]
+    S3[("S3 evidence")]
+    RED[("ElastiCache")]
+    SNS["SNS"]
+  end
+  OFF --> WEB --> API
+  FLD --> API
+  CIT --> API
+  CIT -- "pre-signed upload" --> S3
+  TAG -- MQTT --> IOT --> KIN --> API
+  API --> ML
+  API <--> RED
+  API --> DDB
+  API --> SNS --> MAIL["Email / SMS"]
+  API -.->|FCM push| CIT
+  ML --> EXT["WAQI, OpenAQ, Open-Meteo,<br/>NASA FIRMS, OpenStreetMap"]
 ```
 
-| Stage | Subsystem | What the code does today |
-|---|---|---|
-| 1. Sense | Ingestion | Backend pulls live Delhi station readings from WAQI, then OpenAQ, then a 5-station baseline (cached 15 min in process). AI-ML ingests CPCB CSVs, OpenAQ station metadata, Open-Meteo weather, NASA FIRMS fires and OSM POIs, each with a synthetic fallback. The sensor fleet (HawaPod-M/S, HawaTag) is simulated. |
-| 2. Map | 500 m digital twin | scikit-learn Gaussian Process (constant x RBF + white-noise kernel) over 10,600 cells, with a straight-line wind shift. Each cell carries PM2.5, PM10, variance and a 0.20-0.98 confidence. |
-| 3. Attribute | Source fingerprint | Rule engine (`config/fingerprint_rules.yaml`) labels each hotspot road dust, traffic, open burning, regional smoke, industrial or unknown, plus an upwind back-trajectory pin. A LightGBM classifier trained on weak proxy labels exists but is not used at runtime. |
-| 4. Forecast | 72 h quantile forecaster | 21 LightGBM quantile models (horizons 1, 3, 6, 12, 24, 48, 72 h x P10/P50/P90), CPCB AQI and CAQM GRAP stage per horizon. |
-| 5. Decide | Exposure engine + optimiser | Exposure `E = max(0, C - 60) x population x diurnal multiplier x vulnerability`. A greedy, cause-compatible dispatcher assigns machines (Google OR-Tools is detected but not used). Planner and Auditor agents explain and check the plan; the officer approves in the web console. |
-| 6. Act | Field and citizen apps | Flutter app with driver, inspector, school, citizen and site-manager roles. Citizen reports, alert areas, push tokens and the live fleet radar can use the backend; sign-in, tasks and inspections still run on an in-app fake backend. |
-| 7. Verify | Synthetic control | Constrained donor weights (SLSQP) and in-space placebo tests give an effect with a 95 % interval. It has been validated on a seeded synthetic panel with an injected -18.5 % effect (recovered -18.82 %). |
+- **One Python environment** runs the backend and the AI-ML engine (`backend/.venv`, locked by uv).
+- **Fallbacks everywhere:** AI-ML over HTTP, then in-process, then fixtures; AWS and Redis, then memory.
+- **Honest data:** anything simulated carries `simulated: true` and a badge in the UI.
+- More: [system overview](docs/SYSTEM_OVERVIEW.md) · [backend architecture](docs/backend/ARCHITECTURE.md) · [AWS architecture](docs/AWS_ARCHITECTURE.md)
 
 ---
 
-## Implementation status
+## Features
 
-Status words used in every doc: **Implemented**, **Partial** (works, with a named gap), **Stub/Mock** (fixtures, hard-coded or synthetic data), **Planned** (designed, not in code).
+### Officer web console
 
-| Area | Status | Notes |
-|---|---|---|
-| AI-ML HTTP engine (`AI-ML/`, port 8100) | Implemented | 13 routes, mounted at `/`, `/v1` and `/internal/v1`, no auth |
-| Digital twin | Partial | The `/twin` route fits on 4 hard-coded points; the backend kriges live WAQI stations in process. Leave-one-station-out MAE (37.8) is worse than nearest-station (7.4) on the 3 committed stations |
-| 72 h forecaster | Partial | Models are trained; inference fills every lag feature from one current PM2.5 value and ignores the cell id |
-| Exposure ranking, rule attribution, GRAP | Implemented | |
-| Dispatch optimiser | Partial | Greedy only; OR-Tools CVRP is Planned |
-| What-If vs usual routes | Stub/Mock | Baseline is the AI result x 0.32, so the gain is always 212.5 % |
-| Causal verification | Partial | Algorithm works; API always replays the seeded injected-effect test |
-| Agents (Forecaster, Planner, Auditor, Communicator) | Partial | Plain Python classes; Groq or Bedrock only rephrases, templates when no key; no Strands SDK |
-| Backend API (`backend/`, port 8000) | Partial | 50 operations on 45 paths + WebSocket `/v1/ws/fleet`; plans in Redis or memory; driver route is a fixture; no user sign-in (officer writes and telemetry ingest take an `X-Api-Key`) |
-| Database schema and seed | Partial | 23 SQLAlchemy tables, Alembic migration `0001`, idempotent seed (`make db-update db-seed`); the API does not read or write the database yet |
-| Redis, WebSocket | Implemented (Redis optional) | `HAWA_REDIS_URL`: live fleet geo index, twin snapshot, plans, push tokens, alerts; `/v1/ws/fleet` pushes each ping. Kafka is still Planned |
-| Citizen reports (Citizen Eyes) | Implemented | `/v1/reports*` in DynamoDB `hawa-citizen-grievances` (or memory): automated rule-based verification, officer ticket/close, push to the reporter |
-| Live fleet telemetry | Implemented | HTTP or IoT Core → Kinesis → backend; DynamoDB `hawa-fleet-telemetry` history; live audit for missed-machine reports |
-| Optional AWS layer | Implemented (off by default) | S3 evidence uploads and photo URLs, DynamoDB grievances and fleet telemetry, Kinesis producer and consumer, IoT Core rule, SNS broadcasts and subscriptions, Secrets Manager, FCM push, forecast via Step Functions/SageMaker with DynamoDB cache, dispatch Step Functions. No state machines or SageMaker model in the repo. Setup: [docs/AWS_SETUP_GUIDE.md](docs/AWS_SETUP_GUIDE.md) |
-| Web console (`frontend/`, port 3000) | Partial | Next.js 15 + MapLibre; runs on built-in mocks when `NEXT_PUBLIC_API_URL` is empty |
-| Flutter app (`app_frontend/`) | Partial | Air map, air-near-me, school forecast and the live-operations radar call the backend; reports, alert area and push tokens do too with `REAL_FEATURES` (see [ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md#5-flutter-app---dart-define)); auth, tasks and inspections use the in-app fake backend. Firebase is configured through build defines |
-| Safe route ("Safe Air Navigator") | Stub/Mock | Fixed multipliers and synthetic waypoints; the "43 % lower" figure is a literal string, not a computed result |
-| Ward scorecards | Stub/Mock | Hard-coded leaderboard |
-| Physical sensors | Planned | No HawaTag firmware; `hawa simulate-fleet` sends telemetry through the real HTTP, IoT Core or Kinesis path |
-| Containers and IaC | Implemented | `backend/Dockerfile`; CloudFormation `hawa-integration.yaml`, `hawa-redis.yaml`, `hawa-ecs.yaml` (Fargate + ALB + autoscaling); `.github/workflows/backend-image.yml` builds and pushes to ECR (manual trigger). No test CI |
+- **Live hotspot map** of 500 m cells with likely cause, exposure and a suspect upwind pin.
+- **72-hour forecast** with P10/P50/P90 bands and the GRAP stage checklist.
+- **AI dispatch plans**: Planner drafts, Auditor objects (for example "sprinkler near a CPCB station"), officer approves in one click.
+- **What-If**: usual routes vs the AI plan in people-hours of exposure avoided.
+- **Verified impact**: each intervention's effect with a 95 % interval from synthetic control.
+- **Fleet** with HawaTag pump flow, litres and status; **alerts** with WhatsApp-style preview.
+
+### Field and citizen app (Flutter, English and Hindi)
+
+| Role | What they get |
+|---|---|
+| Driver | Hindi-first route, stop-by-stop, HawaTag auto-done, shift tracking |
+| Inspector | Targets with evidence, on-site check, outcome with photos |
+| School | Safe outdoor windows, indoor vs outdoor, 72 h forecast |
+| Citizen | AI air map with clean-air routes, air near me, alerts, **Citizen Eyes** photo reports, live **Govt in Action** radar |
+| Site manager | Site compliance score |
+
+- **Offline-first**: every action goes through an outbox and syncs when the network returns.
+- **Built for the street**: outdoor high-contrast theme, large buttons, 638 strings in each language.
+
+### Accountability
+
+- **Citizen Eyes**: photo report, automated verification (S3 check, location, cause rules), officer ticket and close, push at every step.
+- **No ghost workers**: a "missed machine" flag is checked against the vehicle's real GPS and pump telemetry; no work on site means an SLA breach.
+- **Live radar**: vehicle positions reach the app over a WebSocket within milliseconds of the ping.
 
 ---
 
-## Repository Structure
+## For the judges
+
+| Criterion | Where to look |
+|---|---|
+| **Idea and impact** | Real fleet, real gap: 733 machines on static schedules. We rank by people exposed and prove what worked ([problem](#the-problem), [system overview](docs/SYSTEM_OVERVIEW.md)) |
+| **Built on AWS** | 22 services integrated, 9 live: EC2, IAM, S3, DynamoDB, Kinesis, IoT Core, ElastiCache, SNS, KMS ([table](#built-on-aws), [deep dive](docs/AWS_ARCHITECTURE.md)) |
+| **Design and usability** | One-click plan approval, Hindi-first driver view, bilingual offline-first app, outdoor theme ([web pages](docs/frontend/PAGES.md), [app screens](docs/app/SCREENS.md)) |
+| **Execution** | A fully developed prototype, deployed and live ([demo](#live-demo)); 135 automated tests; `hawa aws-check` verifies the cloud wiring ([testing](#testing)) |
+| **Demo video** | 3 minutes: the problem, the officer loop, the field app, and where AWS fits |
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| AI / ML | Python 3.11, scikit-learn Gaussian process, LightGBM quantile models, SciPy synthetic control, Groq or Bedrock LLM agents |
+| Backend | FastAPI, Pydantic v2, boto3, redis-py, httpx, SQLAlchemy 2 + Alembic (schema ready), uv |
+| Web console | Next.js 15, React 19, TypeScript, Tailwind CSS, MapLibre GL, zod contracts |
+| Mobile | Flutter 3.44, Riverpod 3, go_router, drift (SQLite), Dio, flutter_map, Firebase Cloud Messaging |
+| Cloud | EC2, S3, DynamoDB, Kinesis, IoT Core, ElastiCache, SNS, IAM, KMS, Secrets Manager, CloudFormation, ECS Fargate |
+| Data | WAQI, OpenAQ, CPCB, Open-Meteo, NASA FIRMS, OpenStreetMap, WorldPop |
+
+---
+
+## Repository layout
 
 ```
 HawaCommand/
-|-- AI-ML/                     # hawa_ml: twin, forecaster, attribution, exposure, optimiser, causal verifier, agents, FastAPI app
-|-- backend/                   # hawa_backend FastAPI service + hawa_contracts package (backend/contracts/)
-|-- frontend/                  # Next.js 15 officer console, landing page, driver view
-|-- app_frontend/              # Flutter app (driver, inspector, school, citizen, site manager)
-|-- docs/                      # System overview, contracts, per-discipline docs, AWS runbooks
-|-- Makefile                   # install, db-up, db-update, db-seed, aiml-api, backend, frontend
-|-- infrastructure/
-|   |-- cloudformation/        # hawa-integration.yaml (DynamoDB tables, Kinesis, IoT rule, SNS, IAM), hawa-redis.yaml, hawa-ecs.yaml
-|   `-- ec2/                   # PM2 ecosystem file and Caddyfile (HTTPS) for a single EC2 host
-|-- .github/workflows/         # backend-image.yml: build backend/Dockerfile and push to ECR (manual)
-|-- LICENSE
-`-- README.md
+├── AI-ML/              hawa_ml: twin, forecaster, attribution, exposure, optimiser, causal verifier, agents
+├── backend/            FastAPI API, AWS layer, services (reports, fleet, alerts, push), CLI, contracts package
+├── frontend/           Next.js officer console, landing page, driver view
+├── app_frontend/       Flutter app for drivers, inspectors, schools, citizens, site managers
+├── infrastructure/     CloudFormation (data plane, cache, ECS), EC2 PM2 file and Caddyfile
+├── docs/               System, AWS, contracts and per-discipline documentation
+├── .github/workflows/  Build the backend image and push it to ECR
+└── Makefile            install, run and build targets
 ```
+
+Full tree: [backend](docs/backend/STRUCTURE.md) · [AI-ML](docs/aiml/STRUCTURE.md) · [web](docs/frontend/STRUCTURE.md) · [app](docs/app/STRUCTURE.md)
 
 ---
 
-## Local Development and Setup
+## Quick start
 
-### Prerequisites
-
-- [uv](https://docs.astral.sh/uv/) (installs Python 3.11 from `backend/.python-version` if needed)
-- Node.js 20 or newer and pnpm
-- Docker, only if you want the bundled Postgres (`make db-up`)
-- Flutter 3.44.0 (pinned in `app_frontend/.fvmrc`; use `fvm`)
-
-One Python environment, `backend/.venv`, runs both the backend and the AI-ML engine: `backend/pyproject.toml` depends on `hawa-ml` (`../AI-ML`) as an editable path dependency, and `backend/uv.lock` pins everything.
-
-### Make targets (run from the repo root)
-
-| Command | What it runs | Port |
-|---|---|---|
-| `make install` | `uv sync --extra dev` in `backend/` (backend + AI-ML + contracts), `pnpm install --frozen-lockfile` in `frontend/` | — |
-| `make db-up` | `docker compose up -d postgres` (PostGIS 16, user/password/db `hawa`) | 5432 |
-| `make db-update` | `uv run alembic upgrade head` in `backend/` | — |
-| `make db-seed` | `uv run python -m hawa_backend.db.seed` in `backend/` (idempotent) | — |
-| `make aiml-data` | `python -m hawa_ml.twin.grid` in `AI-ML/` (active virtualenv): builds `data/processed/grid_covariates_{500m,1000m}.parquet` once | — |
-| `make aiml-api` | `uvicorn hawa_ml.api.main:app --host 0.0.0.0 --port 8100 --reload` from `AI-ML/`, using the active virtualenv (activate `backend/.venv` first). The first start builds `data/processed/` and can take a minute; wait for `Application startup complete` | 0.0.0.0:8100 |
-| `make backend` | `uvicorn hawa_backend.api.app:app` from `backend/` | 0.0.0.0:8000 |
-| `make frontend` | `pnpm install`, `pnpm build`, `pnpm start` in `frontend/` | 3000 |
-| `make app-apk` | Flutter `pub get`, `gen-l10n`, `build_runner`, then `flutter build apk --release --flavor staging --dart-define-from-file=env/staging.json` in `app_frontend/` | — |
-
-Every environment variable (required and optional) for each component is listed in [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md).
-
-Variables you can override: `AIML_HOST`, `AIML_PORT`, `BACKEND_HOST`, `BACKEND_PORT`, `API_URL` (backend URL baked into the web build as `NEXT_PUBLIC_API_URL`), `HAWA_DATABASE_URL`, `UV`, `PNPM`.
-
-### First run
+**Prerequisites:** [uv](https://docs.astral.sh/uv/), Node.js 20+ with pnpm, Flutter 3.44 via fvm (app only). Docker is optional.
 
 ```bash
-make install
-make db-up            # or point HAWA_DATABASE_URL at an existing Postgres
-make db-update
-make db-seed
+make install                                   # backend + AI-ML env (uv), web console deps (pnpm)
+source backend/.venv/bin/activate && make aiml-api   # AI-ML engine on :8100
+make backend                                   # API on :8000, Swagger at /docs
+make frontend API_URL=http://localhost:8000    # web console on :3000
+make app-apk                                   # Android APK (staging flavor)
 ```
 
-Then in three terminals (or tmux panes):
+- Nothing is required to start: without keys, AWS or Redis, everything runs on fixtures and memory.
+- Settings: [environment variables](docs/ENVIRONMENT_VARIABLES.md) · AWS: [setup guide](docs/AWS_SETUP_GUIDE.md).
+- Component runbooks: [backend](backend/README.md) · [AI-ML](AI-ML/README.md) · [web](frontend/README.md) · [app](app_frontend/README.md).
 
-```bash
-source backend/.venv/bin/activate && make aiml-api   # 1. AI-ML engine on 0.0.0.0:8100
-make backend                                    # 2. backend on 0.0.0.0:8000
-make frontend API_URL=http://localhost:8000     # 3. web console on :3000
-```
+### Commands
 
-Checks: `curl http://127.0.0.1:8100/health` returns `{"status":"healthy",...}`; `curl http://127.0.0.1:8000/healthz` returns `{"status":"ok"}`; backend OpenAPI UI at `http://127.0.0.1:8000/docs`.
-
-- **Database.** `HAWA_DATABASE_URL` defaults to `postgresql+asyncpg://hawa:hawa@localhost:5432/hawa` (set it in `backend/.env` or on the command line). For a quick demo without Postgres: `make db-update db-seed HAWA_DATABASE_URL=sqlite+aiosqlite:///./hawa.db` (relative to `backend/`; `aiosqlite` comes with `make install`). The API does not read the database yet (plans are in memory, other routes use AI-ML or fixtures); the schema and seed data are there for the persistence work.
-- **On a server.** `make aiml-api` listens on `0.0.0.0:8100`. Do not open port 8100 in the security group: only the backend calls the engine, and it has no auth and some GET routes write files. To bind it to localhost instead: `make aiml-api AIML_HOST=127.0.0.1`. Build the web console with the public backend URL: `make frontend API_URL=http://<server-ip>:8000`. `NEXT_PUBLIC_API_URL` is baked in at build time.
-- **AI-ML keys** (all optional) live in `AI-ML/.env` (`cp AI-ML/.env.example AI-ML/.env`): `GROQ_API_KEY` or `LLM_PROVIDER=bedrock` for agent text, `OPENAQ_API_KEY`, `NASA_FIRMS_MAP_KEY`, `OFFLINE_MODE=true` to avoid all network calls. The `llm` extra (groq, openai, boto3) is installed through the backend env.
-- **Backend settings** live in `backend/.env` (`cp backend/.env.example backend/.env`), resolved from the package location, so it is read whatever directory you start from. Set `WAQI_TOKEN` and `OPENAQ_API_KEY` there for live stations; without them the backend uses 5 built-in baseline stations. The optional AWS layer is configured with `HAWA_AWS_*` (listed in `backend/.env.example`). AI-ML keys live in `AI-ML/.env`, which `hawa_ml` resolves the same way.
-- The AI-ML package also has its own `make` targets (`cd AI-ML && make help`); its `make api` uses port 8000, which collides with the backend, so use `make aiml-api` from the root instead.
-
-### Without Make
-
-```bash
-# Python env (from backend/)
-cd backend && uv sync --extra dev
-# or with pip: python3 -m venv .venv && . .venv/bin/activate && pip install -e contracts -e "../AI-ML[llm]" -e ".[dev]"
-
-uv run alembic upgrade head                          # from backend/
-uv run python -m hawa_backend.db.seed                # from backend/
-uv run uvicorn hawa_backend.api.app:app --host 0.0.0.0 --port 8000          # from backend/
-cd ../AI-ML && uv run --project ../backend uvicorn hawa_ml.api.main:app --host 127.0.0.1 --port 8100
-
-cd ../frontend && pnpm install && pnpm build && pnpm start                   # NEXT_PUBLIC_API_URL in .env.local
-```
-
-### Flutter app (from `app_frontend/`)
-
-**Shareable APK:** pass your backend URL at build time (from `app_frontend/`):
-
-```bash
-cd app_frontend
-fvm flutter pub get
-fvm flutter gen-l10n
-fvm dart run build_runner build --delete-conflicting-outputs
-fvm flutter build apk --release --flavor staging \
-  --dart-define=FLAVOR=staging \
-  --dart-define=API_BASE_URL=http://<backend-host>:8000
-```
-
-Output: `app_frontend/build/app/outputs/flutter-apk/app-staging-release.apk`, one universal APK that installs on any Android phone as **Hawa STG**. Use the staging flavor: the dev flavor only allows plain HTTP to the emulator and localhost. Include `:8000` and no trailing slash. Without `app_frontend/android/key.properties` the APK is signed with the debug key, which is fine for sideloading. Check the URL on the phone under Settings → Dev tools. `make app-apk` from the repo root does the same using `app_frontend/env/staging.json`.
-
-**Development run on an emulator or USB device:**
-
-```bash
-cd app_frontend
-fvm install && fvm flutter pub get
-fvm flutter gen-l10n && fvm dart run build_runner build
-
-# Physical Android device over USB: forward the backend port
-adb reverse tcp:8000 tcp:8000
-
-fvm flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000
-```
-
-- `USE_FAKE_API` defaults to `true`: login (OTP `123456`), driver, inspector, reports and site screens run on the in-app fake backend. `REAL_FEATURES` (default `air_map,citizen_air,alerts,school_forecast`) always call the backend; add `citizen_reports,citizen_subscription,push` to send reports, the alert area and push tokens there too (`app_frontend/env/staging.json.example`).
-- Default `API_BASE_URL` is `http://10.0.2.2:8000` (Android emulator to host).
-
----
-
-## API Endpoints Reference (backend, port 8000)
-
-| Method | Endpoint | Data source |
-|---|---|---|
-| `GET` | `/healthz`, `/health`, `/livez`, `/v1/health` | Static `{"status":"ok"}` |
-| `GET` | `/readyz` | Which optional backends are on (Redis pinged, AWS from settings) |
-| `GET` | `/v1/twin` | AI-ML twin (live WAQI stations kriged in process), fixture fallback |
-| `GET` | `/v1/hotspots`, `/v1/hotspots/{cell_id}` | AI-ML exposure ranking, fixture fallback |
-| `GET` | `/v1/forecast`, `/v1/forecast/{cell_id}` | AI-ML forecaster |
-| `GET` | `/v1/plans`, `/v1/plans/{plan_id}` | Redis or in-memory store (seed plan `214` is a fixture) |
-| `POST` | `/v1/plans/draft` | AI-ML Planner + Auditor |
-| `POST` | `/v1/plans/{plan_id}/approve`, `/request-changes`, `/suggestions/{comment_id}/apply` | Redis or in-memory state; approval can start Step Functions and publish an SNS notice |
-| `GET`, `POST` | `/v1/plans/{plan_id}/compare`, `/v1/plans/{plan_id}/simulate` | AI-ML What-If |
-| `GET` | `/v1/devices` | Live HawaTag telemetry, then fixtures |
-| `GET` | `/v1/impact`, `/v1/impact/library` | Fixture enriched with AI-ML verification; AI-ML effectiveness library |
-| `GET`, `POST` | `/v1/impact/{id}/verify`, `/v1/interventions/{id}/verify` | AI-ML causal verifier |
-| `GET` | `/v1/alerts` | Sent broadcasts, then fixtures |
-| `POST` | `/v1/alerts/broadcast`, `/v1/alerts/subscribers` | SNS + FCM topic; SNS subscribe (admin key) |
-| `GET` | `/v1/driver/route` | Fixture |
-| `POST` | `/v1/citizen/safe-route` | `hawa_ml` in process (heuristic) |
-| `GET` | `/v1/citizen/safe-window` | `hawa_ml` in process (fixed diurnal curve) |
-| `GET` | `/v1/citizen/live-operations` | Live telemetry first, then the simulated demo fleet |
-| `GET` | `/v1/citizen/wards/leaderboard` | Hard-coded |
-| `POST` | `/v1/citizen/reports/missed-machine` | The asset's live track; `hawa_ml` simulated auditor when it sent no telemetry |
-| `GET` | `/open/v1/air` | AI-ML twin cells |
-| `POST` | `/v1/uploads/presign` | Pre-signed S3 POST for evidence photos (`HAWA_AWS_EVIDENCE_BUCKET`; `503` if not configured) |
-| `POST`, `GET` | `/v1/reports`, `/v1/reports/mine`, `/v1/reports/{id}` | Citizen reports (DynamoDB grievances or memory) |
-| `GET`, `PATCH` | `/v1/reports` (officer list), `/v1/reports/{id}` | Officer view and status changes (admin key) |
-| `PUT`, `GET` | `/v1/me/push-token`, `/v1/me/alert-subscription` | Per-caller push tokens and alert area (Redis or memory) |
-| `POST` | `/v1/telemetry/vehicles` | HawaTag pings (ingest key) → memory, Redis, DynamoDB, Kinesis |
-| `GET` | `/v1/fleet/live`, `/v1/fleet/nearby`, `/v1/fleet/{asset_id}/track` | Live fleet, Redis `GEOSEARCH`, history |
-| `WS` | `/v1/ws/fleet` | Snapshot, then every ping as it arrives |
-
-Full request and response shapes: [docs/backend/API.md](docs/backend/API.md). AI-ML engine routes: [AI-ML/README.md](AI-ML/README.md#5-http-api).
-
----
-
-## Data Sources
-
-| Source | Used by | Status |
-|---|---|---|
-| WAQI map-bounds API | Backend live stations | Implemented |
-| OpenAQ v3 | Backend live stations (fallback); AI-ML station metadata | Implemented |
-| CPCB/DPCC CSVs (manual download to `AI-ML/data/external/cpcb/`) | Forecaster training | Implemented; synthetic 60-day data if absent |
-| Open-Meteo weather and CAMS | AI-ML `fetch_all.py` | Partial: fetched, not used by any model |
-| NASA FIRMS VIIRS fires | AI-ML upwind fire features | Partial: fetched, not used by any model |
-| OpenStreetMap Overpass POIs, WorldPop raster | 500 m grid covariates | Implemented, synthetic fallbacks |
-| ECMWF ERA5, IMD | none | Planned |
-| Sensor fleet (HawaPod-M/S, HawaTag) | AI-ML simulator | Simulated |
-
----
-
-## Testing and checks
-
-| Component | Command (run from the component folder) | Last result (2026-10-10) |
-|---|---|---|
-| AI-ML | `python -m pytest -q` (plain `pytest` / `make test` fails to collect `tests/test_phase7_api_pipelines.py`) | 37 passed, 1 failed on a clean checkout (needs `data/processed/stations_hourly.parquet`); 38 passed after `make data && make train` |
-| Backend | `uv run pytest -q` (from `backend/`) | 96 passed (2026-10-11). On Windows, LightGBM needs the model files with LF endings; `.gitattributes` now keeps them LF |
-| Web | `pnpm typecheck`, `pnpm build` | Both pass; `pnpm lint` fails because no ESLint config is committed (it opens the interactive setup) |
-| Flutter | `make lint`, `make test` | Not run (no Flutter SDK on the reviewing machine). The prototype files and the two tests that imported the old package name were removed on 2026-10-11 |
-
-The AI-ML suite is not hermetic: it rewrites four tracked JSON files under `AI-ML/data/`. Restore them with `git checkout -- AI-ML/data` after running it.
-
----
-
-## Known issues (cross-cutting)
-
-Per-component lists with file and line references are in each README. The WAQI and OpenAQ tokens that were hard-coded in commit `fec1f58` (`backend/src/hawa_backend/core/intel_client.py`) have been removed from the code; they remain in git history, so revoke or rotate them.
-
-1. `AI-ML/Makefile` serves the engine on port 8000, the backend's port; the backend expects 8100.
-2. The backend's What-If HTTP branch looks for a `delta_gain_pct` key that AI-ML never returns, so it always falls back (`intel_client.py:933`).
-3. There is no user sign-in; officer writes and telemetry ingest are protected only by shared `X-Api-Key` values (`HAWA_ADMIN_API_KEY`, `HAWA_INGEST_API_KEY`). CORS allows every origin on both Python services.
-4. The Flutter app's field endpoints `/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*` and `/v1/ws` are not served by the backend (`/v1/reports*`, `/v1/me/push-token`, `/v1/me/alert-subscription` and `/v1/ws/fleet` are).
-5. `AI-ML/scripts/eval_metrics.py` scores the attribution classifier in-sample against rule-generated labels, so its accuracy figures measure rule recovery, not attribution accuracy.
-
----
-
-## Cloud Integration
-
-The backend has an optional AWS layer (`backend/src/hawa_backend/aws/` and `services/`), enabled with `HAWA_AWS_ENABLED=true` plus each service's own variable. Each service falls back to process memory when its variable is unset.
-
-| Service | Used for |
+| Command | Does |
 |---|---|
-| S3 | Evidence photo uploads, report photo URLs |
-| DynamoDB | Citizen grievances, fleet telemetry, forecast cache |
-| Kinesis + IoT Core | Vehicle telemetry |
-| SNS | Alert broadcasts and email/SMS subscriptions |
-| Secrets Manager | Backend settings and the Firebase key |
-| ElastiCache | Shared state for several processes |
-| Step Functions / SageMaker | Forecast and dispatch |
-
-Firebase Cloud Messaging sends the push notifications.
-
-`uv run hawa aws-check` (in `backend/`) verifies a deployment. The repo has no state machine definitions, Lambdas or SageMaker model.
-
-Infrastructure as code:
-- `infrastructure/cloudformation/hawa-integration.yaml`: the data plane
-- `hawa-redis.yaml`: ElastiCache
-- `hawa-ecs.yaml`: ECS Fargate behind an ALB, with autoscaling and optional HTTPS
-- `backend/Dockerfile`, with `.github/workflows/backend-image.yml` to push it to ECR
-
-The web console has an `amplify.yml` for Amplify Hosting. RDS and test CI are Planned.
-
-- [docs/AWS_SETUP_GUIDE.md](docs/AWS_SETUP_GUIDE.md): step-by-step console setup
-- [docs/AWS_INTEGRATION.md](docs/AWS_INTEGRATION.md)
-- [docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md](docs/CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md)
+| `make install` | Sync the Python env and install web dependencies |
+| `make aiml-api` / `make backend` / `make frontend` | Run the engine (:8100), API (:8000), console (:3000) |
+| `make db-update db-seed` | Create and seed the 23-table schema (Postgres or SQLite) |
+| `make app-apk` | Build the shareable Android APK |
+| `uv run hawa aws-check` | Check every configured AWS service, Redis and FCM |
+| `uv run hawa simulate-fleet --target iot` | Drive a demo fleet through IoT Core, Kinesis or the API |
+| `uv run hawa consume-telemetry` | Run the Kinesis consumer as its own process |
 
 ---
 
-## Documentation Index
+## API at a glance
 
-- [Documentation home](docs/README.md)
-- [System Overview](docs/SYSTEM_OVERVIEW.md)
-- [Cross-Discipline Contracts](docs/CONTRACTS.md)
-- [Environment Variables](docs/ENVIRONMENT_VARIABLES.md)
-- [AWS Setup Guide](docs/AWS_SETUP_GUIDE.md)
-- Component runbooks: [AI-ML](AI-ML/README.md) · [Backend](backend/README.md) · [Web](frontend/README.md) · [Flutter app](app_frontend/README.md)
-- Per-discipline docs: [docs/aiml/](docs/aiml/README.md) · [docs/backend/](docs/backend/README.md) · [docs/frontend/](docs/frontend/README.md) · [docs/app/](docs/app/README.md)
+| Area | Endpoints |
+|---|---|
+| Air intelligence | `/v1/twin`, `/v1/hotspots`, `/v1/forecast`, `/open/v1/air` |
+| Plans | `/v1/plans`, `/v1/plans/draft`, `/v1/plans/{id}/approve`, `/v1/plans/{id}/compare` |
+| Impact | `/v1/impact`, `/v1/impact/library`, `/v1/interventions/{id}/verify` |
+| Citizen reports | `/v1/uploads/presign`, `/v1/reports`, `/v1/reports/mine`, `/v1/reports/{id}` |
+| Fleet | `/v1/telemetry/vehicles`, `/v1/fleet/live`, `/v1/fleet/nearby`, `/v1/fleet/{id}/track`, `WS /v1/ws/fleet` |
+| Alerts | `/v1/alerts`, `/v1/alerts/broadcast`, `/v1/alerts/subscribers`, `/v1/me/push-token` |
+| Citizen tools | `/v1/citizen/safe-route`, `/v1/citizen/safe-window`, `/v1/citizen/live-operations`, `/v1/citizen/reports/missed-machine` |
+| Ops | `/healthz`, `/readyz` |
+
+Every route, field and status code: [API reference](docs/backend/API.md).
+
+---
+
+## Testing
+
+| Suite | Command | Result |
+|---|---|---|
+| Backend | `cd backend && uv run pytest -q` | **97 passed** (AWS with moto, Redis with fakeredis) |
+| AI-ML | `cd AI-ML && python -m pytest -q` | **38 passed** after `make data && make train` |
+| Web | `cd frontend && pnpm typecheck && pnpm build` | Pass |
+| Cloud wiring | `cd backend && uv run hawa aws-check` | One live call per configured service |
+
+---
+
+## Prototype scope
+
+HawaCommand is a **fully developed prototype**: every module is built, connected and deployed, and every user flow works end to end.
+
+| Area | In the prototype |
+|---|---|
+| AWS data plane, citizen reports, live fleet, alerts, WebSocket | Running on live AWS services |
+| Digital twin, source attribution, exposure ranking, GRAP | Running on live station data |
+| 72 h forecaster | 21 trained quantile models, driven by the latest reading |
+| Dispatch planner and agents | Cause-matched greedy dispatch, explained by LLM or template agents |
+| Causal verification | Synthetic control, validated on a seeded panel (-18.5 % injected, -18.82 % recovered) |
+| What-If, safe route, ward scorecards | Working on demo data |
+| Field sensors | The HawaTag simulator drives the real IoT Core and Kinesis path |
+
+**Next for a city rollout**
+
+- Officer and citizen sign-in (Amazon Cognito) in place of the shared API key.
+- OR-Tools route optimisation on top of the greedy dispatcher.
+- Physical HawaTag trackers on the fleet, using the same IoT Core topic.
+
+Component-level detail: [system overview](docs/SYSTEM_OVERVIEW.md#0-the-system-as-built-today).
+
+---
+
+## Documentation
+
+| Start here | |
+|---|---|
+| [Docs hub](docs/README.md) | Every doc, grouped by reader |
+| [System overview](docs/SYSTEM_OVERVIEW.md) | Product, users, architecture, status |
+| [AWS architecture](docs/AWS_ARCHITECTURE.md) | Each AWS service: why, how, resources, IAM, fallback |
+| [AWS setup guide](docs/AWS_SETUP_GUIDE.md) | Console steps for every service |
+| [Environment variables](docs/ENVIRONMENT_VARIABLES.md) | Every setting in every component |
+| [API reference](docs/backend/API.md) | Every route |
+| [Contracts](docs/CONTRACTS.md) | IDs, enums, units, packets shared by all teams |
+
+| Discipline | Runbook | Deep docs |
+|---|---|---|
+| AI / ML | [AI-ML/README.md](AI-ML/README.md) | [docs/aiml](docs/aiml/README.md) |
+| Backend | [backend/README.md](backend/README.md) | [docs/backend](docs/backend/README.md) |
+| Web | [frontend/README.md](frontend/README.md) | [docs/frontend](docs/frontend/README.md) |
+| Mobile | [app_frontend/README.md](app_frontend/README.md) | [docs/app](docs/app/README.md) |
+
+---
+
+## Team
+
+**Team Straw Hat Pirates**
+
+| Member | Role |
+|---|---|
+| Shankar | Team lead |
+| Madhur Prakash Mangal | Member |
+| Akshat Arya | Member |
+| Mayank | Member |
+
+---
+
+## Acknowledgements
+
+- Air data: [WAQI](https://aqicn.org), [OpenAQ](https://openaq.org), CPCB / DPCC, [Open-Meteo](https://open-meteo.com), NASA FIRMS.
+- Maps and population: [OpenStreetMap](https://www.openstreetmap.org) contributors, WorldPop, OpenFreeMap, Esri.
+- Built on [AWS](https://aws.amazon.com) for the [WeMakeDevs AWS Environment Hackathon](https://www.wemakedevs.org/aws/env).
+
+## Licence
+
+[MIT](LICENSE)
+
+<div align="center">
+
+Made with ❤️ by Team Straw Hat Pirates
+
+</div>

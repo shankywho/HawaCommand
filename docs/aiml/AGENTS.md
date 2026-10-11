@@ -1,5 +1,13 @@
 # Multi-Agent Command Room (F14)
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · **Agents** · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status (as implemented).** There is no Strands SDK and no tool-calling loop. `AI-ML/src/hawa_ml/agents/` has four plain classes that each compute their numbers with deterministic code and then ask an LLM only to phrase a summary:
 > - `ForecasterAgent.analyze_forecast`: 72 h forecast and GRAP summary
 > - `PlannerAgent.draft_plan`: hotspots, the greedy optimiser and a rationale
@@ -1058,3 +1066,11 @@ Per-task reasons go to `plan_task.reason_text` (and `review_flags` for flagged t
 The UI shows the summary first, then the rationale, each task's reason with flags, and the objection list with outcomes. If `fallback_used`, it shows "Agent explanations unavailable; reasons generated from templates".
 
 Proposed contract items used here: P-05 (alert draft endpoint) and P-09 (plan_review / plan_task columns) in [ARCHITECTURE §12](ARCHITECTURE.md#12-proposed-contract-additions).
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#multi-agent-command-room-f14) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

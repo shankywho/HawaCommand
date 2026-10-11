@@ -1,5 +1,13 @@
 # AWS setup guide (console, step by step)
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · **AWS setup** · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+
+**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · **AWS setup guide** · [AWS integration](AWS_INTEGRATION.md) · [Cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md) · [Environment variables](ENVIRONMENT_VARIABLES.md)
+
+<!-- nav:end -->
+
 This guide takes the HawaCommand backend from "S3 uploads work" to every service in the [cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md): citizen grievances and fleet telemetry in DynamoDB, live fleet tracking in Redis, telemetry through IoT Core and Kinesis, alerts over SNS and Firebase push, settings in Secrets Manager, and optionally a container on ECS behind HTTPS.
 
 Region is **Asia Pacific (Mumbai) ap-south-1** throughout. Check the region picker (top right of the console) before every step.
@@ -582,3 +590,11 @@ After the demo, delete the stream, the cache, and the ECS stack (CloudFormation 
 - **Report verification is rules, not a vision model:** photo present in S3, location inside Delhi, and the twin cell's fingerprint rules compared with the citizen's category.
 - **No physical HawaTag devices:** telemetry comes from `hawa simulate-fleet` or the MQTT test client. The IoT path is the same one a device would use, with a device certificate and policy you would create under **IoT Core** → **Manage** → **Things**.
 - **Flutter changes are unbuilt:** the Flutter SDK was not available where this was written, so the Dart changes were reviewed but not compiled. Run `make app-apk` and `cd app_frontend && fvm flutter analyze` first.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#aws-setup-guide-console-step-by-step) · [Docs hub](README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

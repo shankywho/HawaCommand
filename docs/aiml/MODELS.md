@@ -1,5 +1,13 @@
 # AI-ML Models and Algorithms
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · **Models** · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status per section (as implemented at commit `a33e043`).** This document gives the target algorithm for each component; the code differs as follows. §1 grid: Implemented, 10,600 cells at 500 m and 2,650 at 1 km, cell ids `G-RRR-CCC`, wards are synthetic `Ward-1`..`Ward-12`. §2 calibration: Partial; Huber fit `ref = a*raw + b*RH + c` works, but co-location pairing is not implemented. §3 twin: Partial; scikit-learn GP with a `C*RBF + White` kernel on lat/lon plus a straight 15-minute wind shift. It is not PyKrige or a spherical variogram, and `config/settings.yaml` is unused. LOSO MAE is 37.82 vs 7.4 for nearest-station on 3 stations. §4 hotspots: Partial (top-N by exposure). §5 fingerprint: Implemented as rules from `config/fingerprint_rules.yaml`; the LightGBM weak-label classifier is trained but unused. §6 back-trajectory: Implemented (single straight line). §7 forecaster: Partial; 21 LightGBM quantile models with 37 features and a 45-day holdout, but inference fills lags from one value (metrics in `AI-ML/reports/forecast_metrics.json`). §8 GRAP: Implemented, with a gap bug between integer breakpoints. §9 exposure: Implemented. §10 optimiser: Partial (greedy only). §11 What-If: Stub/Mock (baseline = AI x 0.32). §12 causal: Partial (SLSQP weights plus placebo; API replays a seeded test). §13 library: Partial (JSON running average, key mismatch). §14-17: Planned. §18 safe window: Stub/Mock (fixed diurnal curve x 260 baseline, 4 personas). §19-21: Planned. §22: Planned; template narratives exist in `insights/narratives.py`. Full detail: [AI-ML/README.md](../../AI-ML/README.md#1-implementation-status).
 
 
@@ -1203,3 +1211,11 @@ Cut: template narrative (VISION → STRETCH). Tests: number checker catches an i
 | Evidence narrative | `narrator` | intel-report | 60 s | template | STRETCH |
 | TinyML spike | `tinyml-spike` | device | 5 ms | rule only | edge |
 | Power-proxy, HawaEye | — | — | — | — | VISION |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#ai-ml-models-and-algorithms) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

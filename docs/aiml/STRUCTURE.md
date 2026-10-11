@@ -1,5 +1,13 @@
 # AI-ML Folder Structure
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · **Structure** · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 The layout of `AI-ML/` as committed (commit `a33e043`), one line per file. Every file listed here exists.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [AI-ML runbook](../../AI-ML/README.md) · [AI-ML contracts](../../AI-ML/CONTRACTS.md)
@@ -158,3 +166,11 @@ Created at runtime under `data/`: `cache/` (API responses: `openaq/`, `openmeteo
 | pytest (`python -m pytest -q`) | Implemented (38 tests) |
 | Ruff, mypy, pre-commit, import-boundary tests, CI | Planned |
 | MLflow, DVC | Planned |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#ai-ml-folder-structure) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

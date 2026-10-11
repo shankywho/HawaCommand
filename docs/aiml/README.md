@@ -1,5 +1,13 @@
 # HawaCommand AI-ML
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 Index and entry point for everything the `AI-ML/` folder owns: models, optimiser, verifier, agents, and how they are run. These documents describe the code as it exists, and keep the original blueprint as clearly labelled **Planned** target design.
 
 Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../../AI-ML/README.md](../../AI-ML/README.md) · [../../AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
@@ -109,3 +117,11 @@ Do not use `make test` (plain `pytest` cannot import `scripts`) or `make api` (p
 - Data directory: [../../AI-ML/data/README.md](../../AI-ML/data/README.md); model cards: [forecaster](../../AI-ML/models/forecaster_model_card.md), [attribution](../../AI-ML/models/attribution_model_card.md)
 - Whole-system context: [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
 - Sibling teams: [../backend/](../backend/) · [../frontend/](../frontend/) · [../app/README.md](../app/README.md)
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-ai-ml) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

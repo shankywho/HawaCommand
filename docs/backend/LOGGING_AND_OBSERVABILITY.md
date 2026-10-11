@@ -1,5 +1,13 @@
 # Logging and Observability
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · **Logging** · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status: Partial.** `src/hawa_backend/core/logging.py` provides a JSON formatter with PII masking and `get_logger`, and `core/context.py` holds request and correlation ids. The app middleware binds `x-request-id` and `x-correlation-id` and echoes them back. However, almost nothing in `src/` logs through `get_logger`: `core/intel_client.py` uses the standard `logging` module. logifyx, the Kafka `hawa.logs.v1` topic, OpenTelemetry, Prometheus metrics and Grafana dashboards are Planned. See [docs/backend/README.md](README.md#1-implementation-status).
 
 
@@ -502,3 +510,11 @@ During graceful shutdown, `/readyz` returns 503 `{"status":"draining"}` immediat
 
 - **PCA-23** worker ops endpoints `/healthz`, `/readyz`, `/metrics` on port 9100.
 - **PCA-24** logifyx Kafka security passthrough (`kafka_security` / `kafka_producer_kwargs`) so `hawa.logs.v1` can run on MSK; until then the AWS log path is stdout → CloudWatch.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#logging-and-observability) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

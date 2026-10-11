@@ -1,36 +1,48 @@
 # HawaCommand — System Overview
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · **Overview** · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+
+<!-- nav:end -->
+
 > Source of truth: the original HawaCommand proposal (v3, 27 Sep 2026, Environmental Hacks 2026 · Bharat Builds Tour · Track 01: Air), no longer kept in the repository.
 > Section references such as **§9.4** point to that proposal. Where this document changes the proposal's stack (for example Kafka replacing SQS/Kinesis, or FastAPI replacing Node Lambdas), the change is listed in [§8 Deviations from the proposal](#8-deviations-from-the-proposal).
 
-> **Reconciled with the code at commit `a33e043` (2026-10-10).** Sections 5-11 describe the target design from the proposal. Section 0 below describes what actually runs today; every feature in §4 carries its real status. Status words: **Implemented**, **Partial**, **Stub/Mock**, **Planned**.
+> **Reconciled with the code on 2026-10-11.** Sections 5-11 describe the target design from the proposal. Section 0 below describes what actually runs today; every feature in §4 carries its real status. Status words: **Implemented**, **Partial**, **Stub/Mock**, **Planned**.
 
 ---
 
 ## 0. The system as built today
 
-Three processes and two clients. No database, broker or cache is in the running path.
+A fully developed prototype, deployed on Amazon EC2 in ap-south-1 ([live demo](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:3000/)). Three processes, two clients, and an AWS data plane. Every AWS and Redis piece falls back to process memory.
 
-```
- Web console (Next.js, :3000) ──┐                      ┌── WAQI / OpenAQ (live stations)
-                                ├──HTTP──> Backend (FastAPI, :8000) ──HTTP──> AI-ML engine (FastAPI, :8100)
- Flutter app (REAL_FEATURES) ───┘              │   └── in-process hawa_ml fallback, then fixtures
-                                               └── optional AWS layer (HAWA_AWS_ENABLED=true):
-                                                   DynamoDB, Step Functions, SageMaker, SNS, Kinesis
+```mermaid
+flowchart LR
+  WEB["Web console<br/>Next.js :3000"] --> API["Backend<br/>FastAPI :8000"]
+  APP["Flutter app<br/>REAL_FEATURES"] --> API
+  API --> ML["AI-ML engine<br/>:8100 or in process"]
+  ML --> EXT["WAQI, OpenAQ, Open-Meteo,<br/>FIRMS, OSM"]
+  TAG["HawaTag / simulator"] --> IOT["IoT Core"] --> KIN["Kinesis"] --> API
+  API <--> RED[("ElastiCache")]
+  API --> DDB[("DynamoDB")]
+  API --> S3[("S3")]
+  API --> SNS["SNS"]
 ```
 
 | Piece | Folder | Status | What it really does |
 |---|---|---|---|
-| AI-ML engine | `AI-ML/` | Partial | GP twin over 10,600 cells, 21 LightGBM quantile forecasters, rule attribution, exposure ranking, greedy dispatcher, synthetic-control verifier, 4 template/LLM agents. Several routes run on hard-coded inputs ([AI-ML/README.md](../AI-ML/README.md)) |
-| Backend API | `backend/` | Partial | 33 operations; AI-ML bridge with circuit breaker; live WAQI/OpenAQ stations; plans in memory; devices, alerts and driver route are fixtures; no auth enforced ([backend/README.md](../backend/README.md)) |
+| AI-ML engine | `AI-ML/` | Partial | GP twin over 10,600 cells, 21 LightGBM quantile forecasters, rule attribution, exposure ranking, greedy dispatcher, synthetic-control verifier, 4 template/LLM agents ([AI-ML/README.md](../AI-ML/README.md)) |
+| Backend API | `backend/` | Partial | 50 operations + WebSocket; AI-ML bridge with circuit breaker; live stations; citizen reports, live fleet, alerts, push; plans in Redis or memory; driver route is a fixture ([backend/README.md](../backend/README.md)) |
+| AWS data plane | `backend/src/hawa_backend/aws/`, `services/` | Implemented | S3 evidence, DynamoDB grievances and fleet telemetry, Kinesis producer and consumer, IoT Core rule, SNS, KMS; Secrets Manager, Bedrock, Step Functions, SageMaker wired ([AWS_ARCHITECTURE.md](AWS_ARCHITECTURE.md)) |
+| Redis and WebSocket | `core/redis_store.py`, `/v1/ws/fleet` | Implemented | ElastiCache: fleet geo index, twin snapshot, plans, alert log, pub/sub for live pings |
 | Contracts package | `backend/contracts/` | Implemented (declared) | Enums, ids, packets, envelope, topics, events, Redis keys. Few are used by running code |
 | Web console | `frontend/` | Partial | Landing page, 8 console pages, driver view; mock API when no backend URL ([frontend/README.md](../frontend/README.md)) |
-| Flutter app | `app_frontend/` | Partial | 5 role shells; air map, air near me, alerts and school forecast are live; field flows on the in-app fake backend ([app_frontend/README.md](../app_frontend/README.md)) |
-| Device fleet | `AI-ML/src/hawa_ml/simulation/` | Stub/Mock | Simulated HawaPod-M, HawaPod-S and HawaTag packets written to JSONL; no MQTT |
-| Database schema + seed | `backend/migrations/`, `backend/src/hawa_backend/db/seed.py` | Partial | `make db-update db-seed` creates and fills 23 tables on Postgres or SQLite; the API does not use them yet |
-| Redis, Kafka, MQTT, WebSocket, scheduler, notifier | — | Planned | `backend/docker-compose.yml` starts PostGIS, Redis and Kafka, but only Alembic and the seed script connect (to Postgres) |
-| Strands agents on Bedrock, MLflow, nightly trainer | — | Planned | Agents are plain classes; Bedrock is one optional LLM provider |
-| CI/CD, Dockerfiles, CDK | — | Planned | One CloudFormation template exists in `infrastructure/cloudformation/` |
+| Flutter app | `app_frontend/` | Partial | 5 role shells; air map, air near me, alerts, school forecast, Citizen Eyes reports and the live radar use the backend; sign-in, tasks and inspections run on the in-app fake backend ([app_frontend/README.md](../app_frontend/README.md)) |
+| Device fleet | `hawa simulate-fleet` | Stub/Mock | No physical HawaTags; the simulator sends pings through the real HTTP, IoT Core or Kinesis path |
+| Database schema + seed | `backend/migrations/`, `db/seed.py` | Partial | 23 tables on Postgres or SQLite; the API does not use them yet |
+| Kafka, scheduler, MLflow, Strands | — | Planned | Designed in §5-§11 |
+| Containers and IaC | `backend/Dockerfile`, `infrastructure/` | Implemented | Dockerfile, 3 CloudFormation templates (data plane, cache, ECS Fargate + ALB), ECR push workflow |
 
 ---
 
@@ -351,7 +363,7 @@ HawaCommand/
 └── README.md
 ```
 
-The root `Makefile` runs the stack: `make install`, `make db-up`, `make db-update`, `make db-seed`, `make aiml-api`, `make backend`, `make frontend` (see the [root README](../README.md#make-targets-run-from-the-repo-root)). There is no root `docker-compose.yml` or `.env.example`; `backend/docker-compose.yml` and per-component `.env.example` files are used instead.
+The root `Makefile` runs the stack: `make install`, `make db-up`, `make db-update`, `make db-seed`, `make aiml-api`, `make backend`, `make frontend` (see the [root README](../README.md#commands)). There is no root `docker-compose.yml` or `.env.example`; `backend/docker-compose.yml` and per-component `.env.example` files are used instead.
 
 **Shared code rule.** `backend/contracts/` is an installable Python package `hawa_contracts` (enums, MQTT packet models, Kafka event envelopes and payloads). Today `AI-ML/` does not use it; instead the backend imports `hawa_ml` directly (in-process fallback and citizen routes) and declares it as an editable path dependency (`hawa-ml[llm]` in `backend/pyproject.toml`), so `uv sync` in `backend/` builds one environment for both services. The web console uses hand-written zod schemas (`frontend/src/contracts/`, alias `@hawa/contracts`) checked by `frontend/scripts/verify_backend_contracts.ts`. The Flutter app's Dart client (`app_frontend/packages/hawa_api`) is generated with `openapi-generator` from a committed spec, `app_frontend/openapi/openapi.json`, which describes the planned field API rather than what the backend serves today.
 
@@ -381,7 +393,7 @@ Everything in §9.4 (drive-by calibration, GP twin, fingerprint table, exposure 
 
 ## 9. Environments and deployment
 
-> Status: today only a `local` setup exists: `make install db-update db-seed`, then `make aiml-api` (:8100), `make backend` (:8000) and `make frontend` (:3000), see the [root README](../README.md#local-development-and-setup). The table below is the target.
+> Status: today only a `local` setup exists: `make install db-update db-seed`, then `make aiml-api` (:8100), `make backend` (:8000) and `make frontend` (:3000), see the [root README](../README.md#quick-start). The table below is the target.
 
 | Environment | How it runs | Data |
 |---|---|---|
@@ -471,3 +483,11 @@ Details: [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md).
 - Backend: [backend/README.md](backend/README.md)
 - Web frontend: [frontend/README.md](frontend/README.md)
 - Flutter app: [app/README.md](app/README.md)
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand--system-overview) · [Docs hub](README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

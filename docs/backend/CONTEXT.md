@@ -1,6 +1,14 @@
 # Backend Context
 
-> **Status (reconciled 2026-10-10).** Product context from the proposal. As built, the backend is one FastAPI process that bridges to AI-ML, serves live WAQI/OpenAQ stations, keeps plans in memory and returns fixtures for devices, alerts and the driver route. Postgres, Kafka, Redis, WebSocket, auth endpoints and workers are Planned. See [docs/backend/README.md](README.md#1-implementation-status).
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · **Context** · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
+> **Status (reconciled 2026-10-11).** Product context from the proposal. As built, the backend is one FastAPI process that bridges to AI-ML, serves live WAQI/OpenAQ stations, stores citizen reports and fleet telemetry (DynamoDB), keeps live state in Redis (ElastiCache), consumes Kinesis, broadcasts over SNS and serves the fleet WebSocket. Postgres in the request path, Kafka, auth endpoints and the scheduler are Planned. See [docs/backend/README.md](README.md#1-implementation-status).
 
 
 What the backend must do for HawaCommand and why, taken from the proposal (Proposal v3, 27 Sep 2026) and turned into backend requirements.
@@ -224,3 +232,11 @@ Full table in [DATA_MODEL.md](DATA_MODEL.md) §19.1. The backend-relevant highli
 - No regulatory values: low-cost sensors are indicative (§12.4). The API labels indicative AQI and never presents readings as legal compliance data. Nothing is used to fine anyone (§15).
 - No public write API apart from Citizen Eyes reports.
 - No automatic dispatch of fleet or inspectors without officer approval, ever.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#backend-context) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

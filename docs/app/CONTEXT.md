@@ -1,5 +1,13 @@
 # App context: users, flows and field realities
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · **Context** · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status (reconciled 2026-10-10).** Product context from the proposal. As built:
 > - Live against the backend (`REAL_FEATURES`): the citizen air map, air near me, alerts and the school 72 h forecast.
 > - In-app fake backend: login, driver, inspector, reports and site flows, because the backend does not serve `/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*`, `/v1/reports*`, `/v1/uploads/presign` or `/v1/ws`.
@@ -255,3 +263,11 @@ The app shows the fallback exists. For example, the notifications permission scr
 | Safe window | A time range when forecast outdoor exposure near a school is below the alert threshold, with uncertainty (F19) |
 | Outbox | Local queue of pending mutations, each with a client UUID used as `Idempotency-Key` ([OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md)) |
 | Lower evidence | An intervention completed with `source=manual` or verified by `before_after_naive`. Still counted, but flagged |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#app-context-users-flows-and-field-realities) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # Deployment
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · **Deployment** · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status (as built).**
 > - **Local run:** from the repo root, `make install`, `make db-up` (optional), `make db-update`, `make db-seed`, `make aiml-api` (0.0.0.0:8100, active venv), `make backend` (0.0.0.0:8000), `make frontend` (3000). The root `Makefile` wraps `uv sync`, `uv run alembic upgrade head`, `uv run python -m hawa_backend.db.seed` and `uv run uvicorn ...`. See [backend/README.md](../../backend/README.md#quick-start).
 > - **Docker Compose:** `backend/docker-compose.yml` starts PostGIS 16, Redis 7 and Kafka 3.8 (KRaft); the API uses the Redis when `HAWA_REDIS_URL` points at it, and not Postgres or Kafka.
@@ -859,3 +867,11 @@ Levers to land inside ₹4–6 lakh:
 With those, the estimate is **≈ ₹4.5–5.5 lakh / year**. For comparison, MSK Serverless alone would add about ₹5.5 lakh / year (§6.3).
 
 **Demo Tier A:** one `m6i.xlarge` for an event week (~$35–50), IoT Core (cents), and Amplify (free tier), so under ₹5,000 for the event.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#deployment) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

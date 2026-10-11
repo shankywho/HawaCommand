@@ -1,5 +1,13 @@
 # AI-ML Build Plan
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · **Plan**
+
+<!-- nav:end -->
+
 > **Status (2026-10-10).** Code exists for the twin, forecaster, attribution, exposure, greedy optimiser, What-If (constant baseline), causal verifier, four agents, insights, pipelines, simulator and HTTP API; 38 tests pass once `make data && make train` has been run (37/38 on a clean checkout). Still open: OR-Tools CVRP, real forecast features at inference, twin accuracy (loses to nearest-station in `reports/twin_metrics.json`), real What-If baseline, verification of real interventions, Kafka/DB integration, MLflow, Strands, Citizen Eyes vision, anti-gaming guard, coverage router, site score. Defects are in [AI-ML/README.md](../../AI-ML/README.md#9-known-issues).
 
 
@@ -143,3 +151,11 @@ Run through this before recording the §16.1 video and before judging.
 - [ ] Hindi alert on screen was reviewed by a Hindi-speaking team member (G4).
 - [ ] `HAWA_LLM_MODE=disabled` fallback run rehearsed once, so a Bedrock outage during judging still yields a valid draft.
 - [ ] Dashboards show `twin_run_seconds`, `plan_draft_seconds`, `verify_runs_total` and `agent_tokens_total` for the architecture segment.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#ai-ml-build-plan) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

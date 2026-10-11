@@ -1,5 +1,13 @@
 # AWS integration: handoff runbook
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+
+**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup guide](AWS_SETUP_GUIDE.md) · **AWS integration** · [Cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md) · [Environment variables](ENVIRONMENT_VARIABLES.md)
+
+<!-- nav:end -->
+
 > **Status (2026-10-11).** The backend AWS layer covers S3 evidence uploads and read-back, DynamoDB citizen grievances and fleet telemetry, Kinesis (producer and consumer), SNS broadcasts and subscriptions, Secrets Manager (settings and the Firebase key), the forecast cache, and Step Functions/SageMaker forecast and dispatch. Alongside it are Redis/ElastiCache for the live fleet and twin snapshot, and FCM push. Everything is tested with `moto`/`fakeredis` (`backend/tests/aws/`, `backend/tests/services/`) and is off unless `HAWA_AWS_ENABLED=true` and the service's own variable is set.
 >
 > **For console setup, follow [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md).** This file is the older engineering runbook. Its sections 2, 4 (tasks 5, 7, 9, 10) and 10 are updated; the SageMaker, Step Functions, Bedrock and Amplify tasks are unchanged.
@@ -278,3 +286,11 @@ Cognito token verification on the backend; Timestream; S3 open-data export; Even
 - `git checkout -- AI-ML/data` (test churn).
 - No `.env`, keys or tokens in the diff.
 - Push to `dev` (no PR).
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#aws-integration-handoff-runbook) · [Docs hub](README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

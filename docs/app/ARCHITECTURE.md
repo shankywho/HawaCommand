@@ -1,5 +1,13 @@
 # App architecture
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · **Architecture** · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 Purpose: how the Flutter app in `app_frontend/` is built, covering layers, state, navigation, networking and fake mode, the API surface against the real backend, storage, realtime, push, location, maps, media, i18n, theming, flavors, errors, security, performance and accessibility, plus the key sequences.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
@@ -401,7 +409,7 @@ Android `allowBackup="false"` and `fullBackupContent="false"`, so tokens and the
 
 ### 10.1 WebSocket client
 
-> Status: `WsClient` is Implemented; the backend serves no `/v1/ws`, so in every default build the `FakeRealtimeClient` is used instead (§6.5).
+> Status: `WsClient` is Implemented; the backend serves no `/v1/ws` task-event socket, so in every default build the `FakeRealtimeClient` is used instead (§6.5). The citizen live-operations radar connects to the backend's `/v1/ws/fleet` directly.
 
 `WsClient` (`core/realtime/ws_client.dart`):
 - Connects to `WS_URL?token=<access JWT>` (10 s timeout) and sends `{"op":"subscribe","channels":["tasks:me","alerts:me"],"id":"c1"}`.
@@ -787,3 +795,11 @@ sequenceDiagram
   API-->>A: status timeline verifying, verified, ticketed, closed (fake: 4 s, 10 s, 16 s, 45 s)
   API-->>A: report_outcome alert with the outcome text
 ```
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#app-architecture) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

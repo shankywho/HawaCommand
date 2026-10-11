@@ -1,5 +1,17 @@
 # HawaCommand field & community app (Flutter)
 
+<!-- nav:start -->
+
+<p align="center">
+<img src="https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white" alt="Flutter"> <img src="https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white" alt="Dart"> <img src="https://img.shields.io/badge/Riverpod-3-00B4AB" alt="Riverpod"> <img src="https://img.shields.io/badge/offline-outbox%20%2B%20drift-6E7781?logo=sqlite&logoColor=white" alt="offline"> <img src="https://img.shields.io/badge/languages-English%20%C2%B7%20Hindi-0E7C66" alt="languages"> <img src="https://img.shields.io/badge/push-FCM-FFCA28?logo=firebase&logoColor=white" alt="push">
+</p>
+
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+
+**App docs:** **Runbook** · [Index](../docs/app/README.md) · [Context](../docs/app/CONTEXT.md) · [Architecture](../docs/app/ARCHITECTURE.md) · [Screens](../docs/app/SCREENS.md) · [Offline and sync](../docs/app/OFFLINE_AND_SYNC.md) · [Quality](../docs/app/LINTING_AND_QUALITY.md) · [Structure](../docs/app/STRUCTURE.md) · [Plan](../docs/app/PLAN.md)
+
+<!-- nav:end -->
+
 One Android app for the people who act on Delhi's air: **drivers** (today's route, spray confirmed by HawaTag), **inspectors** (targets with evidence), **school principals** (safe outdoor windows), **citizens** (AI air map with clean-air routes, air near me, report burning) and **site managers** (site score). Hindi-first, offline-first.
 
 The spec is in [`../docs/app/`](../docs/app/README.md): ARCHITECTURE, STRUCTURE, SCREENS, OFFLINE_AND_SYNC, LINTING_AND_QUALITY, PLAN.
@@ -38,8 +50,15 @@ Implementation status and the full known-issues list: [docs/app/README.md](../do
 | `citizen_air` | `/v1/twin?bbox=` (snapped ~1 km box) + `/v1/hotspots` (cause) | C1 Air near me |
 | `alerts` | `/v1/alerts` (command-center broadcasts) | X1/X2 Alerts |
 | `school_forecast` | `/v1/forecast/{cell_id}` | S3 72-hour forecast |
+| `citizen_reports` | `/v1/uploads/presign` (real S3), `/v1/reports`, `/v1/reports/mine`, `/v1/reports/{id}` | C2-C7 Citizen Eyes: capture, review, My reports, status |
+| `citizen_subscription` | `/v1/me/alert-subscription` | Alert area settings |
+| `push` | `/v1/me/push-token` | FCM token registration (report updates reach this phone) |
+| (always, unless `citizen_air` is fake) | `/v1/citizen/live-operations`, WebSocket `/v1/ws/fleet` | Govt in Action radar |
 
-Auth, tasks, inspections, reports, sites and all writes (outbox) stay fake until the backend implements the field contract (`openapi/openapi.json`, generated client in `packages/hawa_api`). Move a feature to `REAL_FEATURES` once its endpoints exist.
+- Add `citizen_reports,citizen_subscription,push` to `REAL_FEATURES` (as in `env/staging.json.example`) to use them.
+- Auth, tasks, inspections and sites stay on the fake backend until the backend implements them (`openapi/openapi.json`, generated client in `packages/hawa_api`).
+- Outbox writes follow the same per-feature rule, so a real report and a fake sign-in work together.
+- Push needs the `FIREBASE_*` defines ([AWS setup guide §7-8](../docs/AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)).
 
 ## Clean-air routing (citizen map)
 
@@ -52,3 +71,11 @@ Basemap: MapTiler when `MAP_API_KEY` is set, else Esri World Street Map (keyless
 `lib/app` (env, router, theme, l10n) · `lib/core` (network + fake backend, drift storage, outbox sync, realtime, notifications, location, media, maps, widgets) · `lib/features/<feature>/{domain,data,application,presentation}`. See `docs/app/STRUCTURE.md`.
 
 **Prototype theme.** `lib/app/theme.dart` is the only file left from the first prototype. Four citizen screens (safe route, live operations, ward scorecard, missed machine) still import it, so it stays excluded from analysis until they move to `lib/app/theme/`.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-field--community-app-flutter) · [Docs hub](../docs/README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

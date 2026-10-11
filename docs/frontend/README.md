@@ -1,5 +1,13 @@
 # HawaCommand Web Frontend: Documentation Index
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 Purpose: the entry point for anyone working on `frontend/`, the Next.js app that holds the public landing page, the officer console and a mobile driver view. It says what is built, how to run and check it, how it talks to the backend, and what is known to be broken.
 
 Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../../frontend/README.md](../../frontend/README.md)
@@ -158,3 +166,11 @@ Run on 2026-10-10 in a scratch copy of `frontend/` (no `node_modules` in the rep
 - Backend API: [../backend/API.md](../backend/API.md). The wire shapes the web relies on are the zod schemas in `frontend/src/contracts/`; [../CONTRACTS.md](../CONTRACTS.md) describes a broader snake_case blueprint surface that the current backend and web do not follow (see [ARCHITECTURE §4.3](ARCHITECTURE.md#43-relationship-to-docscontractsmd))
 - AI-ML: [../aiml/README.md](../aiml/README.md) · Flutter app: [../app/README.md](../app/README.md)
 - Component quick start: [../../frontend/README.md](../../frontend/README.md) · Design export notes: [../../frontend/design/EXPORT_NOTES.md](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-web-frontend-documentation-index) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

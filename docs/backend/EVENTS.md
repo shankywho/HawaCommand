@@ -1,5 +1,13 @@
 # Events (Kafka)
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · **Events** · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status: Planned.** `backend/contracts/hawa_contracts/` declares the envelope (`envelope.py`), topics and consumer groups (`topics.py`) and the event payload models (`events/*.py`), and the contract tests validate them. No running code produces to or consumes from Kafka. `aiokafka` is not a dependency, the outbox table (`db/models/outbox.py`) is written only by tests, and there is no outbox relay. The only live publishing paths are the optional AWS helpers in `src/hawa_backend/aws/events.py` (SNS, Kinesis), which are off unless `HAWA_AWS_ENABLED=true`, and the Step Functions dispatch started on plan approval (`aws/dispatch.py`). `backend/docker-compose.yml` starts a Kafka 3.8 broker that nothing connects to. Everything below is the target design. See [docs/backend/README.md](README.md#1-implementation-status).
 
 
@@ -731,3 +739,11 @@ Kafka UI (http://localhost:8080) shows topics, messages (JSON pretty view), cons
 | PCA-25 | Optional `archiver-raw` group |
 | PCA-26 | `device-health` hosted by alert-engine; `audit` + `audit-writer` hosted by audit-writer (merge suggested) |
 | — | `cmd.verify.run` data `{intervention_id, task_id, attempt, requested_by}` (CONTRACTS names the type but not the data) |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#events-kafka) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

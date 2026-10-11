@@ -1,6 +1,14 @@
 # Caching and Coordination (Redis)
 
-> **Status: Planned (Redis).** No code connects to Redis; `redis` is a declared dependency and `hawa_contracts/redis_keys.py` defines the key builders. Caching that actually runs: live station data is cached in process for 15 minutes in `core/intel_client.py`; settings use `functools.lru_cache`; when `HAWA_AWS_ENABLED=true`, `aws/cache.py` caches remote forecast results (only those from the AWS forecast path in `aws/forecast.py`, used by `GET /v1/forecast/{cell_id}`) in DynamoDB (`HAWA_AWS_CACHE_TABLE`, default `hawa-cache`, TTL `HAWA_AWS_CACHE_TTL_SECONDS`, default 3600). Rate limiting, idempotency keys, OTP storage and GEO fleet sets below are the target design. See [docs/backend/README.md](README.md#1-implementation-status).
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · **Caching** · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
+> **Status: Partial (Redis live state implemented).** `HAWA_REDIS_URL` (ElastiCache for Valkey/Redis, or any Redis 6.2+) holds: `geo:fleet:active` (GEOADD/GEOSEARCH), `fleet:lastseen` and `fleet:latest:<id>`, the `fleet:pings` pub/sub channel behind `/v1/ws/fleet`, the twin snapshot `grid:pm25:500m:<hour>` (TTL 900 s), `plans:active`, `push:tokens:<user>`, `alerts:sent`, `alerts:subscription:<user>` and `kinesis:checkpoint:<stream>:<shard>` (`core/redis_store.py`, `services/`). Without it, each falls back to process memory. Also running: live stations cached 15 min in process, `lru_cache` settings, remote forecasts cached in DynamoDB (`aws/cache.py`). Rate limiting, idempotency keys, OTP storage and versioned cache-aside below are still the target design. Key table: [AWS architecture §4.7](../AWS_ARCHITECTURE.md#47-amazon-elasticache-valkey--redis).
 
 
 Redis in depth for HawaCommand: the client, key conventions and TTLs, versioned cache-aside, stampede protection, HTTP caching, rate limiting, OTP and token state, idempotency keys, locks, WebSocket fan-out, live fleet, eviction, sizing, failure behaviour and metrics.
@@ -419,3 +427,11 @@ Server-side metrics come from `redis-exporter` (obs profile locally, CloudWatch 
 - **PCA-13** keys `idem:{sub}:{key}` (hash, 24 h; also in API.md §23), `lock:cache:{key_hash}` (5 s), `cache:open:{endpoint}:{tile_version}:{params_hash}` (60 s), `cache:grap:{ward_id}:{issued_at}` (75 min), protected pointers `twin:run_id` and `forecast:issued_at`, pub/sub channels `ws:user:{user_id}` and `inv:device`, `rl` scope names, and a configurable `dedupe:pkt` TTL.
 - **PCA-14** `otp:{phone_hash}` instead of `otp:{phone_e164}`, with hashed subjects in `rl` keys.
 - **PCA-22** tile URL `?v={tile_version}` with immutable caching and ETag.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#caching-and-coordination-redis) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # AI-ML Runtime Architecture
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · [Context](CONTEXT.md) · **Architecture** · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status: target architecture (Planned).** As built, AI-ML is a single FastAPI process, `hawa_ml.api.main:app`, served on port 8100. It has 13 routes, mounted at `/`, `/v1` and `/internal/v1`, with no authentication. There are no Kafka consumers, no Postgres/Redis/S3/MLflow access and no separate trainer or worker processes. Models load from `AI-ML/models/*.txt` at import time, and mutable state lives in JSON files under `AI-ML/data/internal/`. The backend calls the engine over HTTP via `HAWA_AIML_SERVICE_URL`, or imports `hawa_ml` in process when the HTTP call fails. The pipelines (`pipelines/cycle.py`, `master_plan.py`, `verify.py`) run only from `scripts/run_cycle.py` or `python -m`; there is no scheduler. Sections 2-12 below describe the target design. For the as-built routes, scripts and defects, see [AI-ML/README.md](../../AI-ML/README.md#1-implementation-status); for the HTTP and in-process contracts, see [AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md).
 
 
@@ -596,3 +604,11 @@ These are needed by AI-ML and are not (fully) defined in [CONTRACTS.md](../CONTR
 | P-18 | Metrics endpoint | `intel-service` exposes `GET /metrics` (infra only) | Prometheus scraping |
 | P-19 | Audit actions | Action vocabulary AI-ML writes inside `audit.recorded` on `hawa.audit.v1` (additive): `plan_review_submitted`, `objection_raised`, `change_applied`, `change_rejected`, `fallback_used`, `model.promoted`, `model.promotion_blocked`, with actor `agent:{role}@{version}` or `service:intel-trainer` | CONTRACTS lists human and agent actions but no agent/model action names |
 | P-20 | Consumer group reuse | `intel-twin` subscribes to `hawa.cmd.twin.v1` plus `hawa.external.observation.v1` / `hawa.external.weather.v1` (freshness only); the twin reads observations from Postgres at run time, so the external subscriptions are optional and may be dropped from CONTRACTS §5.2 | Clarify why the twin group appears on external topics |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#ai-ml-runtime-architecture) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

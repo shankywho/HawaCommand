@@ -1,5 +1,13 @@
 # Linting and quality
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · **Quality** · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 > **Status (as built).** The quality gates are the `app_frontend/Makefile` targets: `format-check`, `analyze` (`--fatal-infos`), `guard` (`tool/architecture_guard.sh`), `lint` (all three) and `test` (`flutter test --coverage`). `analysis_options.yaml` uses `very_good_analysis`; `custom_lint`/`riverpod_lint` are disabled because no release resolves on Dart 3.12.
 >
 > Gaps:
@@ -462,3 +470,11 @@ A change is done when **all** of these hold:
 6. Simulated badge, indicative label and uncertainty display are present wherever the data calls for them.
 7. No contract drift: fixtures parse with the generated models. Missing API needs are listed as contract proposals ([PLAN §11](PLAN.md#11-contract-proposals-to-raise)).
 8. CI is green, including the dev APK build. The PR title is a Conventional Commit and the description lists any new packages and screenshots (en + hi).
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#linting-and-quality) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

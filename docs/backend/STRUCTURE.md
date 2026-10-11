@@ -1,5 +1,13 @@
 # Backend Structure and Tooling
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · **Structure** · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 The real layout of `backend/` with one line per file, the packaging and test configuration as committed, and the planned layout the blueprint described.
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md)
@@ -181,3 +189,11 @@ No `[tool.ruff]`, `[tool.mypy]`, pre-commit configuration or Makefile exists. Re
 The target adds, under `src/hawa_backend/`: `bootstrap.py` (DI container), `api/routers/`, `api/schemas/`, `api/deps.py`, `api/ws/` (WebSocket hub), `api/middleware/`; `services/` (use cases and state transitions); `db/repositories/`, `db/uow.py`, `db/spatial.py`; `events/` (producer, consumer base class, outbox, relay, serde, MSK auth); `cache/` (client, cached, rate limit, locks); `integrations/` (SMS, WhatsApp, FCM, S3, intel client, feeds, each behind a Protocol with fakes); one package per worker under `workers/` (`ingest`, `feeds`, `scheduler`, `dispatch`, `notifier`, `outbox_relay`, `mqtt_bridge`, `audit_writer`, `alert_engine`, `evidence_report`, `archiver`); plus `backend/simulator/` (`hawa-sim`), `backend/infra/` (CDK), `backend/config/` (GRAP actions, alert templates, reading weights), `backend/docker/` (Dockerfile, Mosquitto config), and repo-root `docker-compose.yml` and `.env.example` (the repo-root `Makefile` and `backend/migrations/` already exist).
 
 Target tooling: a uv workspace (root + contracts + simulator), ruff with banned-import rules for layering, strict mypy, pytest markers `integration` (testcontainers) and `e2e`, pre-commit with gitleaks, and a typer-based `hawa` CLI (`api`, `worker <name>`, `kafka-init`, `seed`, `partitions`, `demo-reset`, `demo-check`, `scheduler trigger`).
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#backend-structure-and-tooling) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

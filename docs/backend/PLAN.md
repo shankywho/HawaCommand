@@ -1,5 +1,13 @@
 # Backend Build Plan
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · **Plan**
+
+<!-- nav:end -->
+
 > **Status (2026-10-10).** Built: phases 1-5 as code plus unit tests, the AI-ML bridge with circuit breaker, live stations, 33 API operations, the optional AWS layer. Test run: 64 passed, 1 failed. Not built: persistence (the API never opens a DB session, no Alembic), Kafka producers and consumers, Redis, WebSocket, auth endpoints and enforcement, the field API the Flutter app expects, scheduler, notifier, Dockerfile, CI. Milestones below are the original plan.
 
 
@@ -150,3 +158,11 @@ Backend cut order when behind at H14 or H19. Apply from the top:
 | **Phase 1: campus pilot (0–3 months)** | one campus or district, an e-rickshaw fleet partner, 10–20 schools; publish verified results | Real device onboarding (IoT fleet provisioning by claim, per-device X.509, OTA via IoT Jobs later); CDK Tier B with MSK provisioned (PCA-01); DLT SMS registration and approved WhatsApp templates; DPDP-compliant consent, retention and deletion flows for phone numbers; backups + restore drill; load test at 10 × pilot; on-call runbook and alarms; `HAWA_OPEN_INCLUDE_SIMULATED=false`; public open data portal and weekly evidence report; instrument KPIs §13.1 (coverage, verified-action share, alert lead time) as metrics |
 | **Phase 2: one MCD zone (3–12 months)** | HawaTags on the zone's sprinklers and smog guns; integrate existing machine GPS | New feeds adapter for the agency's machine GPS (interventions with `source=gps_inferred`); agency roles and multi-ward RBAC; zone-scale infra (ingest × 3, 12 telemetry partitions, RDS read replica for open data and analytics, CloudFront on `/open/v1`); 99.5 % SLO with error budgets; audit exports for courts and the Green War Room; `dedupe:pkt` TTL cut to 6 h |
 | **Phase 3: NCR-wide, then other NCAP cities (12+ months)** | NCR, other NCAP cities; the effectiveness library becomes the moat | Multi-tenancy (`city_id` in keys, topics and tables, or a deployment per city); 24 telemetry partitions, larger MSK brokers or tiered storage; `reading` hot retention 30 d with a Parquet/Athena lake; Redis cluster mode with hash tags; licensed historical data API (§14) with usage metering; effectiveness library API for other cities |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#backend-build-plan) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

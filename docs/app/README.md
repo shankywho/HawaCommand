@@ -1,5 +1,13 @@
 # HawaCommand Field & Community: Flutter app docs
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**App docs:** [Runbook](../../app_frontend/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+
+<!-- nav:end -->
+
 Purpose: the index, quick start, implementation status and known issues for the Flutter app in `app_frontend/`, used by drivers, inspectors, school principals, citizens and site managers.
 
 Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md) · [app_frontend/README.md](../../app_frontend/README.md)
@@ -35,18 +43,19 @@ The backend that exists today serves the AI-ML read endpoints (`/v1/twin`, `/v1/
 | School: today (safe windows), indoor vs outdoor, 72 h forecast | **Partial** | Forecast is live (`/v1/forecast/{cell_id}`, reshaped). Safe windows, indoor/outdoor, GRAP outlook and `/v1/schools/me` come from fixtures |
 | Citizen AI air map with clean-air routing | **Implemented** | Live `/v1/twin` (paged), `/v1/hotspots`, `/v1/forecast`; OSRM routing and Photon search. Its fixture fallback is broken (Known issue 3) |
 | Citizen air near me | **Partial** | Live twin + hotspots through an adapter, live `/v1/citizen/safe-window`. Alert subscription is on fixtures |
-| Citizen Eyes report, My reports, report status | **Stub/Mock** | Capture, EXIF strip and outbox are real code; presign/upload/reports run on the fake backend |
-| Citizen Safe route, Live operations, Ward scorecard, Missed machine screens | **Stub/Mock** | Hard-coded demo data. The backend's `/v1/citizen/safe-route`, `/live-operations`, `/wards/leaderboard`, `/reports/missed-machine` are not called |
+| Citizen Eyes report, My reports, report status | **Implemented** | With `citizen_reports` in `REAL_FEATURES`: pre-signed S3 upload, `POST /v1/reports`, automated verification, officer status changes and push updates through the backend. On the fake backend otherwise |
+| Citizen live operations (Govt in Action radar) | **Implemented** | `GET /v1/citizen/live-operations` every 15 s plus the `/v1/ws/fleet` WebSocket for each ping; built-in demo list when the backend is unreachable |
+| Citizen Safe route, Ward scorecard, Missed machine screens | **Stub/Mock** | Hard-coded demo data. The backend's `/v1/citizen/safe-route`, `/wards/leaderboard`, `/reports/missed-machine` are not called yet |
 | Site manager score | **Stub/Mock** | `sites_me.json` via the fake backend |
 | Alerts inbox and detail | **Partial** | Live command-center broadcast log (`GET /v1/alerts`) mapped to inbox items; acks stay on the phone. The contract inbox (`ALERTS_CONTRACT=true`) needs endpoints the backend lacks |
 | Offline cache (drift), outbox, drainer, conflict resolver, sync triggers | **Implemented** | Executes against the fake backend in the default build ([OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md)). Some cleanup jobs are never called |
 | Network stack: three Dio clients, 8 interceptors, typed failures, generated `hawa_api` | **Implemented** | The generated client targets a hand-written contract snapshot, not the backend's real OpenAPI |
-| Realtime | **Partial** | `FakeRealtimeClient` drives the demo. `WsClient` is complete but the backend serves no `/v1/ws` |
+| Realtime | **Partial** | The live radar uses the backend's `/v1/ws/fleet`. Task events: `FakeRealtimeClient` drives the demo; `WsClient` is complete but the backend serves no `/v1/ws` |
 | Push notifications (FCM) and Crashlytics | **Partial** | Code is wired. Firebase options come from the `FIREBASE_*` build defines (`lib/firebase/firebase_options_env.dart`); without them both are disabled. Each install subscribes to the FCM topic `FCM_TOPIC` (backend broadcasts), and report updates are pushed to the token registered with `PUT /v1/me/push-token` ([AWS_SETUP_GUIDE §7–8](../AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)). Local notifications and in-app banners work |
 | Background sync (workmanager) | **Implemented** | Android periodic 15 min task + one-off from the FCM handler |
 | Shift location tracking (foreground service, battery-aware sampling, geofence) | **Implemented** | Driver only |
 | Maps (flutter_map, MapTiler or keyless Esri basemap, file tile cache, markers) | **Partial** | Corridor tile prefetch, cache size cap and polyline simplification exist but are never called |
-| Camera, EXIF strip, presigned upload | **Partial** | Capture and processing are real; uploads go to a fake S3 in the default build |
+| Camera, EXIF strip, presigned upload | **Implemented** | Capture and processing are real; report photos go to the real S3 bucket with `citizen_reports` in `REAL_FEATURES`, inspection photos stay on the fake S3 |
 | Deep links | **Partial** | Push and notification taps are routed. `hawa://` links from SMS/WhatsApp open the app but are not routed (Known issue 8) |
 | Tests | **Partial** | 5 test files ([LINTING_AND_QUALITY §10](LINTING_AND_QUALITY.md#10-testing-strategy)); the two prototype tests that did not compile were removed |
 | CI workflow, wired pre-commit hook, golden tests, integration test, mock server | **Planned** | Makefile targets reference them; the files do not exist |
@@ -270,3 +279,11 @@ Defects found by reading the code. Paths are relative to `app_frontend/` unless 
 - AI-ML docs (twin, forecast, safe windows, attribution, verifier): [../aiml/README.md](../aiml/README.md)
 - App folder readme: [../../app_frontend/README.md](../../app_frontend/README.md)
 - Source proposal: the original proposal v3, no longer in the repository (§6 features, §7 users/flows, §8 timeline, §10 hardware, §12.4 privacy, §15 risks)
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#hawacommand-field--community-flutter-app-docs) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,13 @@
 # Cloud Engineer System Integration Checklist
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+
+**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup guide](AWS_SETUP_GUIDE.md) · [AWS integration](AWS_INTEGRATION.md) · **Cloud checklist** · [Environment variables](ENVIRONMENT_VARIABLES.md)
+
+<!-- nav:end -->
+
 > **Status (2026-10-11): every item below has backend code.** Each one is off until its variable is set, and falls back to process memory. Console steps for each item: [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md). Check a deployment with `uv run hawa aws-check` (in `backend/`).
 >
 > | § | Item | Code | Setup |
@@ -206,3 +214,11 @@
   - Post missed machine flag for `SWP-07` &rarr; confirm `SLA_BREACH_CONFIRMED` response with penalty logged.
 - [ ] **Smoke Test 4: Live Fleet Redis Stream**
   - Verify vehicle `SPR-04` telemetry appears on the mobile app radar in < 200 ms.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#cloud-engineer-system-integration-checklist) · [Docs hub](README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

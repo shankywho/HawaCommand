@@ -1,5 +1,13 @@
 # Web Frontend Folder Structure
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Quality](LINTING_AND_QUALITY.md) · **Structure** · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
+<!-- nav:end -->
+
 Purpose: the complete `frontend/` tree as it exists in the repository, with one line of responsibility per file, plus the dependency rules the code follows and where new code should go.
 
 Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
@@ -236,3 +244,11 @@ Rules the code follows today (by convention; no lint rule enforces them, see [LI
 | A landing section | `src/app/(marketing)/sections/<Name>.tsx`, composed in `(marketing)/page.tsx` | Add its id to `ScrollRail` `ITEMS` if it should appear in the rail |
 | A new map overlay | `src/components/map/layers.ts` (name) and `src/lib/visuals/hawa-gl.js` (drawing) | The map renderer is the vendored element; there is no deck.gl |
 | A design token | `tailwind.config.ts` (and `globals.css` if a CSS variable is needed) | Update [DESIGN_SYSTEM](DESIGN_SYSTEM.md) in the same change |
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#web-frontend-folder-structure) · [Docs hub](../README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->

@@ -1,5 +1,11 @@
 # Model Card: HawaCommand 72-Hour Quantile Air Forecaster
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../../README.md) · [Docs hub](../../docs/README.md) · [Overview](../../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../../docs/AWS_ARCHITECTURE.md) · [AWS setup](../../docs/AWS_SETUP_GUIDE.md) · [API](../../docs/backend/API.md) · [Environment](../../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../../docs/CONTRACTS.md)
+
+<!-- nav:end -->
+
 > Status: Implemented (training), Partial (inference; see Intended use). This card describes the committed artifacts `models/lgb_pm25_{1,3,6,12,24,48,72}h_{p10,p50,p90}.txt`. Note: `scripts/train_all.py` regenerates this file from a template in `src/hawa_ml/forecasting/train.py` (`_write_model_card`), which overwrites these notes.
 
 ## Model overview
@@ -54,3 +60,11 @@ No confidence intervals, rolling-origin backtest or per-season breakdown were co
 - Inference does not use real history, weather forecasts or fire data, so live forecasts differ from the evaluated setting.
 - Error grows with horizon (MAE 45.75 at 1h to 73.78 at 72h); coverage stays below the nominal 80 % at 1h, 24h, 48h and 72h.
 - Retraining on the synthetic offline dataset produces meaningless metrics; check the data source before quoting results.
+
+<!-- footer:start -->
+
+---
+
+[Back to top](#model-card-hawacommand-72-hour-quantile-air-forecaster) · [Docs hub](../../docs/README.md) · [Project README](../../README.md)
+
+<!-- footer:end -->
