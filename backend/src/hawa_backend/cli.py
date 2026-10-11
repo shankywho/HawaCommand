@@ -278,7 +278,7 @@ def main() -> None:
     p_sim.add_argument("--target", choices=["api", "iot", "kinesis"], default="api")
     p_sim.add_argument("--url", default="http://localhost:8000", help="Backend URL for --target api")
     p_sim.add_argument("--assets", default="", help="Comma-separated asset ids (default: the demo fleet)")
-    p_sim.add_argument("--interval", type=float, default=5.0, help="Seconds between rounds")
+    p_sim.add_argument("--interval", type=float, default=600.0, help="Seconds between rounds (default 10 min)")
     p_sim.add_argument("--count", type=int, default=0, help="Rounds to send (0 = until Ctrl+C)")
 
     subparsers.add_parser("consume-telemetry", help="Run the Kinesis -> live fleet consumer in the foreground")

@@ -139,6 +139,20 @@ def test_missed_machine_audit_uses_live_telemetry(client):
     }).json()
     assert bad["verdict"] == "SLA_BREACH_CONFIRMED" and bad["penalty_fine_inr"] == 25000
 
+
+def test_missed_machine_audit_counts_ten_minute_pings(client):
+    # the simulator's default cadence: one ping every 10 minutes, 20 minutes on site
+    now = time.time()
+    client.post("/v1/telemetry/vehicles", json=[ping(ts=now - 1200 + i * 600) for i in range(3)])
+    ok = client.post("/v1/citizen/reports/missed-machine", json={
+        "asset_id": "SPR-04", "cell_id": "C-1", "ward": "Anand Vihar", "lat": 28.6476, "lon": 77.3158,
+    }).json()
+    assert ok["verdict"] == "MACHINE_ACTIVE_VERIFIED" and ok["evidence"]["dwell_minutes"] == 20.0
+
+    # a gap longer than the live window counts only up to HAWA_FLEET_ACTIVE_MINUTES (15)
+    pts = [dict(ping(ts=t), epoch=t) for t in (now - 3600, now)]
+    assert fleet.evaluate(pts, None, None, 60)["dwell_minutes"] == 15.0
+
     # No telemetry at all: the simulated auditor answers
     sim = client.post("/v1/citizen/reports/missed-machine", json={"asset_id": "SMG-12", "cell_id": "C-3", "ward": "x"}).json()
     assert sim["evidence_source"] == "simulated"

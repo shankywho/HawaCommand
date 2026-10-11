@@ -135,7 +135,7 @@ Subcommands:
 |---|---|
 | `version`, `config`, `check` | Print the version or the active configuration; validate settings |
 | `aws-check [--push-test]` | One cheap call per configured service (STS, Secrets Manager, S3 put+head, both DynamoDB tables and their indexes, Kinesis, SNS, Redis GEO round trip, FCM token); exit 1 on any failure |
-| `simulate-fleet --target api\|iot\|kinesis [--url] [--assets] [--interval] [--count]` | Moving HawaTag pings for SPR-04, SMG-12, SPR-09 and a parked SWP-07 |
+| `simulate-fleet --target api\|iot\|kinesis [--url] [--assets] [--interval] [--count]` | Moving HawaTag pings for SPR-04, SMG-12, SPR-09 and a parked SWP-07, one round every 10 min by default (`--interval` in seconds) |
 | `consume-telemetry` | Kinesis → live fleet consumer in the foreground (instead of `HAWA_AWS_KINESIS_CONSUMER=true`) |
 
 ### 6. Make targets (repo root)

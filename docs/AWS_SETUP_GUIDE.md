@@ -221,9 +221,9 @@ Put it in `.env`: `HAWA_AWS_IOT_ENDPOINT=a1b2c3d4e5f6g7-ats.iot.ap-south-1.amazo
 - **From the instance, a moving demo fleet through IoT Core:**
   ```bash
   cd ~/HawaCommand/backend
-  uv run hawa simulate-fleet --target iot --interval 5     # Ctrl+C to stop
+  uv run hawa simulate-fleet --target iot     # one round every 10 minutes; Ctrl+C to stop
   ```
-  `--target api` posts to the backend directly (using `HAWA_INGEST_API_KEY`), and `--target kinesis` writes straight to the stream. The demo fleet is SPR-04, SMG-12 and SPR-09 spraying, plus SWP-07 parked at the depot (the ghost-worker case).
+  Each round sends one ping per vehicle, so the default is 4 pings every 10 minutes (about 4,000 DynamoDB writes a week). Add `--interval 5` for a fast-moving demo, and stop it afterwards. `--target api` posts to the backend directly (using `HAWA_INGEST_API_KEY`), and `--target kinesis` writes straight to the stream. The demo fleet is SPR-04, SMG-12 and SPR-09 spraying, plus SWP-07 parked at the depot (the ghost-worker case).
 
 **Check:** `aws-check` shows `[OK] Kinesis hawa-sensor-data  ACTIVE, ON_DEMAND, ...` and the IoT endpoint line.
 
@@ -485,13 +485,13 @@ Run these on the instance (or against your domain).
         -d '{"origin":{"lat":28.6315,"lon":77.2167},"destination":{"lat":28.5245,"lon":77.2066},"mode":"cycling"}'
    ```
 4. **IoT audit (checklist test 3):**
-   - Run the simulator for a minute: `uv run hawa simulate-fleet --target iot --interval 5`.
+   - Run the simulator for a minute in fast mode: `uv run hawa simulate-fleet --target iot --interval 5`.
    - Then flag the parked sweeper:
      ```bash
      curl -X POST http://localhost:8000/v1/citizen/reports/missed-machine -H 'content-type: application/json' \
           -d '{"asset_id":"SWP-07","cell_id":"G-052-054","ward":"Okhla","lat":28.5300,"lon":77.2700}'
      ```
-   - Expect `"evidence_source": "live_telemetry"` and `"verdict": "SLA_BREACH_CONFIRMED"`. The same call for `SPR-04` at `28.6476, 77.3158`, after 15+ minutes of simulation, returns `MACHINE_ACTIVE_VERIFIED`.
+   - Expect `"evidence_source": "live_telemetry"` and `"verdict": "SLA_BREACH_CONFIRMED"`. The same call for `SPR-04` at `28.6476, 77.3158`, after 15+ minutes of simulation (20+ minutes at the default 10-minute interval), returns `MACHINE_ACTIVE_VERIFIED`.
 5. **Live fleet (checklist test 4):**
    - Open the app → citizen → **Govt in Action radar** with the simulator running. Positions update as pings arrive: in local testing a ping reached the WebSocket about 25 ms after it was posted.
    - From a shell, connect with `npx wscat -c ws://<host>:8000/v1/ws/fleet`.
@@ -555,6 +555,20 @@ These prices are rough figures for low traffic. Check each service's pricing pag
 | Kinesis | **Charged every hour the stream exists:** on-demand has a per-stream hourly fee; one provisioned shard is cheaper. |
 | ElastiCache | **Hourly per node**, even when idle. |
 | ECS Fargate and the ALB | **Hourly**, even when idle. |
+
+**One week on a small budget (approximate on-demand prices for ap-south-1, before tax):**
+
+| Item | One week |
+|---|---|
+| EC2 instance (runs 24/7) | t3.small ~$3.80, t3.medium ~$7.50, t3.large ~$15 |
+| Its EBS disk (30 GB gp3) and public IPv4 address | ~$1.50 |
+| Kinesis `hawa-sensor-data` | On-demand ~$7–8; provisioned with 1 shard ~$2.50–3 |
+| ElastiCache `cache.t4g.micro` (optional) | ~$2–3 |
+| DynamoDB (3 tables), S3, IoT Core, Secrets Manager, SNS email, CloudWatch | Under $1 at demo traffic, with the simulator at its default of 4 pings every 10 minutes |
+| ECS Fargate and ALB (optional, §10) | ~$8–10 on top of the above |
+| Route 53 (optional, §11) | Hosted zone $0.50 a month; a new domain costs a full year up front |
+
+Accounts billed by AWS India (AISPL) pay 18% GST on top. Set a budget alert under **Billing and Cost Management** → **Budgets**; billing data lags by up to a day.
 
 After the demo, delete the stream, the cache, and the ECS stack (CloudFormation → **Delete**). Each of those features then falls back to memory.
 

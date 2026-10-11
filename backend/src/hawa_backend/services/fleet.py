@@ -329,15 +329,19 @@ async def audit(
 def evaluate(
     pts: List[Dict[str, Any]], lat: Optional[float], lon: Optional[float], window_minutes: int, radius_m: float = 500.0,
 ) -> Dict[str, Any]:
-    """Dwell time, pump activity and closest approach of a track relative to (lat, lon); no site = anywhere."""
+    """Dwell time, pump activity and closest approach of a track relative to (lat, lon); no site = anywhere.
+
+    A gap between pings counts up to HAWA_FLEET_ACTIVE_MINUTES, the window in which the asset still counts as live.
+    """
 
     def near(p: Dict[str, Any]) -> bool:
         return lat is None or lon is None or haversine_m(lat, lon, p["lat"], p["lon"]) <= radius_m
 
+    max_gap = get_settings().fleet_active_minutes * 60.0
     dwell_s = 0.0
     litres = 0.0
     for a, b in zip(pts, pts[1:]):
-        gap = min(max(float(b["epoch"]) - float(a["epoch"]), 0.0), 300.0)
+        gap = min(max(float(b["epoch"]) - float(a["epoch"]), 0.0), max_gap)
         if near(a) and near(b):
             dwell_s += gap
             litres += float(a.get("pump_flow_lpm", 0)) * gap / 60.0
