@@ -609,6 +609,8 @@ These are needed by AI-ML and are not (fully) defined in [CONTRACTS.md](../CONTR
 
 ---
 
+**Related across the project:** [Backend architecture](../backend/ARCHITECTURE.md) · [Backend AI-ML bridge](../backend/SERVICES.md#ai-ml-bridge) · [AWS architecture](../AWS_ARCHITECTURE.md) · [Web pages](../frontend/PAGES.md)
+
 [Back to top](#ai-ml-runtime-architecture) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

@@ -113,6 +113,8 @@ How the FastAPI backend (`backend/`) is deployed, configured, checked and scaled
 
 ---
 
+**Related across the project:** [AWS integration guide](../AWS_SETUP_GUIDE.md) · [AI-ML deployment](../aiml/DEPLOYMENT.md) · [Web deployment](../frontend/DEPLOYMENT.md) · [App deployment](../app/DEPLOYMENT.md)
+
 [Back to top](#backend-deployment) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

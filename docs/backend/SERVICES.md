@@ -148,6 +148,8 @@ flowchart LR
 
 ---
 
+**Related across the project:** [App screens](../app/SCREENS.md) · [App offline and sync](../app/OFFLINE_AND_SYNC.md) · [App push](../app/NOTIFICATIONS_AND_REALTIME.md) · [Web pages](../frontend/PAGES.md) · [AI-ML models](../aiml/MODELS.md) · [AWS data flows](../AWS_ARCHITECTURE.md#3-data-flows)
+
 [Back to top](#backend-services) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

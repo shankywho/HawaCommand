@@ -80,6 +80,8 @@ The hotspot list, detail and heat field come from `/v1/hotspots`; truck routes, 
 
 ---
 
+**Related across the project:** [Pages](../docs/frontend/PAGES.md) · [Design system](../docs/frontend/DESIGN_SYSTEM.md) · [Backend API](../docs/backend/API.md)
+
 [Back to top](#hawacommand-frontend) · [Docs hub](../docs/README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

@@ -828,6 +828,8 @@ The target replaces today's unprefixed calls with `/internal/v1/simulate`, `/int
 
 ---
 
+**Related across the project:** [Web pages](../frontend/PAGES.md) · [App screens](../app/SCREENS.md) · [Engine API](../../AI-ML/CONTRACTS.md) · [Contracts](../CONTRACTS.md)
+
 [Back to top](#hawacommand-backend--rest-api) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

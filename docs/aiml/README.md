@@ -120,6 +120,8 @@ Do not use `make test` (plain `pytest` cannot import `scripts`) or `make api` (p
 
 ---
 
+**Related across the project:** [Backend AI-ML bridge](../backend/SERVICES.md#ai-ml-bridge) · [Web pages](../frontend/PAGES.md) · [App screens](../app/SCREENS.md) · [AWS architecture](../AWS_ARCHITECTURE.md)
+
 [Back to top](#hawacommand-ai-ml) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

@@ -439,6 +439,8 @@ These files are read and written at run time. Four of them are tracked in git an
 
 ---
 
+**Related across the project:** [Backend API](../docs/backend/API.md) · [Models](../docs/aiml/MODELS.md) · [Agents](../docs/aiml/AGENTS.md)
+
 [Back to top](#hawacommand-ai-ml-api-and-data-contracts) · [Docs hub](../docs/README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

@@ -122,6 +122,8 @@ Demo numbers: driver `98100 12345`, inspector `98100 22222`, school `98100 33333
 
 ---
 
+**Related across the project:** [Backend API](../backend/API.md) · [Citizen reports service](../backend/SERVICES.md#citizen-reports) · [Fleet telemetry service](../backend/SERVICES.md#fleet-telemetry) · [Citizen models](../aiml/MODELS.md#10-citizen-models) · [Web pages](../frontend/PAGES.md)
+
 [Back to top](#app-screens) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

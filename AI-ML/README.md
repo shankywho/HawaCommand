@@ -334,6 +334,8 @@ Defects found while documenting. Nothing here has been fixed.
 
 ---
 
+**Related across the project:** [Models](../docs/aiml/MODELS.md) · [Agents](../docs/aiml/AGENTS.md) · [Data and training](../docs/aiml/DATA_AND_TRAINING.md) · [Backend AI-ML bridge](../docs/backend/SERVICES.md#ai-ml-bridge)
+
 [Back to top](#hawacommand-ai-ml-engine) · [Docs hub](../docs/README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

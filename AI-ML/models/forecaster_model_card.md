@@ -65,6 +65,8 @@ No confidence intervals, rolling-origin backtest or per-season breakdown were co
 
 ---
 
+**Related across the project:** [Forecaster](../../docs/aiml/MODELS.md#3-72-hour-forecaster) · [Training](../../docs/aiml/DATA_AND_TRAINING.md#training) · [Forecast page](../../docs/frontend/PAGES.md#forecast-72-hours-ahead)
+
 [Back to top](#model-card-hawacommand-72-hour-quantile-air-forecaster) · [Docs hub](../../docs/README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

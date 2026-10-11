@@ -800,6 +800,8 @@ sequenceDiagram
 
 ---
 
+**Related across the project:** [Backend API](../backend/API.md) · [Design system](../frontend/DESIGN_SYSTEM.md) · [Backend services](../backend/SERVICES.md)
+
 [Back to top](#app-architecture) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

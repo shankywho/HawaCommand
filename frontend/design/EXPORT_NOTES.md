@@ -28,6 +28,8 @@ Suggested port map:
 
 ---
 
+**Related across the project:** [Design system](../../docs/frontend/DESIGN_SYSTEM.md) · [Pages](../../docs/frontend/PAGES.md)
+
 [Back to top](#hawacommand--final-frontend-prototype) · [Docs hub](../../docs/README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

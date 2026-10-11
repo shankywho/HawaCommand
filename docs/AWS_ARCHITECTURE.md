@@ -368,6 +368,8 @@ Example output:
 
 ---
 
+**Related across the project:** [Backend services](backend/SERVICES.md) · [Data stores](backend/DATA_STORES.md) · [Backend deployment](backend/DEPLOYMENT.md) · [Agents on Bedrock](aiml/AGENTS.md#llm-providers) · [App push](app/NOTIFICATIONS_AND_REALTIME.md)
+
 [Back to top](#aws-architecture) · [Docs hub](README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

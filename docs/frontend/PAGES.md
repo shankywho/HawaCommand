@@ -111,6 +111,8 @@ Every page of the officer console: who it is for, what it shows, the endpoints b
 
 ---
 
+**Related across the project:** [Backend API](../backend/API.md) · [Models behind the pages](../aiml/MODELS.md) · [Plan agents](../aiml/AGENTS.md) · [Plans service](../backend/SERVICES.md#plans) · [App screens](../app/SCREENS.md)
+
 [Back to top](#web-console-pages) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

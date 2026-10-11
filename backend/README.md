@@ -209,6 +209,8 @@ Subcommands:
 
 ---
 
+**Related across the project:** [Services](../docs/backend/SERVICES.md) · [Data stores](../docs/backend/DATA_STORES.md) · [Testing](../docs/backend/TESTING.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md)
+
 [Back to top](#hawacommand-backend) · [Docs hub](../docs/README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

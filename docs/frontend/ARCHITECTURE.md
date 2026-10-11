@@ -331,6 +331,8 @@ Ports: `pnpm dev` and `pnpm start` use 3000 (`-p 3000` in the scripts).
 
 ---
 
+**Related across the project:** [Backend API](../backend/API.md) · [Contracts](../CONTRACTS.md) · [Backend architecture](../backend/ARCHITECTURE.md)
+
 [Back to top](#web-frontend-architecture) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

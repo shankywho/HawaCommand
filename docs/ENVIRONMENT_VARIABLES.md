@@ -271,6 +271,8 @@ Leave `WAQI_TOKEN`, `OPENAQ_API_KEY` and `NEXT_PUBLIC_API_URL` unset: the backen
 
 ---
 
+**Related across the project:** [Every AWS variable](AWS_SETUP_GUIDE.md#13-every-variable-in-one-table) · [Backend deployment](backend/DEPLOYMENT.md) · [AI-ML deployment](aiml/DEPLOYMENT.md) · [Web deployment](frontend/DEPLOYMENT.md) · [App deployment](app/DEPLOYMENT.md)
+
 [Back to top](#environment-variables) · [Docs hub](README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

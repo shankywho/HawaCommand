@@ -382,6 +382,8 @@ Auth with argon2id passwords and phone OTP, RS256 access tokens with refresh rot
 
 ---
 
+**Related across the project:** [AI-ML architecture](../aiml/ARCHITECTURE.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [Web architecture](../frontend/ARCHITECTURE.md) · [App architecture](../app/ARCHITECTURE.md)
+
 [Back to top](#backend-architecture) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

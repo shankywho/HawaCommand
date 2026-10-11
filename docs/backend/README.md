@@ -181,6 +181,8 @@ Defects found while reconciling these documents with the code (verified 2026-10-
 
 ---
 
+**Related across the project:** [AI-ML models](../aiml/MODELS.md) · [Web pages](../frontend/PAGES.md) · [App screens](../app/SCREENS.md) · [AWS architecture](../AWS_ARCHITECTURE.md)
+
 [Back to top](#hawacommand-backend--documentation-index) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

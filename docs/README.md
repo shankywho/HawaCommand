@@ -1,5 +1,11 @@
 # HawaCommand documentation
 
+<!-- nav:start -->
+
+**Navigate:** [Project](../README.md) · **Docs hub** · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS guide](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+
+<!-- nav:end -->
+
 <div align="center">
 
 <a href="../README.md"><img src="https://img.shields.io/badge/project-README-111111?logo=github&logoColor=white" alt="Project README"></a>
@@ -59,6 +65,7 @@ Every module has a **README** (index and status), **ARCHITECTURE** and **DEPLOYM
 |---|---|
 | [Forecaster model card](../AI-ML/models/forecaster_model_card.md) · [Attribution model card](../AI-ML/models/attribution_model_card.md) | Training data, metrics, limits |
 | [AI-ML/data/README.md](../AI-ML/data/README.md) | Data folders and fixtures |
+| Agent prompts: [planner](../AI-ML/src/hawa_ml/agents/prompts/planner.md) · [auditor](../AI-ML/src/hawa_ml/agents/prompts/auditor.md) · [forecaster](../AI-ML/src/hawa_ml/agents/prompts/forecaster.md) · [communicator](../AI-ML/src/hawa_ml/agents/prompts/communicator.md) | System prompts the agents load at runtime |
 | [Design export notes](../frontend/design/EXPORT_NOTES.md) | The design source the web console was ported from |
 
 ---
@@ -71,6 +78,10 @@ Every module has a **README** (index and status), **ARCHITECTURE** and **DEPLOYM
 4. **Humans approve:** the optimiser decides, agents explain, officers approve.
 5. **Docs follow code:** change behaviour, change the matching module doc in the same PR.
 
+<!-- footer:start -->
+
 ---
 
-[Back to the project README](../README.md)
+[Back to top](#hawacommand-documentation) · [Docs hub](README.md) · [Project README](../README.md)
+
+<!-- footer:end -->

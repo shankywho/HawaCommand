@@ -76,6 +76,8 @@ Basemap: MapTiler when `MAP_API_KEY` is set, else Esri World Street Map (keyless
 
 ---
 
+**Related across the project:** [Screens](../docs/app/SCREENS.md) · [Offline and sync](../docs/app/OFFLINE_AND_SYNC.md) · [Notifications and realtime](../docs/app/NOTIFICATIONS_AND_REALTIME.md) · [Backend API](../docs/backend/API.md)
+
 [Back to top](#hawacommand-field--community-app-flutter) · [Docs hub](../docs/README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

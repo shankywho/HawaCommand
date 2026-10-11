@@ -187,6 +187,8 @@ E = max(0, C − C_safe) × Pop(cell, hour) × V(cell) × dt
 
 ---
 
+**Related across the project:** [Twin snapshot in Redis](../backend/SERVICES.md#twin-snapshot) · [Map, forecast and impact pages](../frontend/PAGES.md) · [Citizen air screens](../app/SCREENS.md#citizen-air--report--my-reports--more) · [Forecaster card](../../AI-ML/models/forecaster_model_card.md) · [Attribution card](../../AI-ML/models/attribution_model_card.md) · [SageMaker forecast](../AWS_SETUP_GUIDE.md#16b-sagemaker-or-step-functions-forecast)
+
 [Back to top](#ai-ml-models) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

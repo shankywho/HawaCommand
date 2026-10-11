@@ -679,6 +679,8 @@ The four area doc sets proposed additions while being written. The ones below ar
 
 ---
 
+**Related across the project:** [Backend API](backend/API.md) · [Engine API](../AI-ML/CONTRACTS.md) · [Data stores](backend/DATA_STORES.md) · [AQI colours](frontend/DESIGN_SYSTEM.md#aqi-bands-data-only) · [App offline and sync](app/OFFLINE_AND_SYNC.md)
+
 [Back to top](#hawacommand--shared-contracts) · [Docs hub](README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

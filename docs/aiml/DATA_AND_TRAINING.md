@@ -103,6 +103,8 @@ make train    # 21 forecaster models + attribution classifier + model cards + me
 
 ---
 
+**Related across the project:** [Data folder](../../AI-ML/data/README.md) · [Forecaster card](../../AI-ML/models/forecaster_model_card.md) · [Attribution card](../../AI-ML/models/attribution_model_card.md) · [Fleet telemetry](../backend/SERVICES.md#fleet-telemetry) · [AI-ML variables](../ENVIRONMENT_VARIABLES.md#2-ai-ml-engine-ai-mlenv)
+
 [Back to top](#ai-ml-data-and-training) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

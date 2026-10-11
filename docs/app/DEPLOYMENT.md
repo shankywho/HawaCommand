@@ -78,6 +78,8 @@ make app-apk        # from the repo root
 
 ---
 
+**Related across the project:** [Firebase setup](../AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret) · [Backend deployment](../backend/DEPLOYMENT.md) · [App variables](../ENVIRONMENT_VARIABLES.md#5-flutter-app---dart-define)
+
 [Back to top](#app-deployment) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

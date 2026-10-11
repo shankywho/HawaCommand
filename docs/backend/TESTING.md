@@ -81,6 +81,8 @@ cd backend && uv run pytest -q
 
 ---
 
+**Related across the project:** [End-to-end smoke tests](../AWS_SETUP_GUIDE.md#12-smoke-tests) · [AI-ML runbook](../../AI-ML/README.md) · [AWS architecture](../AWS_ARCHITECTURE.md)
+
 [Back to top](#backend-testing) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

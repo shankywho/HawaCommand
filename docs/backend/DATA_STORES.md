@@ -120,6 +120,8 @@ The schema is ready for moving state into PostgreSQL; the API does not open a se
 
 ---
 
+**Related across the project:** [DynamoDB in AWS](../AWS_ARCHITECTURE.md#44-amazon-dynamodb) · [Create the tables](../AWS_SETUP_GUIDE.md#2-dynamodb-citizen-grievances-table) · [App local tables](../app/OFFLINE_AND_SYNC.md#local-tables) · [Contracts](../CONTRACTS.md)
+
 [Back to top](#backend-data-stores) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

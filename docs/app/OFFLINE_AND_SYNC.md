@@ -114,6 +114,8 @@ flowchart LR
 
 ---
 
+**Related across the project:** [Citizen reports service](../backend/SERVICES.md#citizen-reports) · [Backend API](../backend/API.md) · [Data stores](../backend/DATA_STORES.md)
+
 [Back to top](#app-offline-and-sync) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

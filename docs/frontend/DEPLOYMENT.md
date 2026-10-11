@@ -73,6 +73,8 @@ Full list: [environment variables](../ENVIRONMENT_VARIABLES.md#3-web-console-fro
 
 ---
 
+**Related across the project:** [Backend deployment](../backend/DEPLOYMENT.md) · [Domain and HTTPS](../AWS_SETUP_GUIDE.md#11-optional-domain-and-https) · [Web variables](../ENVIRONMENT_VARIABLES.md#3-web-console-frontendenvlocal)
+
 [Back to top](#web-console-deployment) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

@@ -76,6 +76,8 @@ Caches are not time-limited. Delete a cache file to force a refetch.
 
 ---
 
+**Related across the project:** [Data and training](../../docs/aiml/DATA_AND_TRAINING.md) · [Models](../../docs/aiml/MODELS.md)
+
 [Back to top](#hawacommand-ai-ml-data-directory) · [Docs hub](../../docs/README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

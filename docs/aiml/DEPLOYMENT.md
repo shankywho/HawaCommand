@@ -78,6 +78,8 @@ Full list: [environment variables](../ENVIRONMENT_VARIABLES.md#2-ai-ml-engine-ai
 
 ---
 
+**Related across the project:** [Backend deployment](../backend/DEPLOYMENT.md) · [Optional AWS AI services](../AWS_SETUP_GUIDE.md#16-optional-bedrock-sagemaker-and-step-functions) · [AI-ML variables](../ENVIRONMENT_VARIABLES.md#2-ai-ml-engine-ai-mlenv)
+
 [Back to top](#ai-ml-deployment) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

@@ -168,6 +168,8 @@ Run on 2026-10-10 in a scratch copy of `frontend/` (no `node_modules` in the rep
 
 ---
 
+**Related across the project:** [Backend API](../backend/API.md) · [AI-ML models](../aiml/MODELS.md) · [App screens](../app/SCREENS.md)
+
 [Back to top](#hawacommand-web-frontend-documentation-index) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

@@ -686,6 +686,8 @@ These services are wired in code and switched on by one variable each. The demo 
 
 ---
 
+**Related across the project:** [Data stores](backend/DATA_STORES.md) · [Backend deployment](backend/DEPLOYMENT.md) · [App deployment](app/DEPLOYMENT.md) · [App push](app/NOTIFICATIONS_AND_REALTIME.md) · [Backend testing](backend/TESTING.md)
+
 [Back to top](#aws-integration-guide) · [Docs hub](README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

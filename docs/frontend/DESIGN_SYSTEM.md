@@ -108,6 +108,8 @@ Loaded with `next/font/google` in `src/app/layout.tsx`.
 
 ---
 
+**Related across the project:** [App theme](../app/ARCHITECTURE.md) · [AQI tables](../CONTRACTS.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+
 [Back to top](#web-design-system) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

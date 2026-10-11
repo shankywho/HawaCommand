@@ -47,6 +47,8 @@ These mappings are what the rule engine and greedy optimiser implement, not the 
 
 ---
 
+**Related across the project:** [Source attribution](../../docs/aiml/MODELS.md#2-source-attribution) · [Training](../../docs/aiml/DATA_AND_TRAINING.md#training) · [Map page](../../docs/frontend/PAGES.md#map-live-hotspot-map)
+
 [Back to top](#model-card-hawacommand-source-attribution-classifier-f7) · [Docs hub](../../docs/README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

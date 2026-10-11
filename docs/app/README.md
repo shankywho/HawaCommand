@@ -283,6 +283,8 @@ Defects found by reading the code. Paths are relative to `app_frontend/` unless 
 
 ---
 
+**Related across the project:** [Backend API](../backend/API.md) · [Backend services](../backend/SERVICES.md) · [Web pages](../frontend/PAGES.md) · [Firebase setup](../AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)
+
 [Back to top](#hawacommand-field--community-flutter-app-docs) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

@@ -99,6 +99,8 @@ How the app hears about changes: FCM pushes, local notifications, deep links and
 
 ---
 
+**Related across the project:** [Push service](../backend/SERVICES.md#push) · [Alerts service](../backend/SERVICES.md#alerts) · [SNS fan-out](../AWS_ARCHITECTURE.md#33-alerts-sns-fan-out) · [Firebase setup](../AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)
+
 [Back to top](#app-notifications-and-realtime) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->

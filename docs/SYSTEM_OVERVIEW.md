@@ -488,6 +488,8 @@ Details: [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md).
 
 ---
 
+**Related across the project:** [AWS architecture](AWS_ARCHITECTURE.md) · [AI-ML models](aiml/MODELS.md) · [Backend services](backend/SERVICES.md) · [Web pages](frontend/PAGES.md) · [App screens](app/SCREENS.md)
+
 [Back to top](#hawacommand--system-overview) · [Docs hub](README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

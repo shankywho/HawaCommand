@@ -132,6 +132,8 @@ The insight engine (`insights/triggers.py`) scans each cycle for:
 
 ---
 
+**Related across the project:** [Plan routes](../backend/API.md) · [Plan review page](../frontend/PAGES.md#plans-and-plansid-review-and-approve) · [Plans service](../backend/SERVICES.md#plans) · [Bedrock setup](../AWS_SETUP_GUIDE.md#16a-bedrock-for-the-agents)
+
 [Back to top](#ai-ml-agents) · [Docs hub](../README.md) · [Project README](../../README.md)
 
 <!-- footer:end -->
