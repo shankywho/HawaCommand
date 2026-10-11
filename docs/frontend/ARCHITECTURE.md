@@ -4,7 +4,7 @@
 
 **Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · **Architecture** · [Deployment](DEPLOYMENT.md)
+**Web docs:** [Runbook](../../frontend/README.md) · [Index](README.md) · **Architecture** · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 

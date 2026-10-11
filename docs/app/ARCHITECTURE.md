@@ -4,7 +4,7 @@
 
 **Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · **Architecture** · [Deployment](DEPLOYMENT.md)
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · **Architecture** · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Notifications and realtime](NOTIFICATIONS_AND_REALTIME.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 

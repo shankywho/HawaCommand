@@ -8,7 +8,7 @@
 
 **Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS guide](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
 
-**Backend docs:** **Runbook** · [Index](../docs/backend/README.md) · [Architecture](../docs/backend/ARCHITECTURE.md) · [API](../docs/backend/API.md) · [Deployment](../docs/backend/DEPLOYMENT.md)
+**Backend docs:** **Runbook** · [Index](../docs/backend/README.md) · [Architecture](../docs/backend/ARCHITECTURE.md) · [API](../docs/backend/API.md) · [Services](../docs/backend/SERVICES.md) · [Data stores](../docs/backend/DATA_STORES.md) · [Testing](../docs/backend/TESTING.md) · [Deployment](../docs/backend/DEPLOYMENT.md)
 
 <!-- nav:end -->
 

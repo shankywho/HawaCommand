@@ -4,7 +4,7 @@
 
 **Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS guide](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
 
-**AI-ML docs:** [Runbook](README.md) · [Index](../docs/aiml/README.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · **Engine API** · [Deployment](../docs/aiml/DEPLOYMENT.md)
+**AI-ML docs:** [Runbook](README.md) · [Index](../docs/aiml/README.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · [Models](../docs/aiml/MODELS.md) · [Agents](../docs/aiml/AGENTS.md) · [Data and training](../docs/aiml/DATA_AND_TRAINING.md) · **Engine API** · [Deployment](../docs/aiml/DEPLOYMENT.md)
 
 <!-- nav:end -->
 

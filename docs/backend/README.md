@@ -4,7 +4,7 @@
 
 **Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**Backend docs:** [Runbook](../../backend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Deployment](DEPLOYMENT.md)
+**Backend docs:** [Runbook](../../backend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Services](SERVICES.md) · [Data stores](DATA_STORES.md) · [Testing](TESTING.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -60,13 +60,16 @@ In one sentence: today the backend is a single FastAPI process that serves the w
 |---|---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | The one running process, module layering, the hotspot/forecast fallback chain, the circuit breaker, live station ingestion, plan flow, security and resilience as built, then the target process architecture | Before changing any code |
 | [API.md](API.md) | Every registered route with parameters, real response examples, status codes and data source; errors, CORS, headers, auth; planned endpoints listed separately | Before touching routes or clients |
+| [SERVICES.md](SERVICES.md) | Citizen reports, fleet telemetry, alerts, push, twin snapshot, AI-ML bridge, plans: lifecycles and fallbacks | Before changing a feature |
+| [DATA_STORES.md](DATA_STORES.md) | DynamoDB items, Redis keys, S3 layout, SQL schema | Before touching storage |
+| [TESTING.md](TESTING.md) | Test suites, moto and fakeredis, live AWS checks | Before a PR |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | EC2 + PM2 (live), the Docker image, ECS Fargate, configuration and operations | When running or shipping |
 
 The code is organised by layer under `backend/src/hawa_backend/`.
 
 ## 3. Reading order
 
-**Humans:** this README → [API.md](API.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → [DEPLOYMENT.md](DEPLOYMENT.md).
+**Humans:** this README → [SERVICES.md](SERVICES.md) → [API.md](API.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → [DATA_STORES.md](DATA_STORES.md) → [DEPLOYMENT.md](DEPLOYMENT.md).
 
 **AI coding agents:** treat the code and this README's status table as the truth; treat `../CONTRACTS.md` as binding for names that already exist in `hawa_contracts`. Do not assume any **Planned** item exists.
 

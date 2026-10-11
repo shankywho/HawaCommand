@@ -15,7 +15,7 @@ A fully developed prototype, deployed on AWS: every flow runs end to end, from a
 <a href="#built-on-aws"><img src="https://img.shields.io/badge/AWS%20services-22%20integrated%20%C2%B7%209%20live-FF9900?logo=amazonwebservices&logoColor=white" alt="AWS services"></a>
 <a href="docs/backend/API.md"><img src="https://img.shields.io/badge/API-50%20operations%20%2B%20WebSocket-2563EB?logo=fastapi&logoColor=white" alt="API"></a>
 <a href="#testing"><img src="https://img.shields.io/badge/tests-135%20passing-2EA44F?logo=pytest&logoColor=white" alt="Tests"></a>
-<a href="docs/README.md"><img src="https://img.shields.io/badge/docs-34%20pages-2563EB?logo=readthedocs&logoColor=white" alt="Docs"></a>
+<a href="docs/README.md"><img src="https://img.shields.io/badge/docs-45%20pages-2563EB?logo=readthedocs&logoColor=white" alt="Docs"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-C0392B" alt="MIT licence"></a>
 
 <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python">
@@ -91,12 +91,12 @@ flowchart LR
 | Stage | What it does | Where |
 |---|---|---|
 | Sense | Live WAQI / OpenAQ stations, HawaTag vehicle telemetry over **IoT Core + Kinesis**, citizen photo reports to **S3** | [backend](backend/README.md), [AWS architecture](docs/AWS_ARCHITECTURE.md) |
-| Map | Gaussian-process kriging over **10,600 cells** of 500 m, each with PM2.5, PM10 and confidence | [AI-ML architecture](docs/aiml/ARCHITECTURE.md) |
+| Map | Gaussian-process kriging over **10,600 cells** of 500 m, each with PM2.5, PM10 and confidence | [twin](docs/aiml/MODELS.md#1-digital-twin) |
 | Attribute | Fingerprint rules label each hotspot: road dust, traffic, burning, regional smoke, industrial | [AI-ML README](AI-ML/README.md) |
 | Forecast | **21 LightGBM quantile models**, 1 to 72 h, with CPCB AQI and the CAQM GRAP stage | [forecaster card](AI-ML/models/forecaster_model_card.md) |
-| Decide | Ranks hotspots by **people exposed** (population, schools, hospitals), not raw AQI; drafts a cause-matched dispatch plan | [AI-ML architecture](docs/aiml/ARCHITECTURE.md) |
+| Decide | Ranks hotspots by **people exposed** (population, schools, hospitals), not raw AQI; drafts a cause-matched dispatch plan | [exposure](docs/aiml/MODELS.md#5-exposure-engine), [agents](docs/aiml/AGENTS.md) |
 | Act | Officer approves in the console; drivers get Hindi-first routes; **SNS** alerts and push go out | [web](frontend/README.md), [app](app_frontend/README.md) |
-| Verify | Synthetic control with placebo tests: effect size with a 95 % interval | [AI-ML runbook](AI-ML/README.md) |
+| Verify | Synthetic control with placebo tests: effect size with a 95 % interval | [causal verifier](docs/aiml/MODELS.md#8-causal-verifier) |
 
 ---
 
@@ -220,7 +220,7 @@ flowchart LR
 |---|---|
 | **Idea and impact** | Real fleet, real gap: 733 machines on static schedules. We rank by people exposed and prove what worked ([problem](#the-problem), [system overview](docs/SYSTEM_OVERVIEW.md)) |
 | **Built on AWS** | 22 services integrated, 9 live: EC2, IAM, S3, DynamoDB, Kinesis, IoT Core, ElastiCache, SNS, KMS ([table](#built-on-aws), [deep dive](docs/AWS_ARCHITECTURE.md)) |
-| **Design and usability** | One-click plan approval, Hindi-first driver view, bilingual offline-first app, outdoor theme ([web architecture](docs/frontend/ARCHITECTURE.md), [app architecture](docs/app/ARCHITECTURE.md)) |
+| **Design and usability** | One-click plan approval, Hindi-first driver view, bilingual offline-first app, outdoor theme ([web pages](docs/frontend/PAGES.md), [app screens](docs/app/SCREENS.md), [design system](docs/frontend/DESIGN_SYSTEM.md)) |
 | **Execution** | A fully developed prototype, deployed and live ([demo](#live-demo)); 135 automated tests; `hawa aws-check` verifies the cloud wiring ([testing](#testing)) |
 | **Demo video** | 3 minutes: the problem, the officer loop, the field app, and where AWS fits |
 
@@ -253,7 +253,7 @@ HawaCommand/
 └── Makefile            install, run and build targets
 ```
 
-Module docs (architecture, API, deployment): [backend](docs/backend/README.md) · [AI-ML](docs/aiml/README.md) · [web](docs/frontend/README.md) · [app](docs/app/README.md)
+Module docs: [backend](docs/backend/README.md) · [AI-ML](docs/aiml/README.md) · [web](docs/frontend/README.md) · [app](docs/app/README.md)
 
 ---
 
@@ -351,12 +351,12 @@ Component-level detail: [system overview](docs/SYSTEM_OVERVIEW.md#0-the-system-a
 | [API reference](docs/backend/API.md) | Every route |
 | [Contracts](docs/CONTRACTS.md) | IDs, enums, units, packets shared by all teams |
 
-| Discipline | Runbook | Deep docs |
+| Module | Runbook | Docs |
 |---|---|---|
-| AI / ML | [AI-ML/README.md](AI-ML/README.md) | [docs/aiml](docs/aiml/README.md) |
-| Backend | [backend/README.md](backend/README.md) | [docs/backend](docs/backend/README.md) |
-| Web | [frontend/README.md](frontend/README.md) | [docs/frontend](docs/frontend/README.md) |
-| Mobile | [app_frontend/README.md](app_frontend/README.md) | [docs/app](docs/app/README.md) |
+| AI / ML | [AI-ML/README.md](AI-ML/README.md) | [Architecture](docs/aiml/ARCHITECTURE.md) · [Models](docs/aiml/MODELS.md) · [Agents](docs/aiml/AGENTS.md) · [Data and training](docs/aiml/DATA_AND_TRAINING.md) · [Engine API](AI-ML/CONTRACTS.md) · [Deployment](docs/aiml/DEPLOYMENT.md) |
+| Backend | [backend/README.md](backend/README.md) | [Architecture](docs/backend/ARCHITECTURE.md) · [Services](docs/backend/SERVICES.md) · [API](docs/backend/API.md) · [Data stores](docs/backend/DATA_STORES.md) · [Testing](docs/backend/TESTING.md) · [Deployment](docs/backend/DEPLOYMENT.md) |
+| Web | [frontend/README.md](frontend/README.md) | [Architecture](docs/frontend/ARCHITECTURE.md) · [Pages](docs/frontend/PAGES.md) · [Design system](docs/frontend/DESIGN_SYSTEM.md) · [Deployment](docs/frontend/DEPLOYMENT.md) |
+| Mobile | [app_frontend/README.md](app_frontend/README.md) | [Architecture](docs/app/ARCHITECTURE.md) · [Screens](docs/app/SCREENS.md) · [Offline and sync](docs/app/OFFLINE_AND_SYNC.md) · [Notifications and realtime](docs/app/NOTIFICATIONS_AND_REALTIME.md) · [Deployment](docs/app/DEPLOYMENT.md) |
 
 ---
 

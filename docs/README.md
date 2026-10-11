@@ -23,10 +23,10 @@ Every document in the repository, grouped by who needs it. HawaCommand is a **fu
 |---|---|
 | **Judge or first-time visitor** | [Project README](../README.md) → [AWS architecture](AWS_ARCHITECTURE.md) → [System overview](SYSTEM_OVERVIEW.md) |
 | **Cloud engineer** | [AWS architecture](AWS_ARCHITECTURE.md) → [AWS integration guide](AWS_SETUP_GUIDE.md) → [Environment variables](ENVIRONMENT_VARIABLES.md) |
-| **Backend developer** | [Runbook](../backend/README.md) → [Architecture](backend/ARCHITECTURE.md) → [API](backend/API.md) → [Deployment](backend/DEPLOYMENT.md) |
-| **AI / ML developer** | [Runbook](../AI-ML/README.md) → [Architecture](aiml/ARCHITECTURE.md) → [Engine API](../AI-ML/CONTRACTS.md) → [Deployment](aiml/DEPLOYMENT.md) |
-| **Web developer** | [Runbook](../frontend/README.md) → [Architecture](frontend/ARCHITECTURE.md) → [Deployment](frontend/DEPLOYMENT.md) |
-| **Mobile developer** | [Runbook](../app_frontend/README.md) → [Architecture](app/ARCHITECTURE.md) → [Deployment](app/DEPLOYMENT.md) |
+| **Backend developer** | [Runbook](../backend/README.md) → [Architecture](backend/ARCHITECTURE.md) → [Services](backend/SERVICES.md) → [API](backend/API.md) → [Data stores](backend/DATA_STORES.md) → [Deployment](backend/DEPLOYMENT.md) |
+| **AI / ML developer** | [Runbook](../AI-ML/README.md) → [Architecture](aiml/ARCHITECTURE.md) → [Models](aiml/MODELS.md) → [Agents](aiml/AGENTS.md) → [Data and training](aiml/DATA_AND_TRAINING.md) → [Deployment](aiml/DEPLOYMENT.md) |
+| **Web developer** | [Runbook](../frontend/README.md) → [Pages](frontend/PAGES.md) → [Design system](frontend/DESIGN_SYSTEM.md) → [Architecture](frontend/ARCHITECTURE.md) → [Deployment](frontend/DEPLOYMENT.md) |
+| **Mobile developer** | [Runbook](../app_frontend/README.md) → [Screens](app/SCREENS.md) → [Architecture](app/ARCHITECTURE.md) → [Offline and sync](app/OFFLINE_AND_SYNC.md) → [Notifications and realtime](app/NOTIFICATIONS_AND_REALTIME.md) → [Deployment](app/DEPLOYMENT.md) |
 
 ---
 
@@ -44,14 +44,14 @@ Every document in the repository, grouped by who needs it. HawaCommand is a **fu
 
 ## By module
 
-Each module has the same docs: **README** (index and status), **ARCHITECTURE**, **API** (where the module has one) and **DEPLOYMENT**.
+Every module has a **README** (index and status), **ARCHITECTURE** and **DEPLOYMENT**, plus the docs that matter for that module.
 
-| Module | Runbook | Index | Architecture | API | Deployment |
-|---|---|---|---|---|---|
-| ![AI-ML](https://img.shields.io/badge/AI--ML-engine-3776AB?logo=python&logoColor=white) | [AI-ML/README.md](../AI-ML/README.md) | [aiml/README.md](aiml/README.md) | [aiml/ARCHITECTURE.md](aiml/ARCHITECTURE.md) | [AI-ML/CONTRACTS.md](../AI-ML/CONTRACTS.md) | [aiml/DEPLOYMENT.md](aiml/DEPLOYMENT.md) |
-| ![Backend](https://img.shields.io/badge/backend-API-009688?logo=fastapi&logoColor=white) | [backend/README.md](../backend/README.md) | [backend/README.md](backend/README.md) | [backend/ARCHITECTURE.md](backend/ARCHITECTURE.md) | [backend/API.md](backend/API.md) | [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md) |
-| ![Web](https://img.shields.io/badge/web-console-000000?logo=nextdotjs&logoColor=white) | [frontend/README.md](../frontend/README.md) | [frontend/README.md](frontend/README.md) | [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) | uses the [backend API](backend/API.md) | [frontend/DEPLOYMENT.md](frontend/DEPLOYMENT.md) |
-| ![App](https://img.shields.io/badge/mobile-app-02569B?logo=flutter&logoColor=white) | [app_frontend/README.md](../app_frontend/README.md) | [app/README.md](app/README.md) | [app/ARCHITECTURE.md](app/ARCHITECTURE.md) | uses the [backend API](backend/API.md) | [app/DEPLOYMENT.md](app/DEPLOYMENT.md) |
+| Module | Core | Module-specific |
+|---|---|---|
+| ![AI-ML](https://img.shields.io/badge/AI--ML-engine-3776AB?logo=python&logoColor=white) | [Runbook](../AI-ML/README.md) · [Index](aiml/README.md) · [Architecture](aiml/ARCHITECTURE.md) · [Engine API](../AI-ML/CONTRACTS.md) · [Deployment](aiml/DEPLOYMENT.md) | [Models](aiml/MODELS.md): twin, forecaster, attribution, exposure, optimiser, verifier · [Agents](aiml/AGENTS.md): Planner, Auditor, Forecaster, Communicator · [Data and training](aiml/DATA_AND_TRAINING.md): sources, datasets, training |
+| ![Backend](https://img.shields.io/badge/backend-API-009688?logo=fastapi&logoColor=white) | [Runbook](../backend/README.md) · [Index](backend/README.md) · [Architecture](backend/ARCHITECTURE.md) · [API](backend/API.md) · [Deployment](backend/DEPLOYMENT.md) | [Services](backend/SERVICES.md): reports, fleet, alerts, push · [Data stores](backend/DATA_STORES.md): DynamoDB, Redis, S3, SQL · [Testing](backend/TESTING.md): suites, moto, fakeredis |
+| ![Web](https://img.shields.io/badge/web-console-000000?logo=nextdotjs&logoColor=white) | [Runbook](../frontend/README.md) · [Index](frontend/README.md) · [Architecture](frontend/ARCHITECTURE.md) · [Deployment](frontend/DEPLOYMENT.md) | [Pages](frontend/PAGES.md): every console page · [Design system](frontend/DESIGN_SYSTEM.md): colours, AQI bands, type, components |
+| ![App](https://img.shields.io/badge/mobile-app-02569B?logo=flutter&logoColor=white) | [Runbook](../app_frontend/README.md) · [Index](app/README.md) · [Architecture](app/ARCHITECTURE.md) · [Deployment](app/DEPLOYMENT.md) | [Screens](app/SCREENS.md): every role and screen · [Offline and sync](app/OFFLINE_AND_SYNC.md): outbox and retries · [Notifications and realtime](app/NOTIFICATIONS_AND_REALTIME.md): FCM, deep links, WebSockets |
 
 ### Next to the code
 
@@ -69,7 +69,7 @@ Each module has the same docs: **README** (index and status), **ARCHITECTURE**, 
 2. **Honesty rule:** anything simulated carries `simulated: true` and a badge on screen.
 3. **Uncertainty everywhere:** no model output without its confidence, P10/P90 or interval.
 4. **Humans approve:** the optimiser decides, agents explain, officers approve.
-5. **Docs follow code:** change behaviour, change the module's README, ARCHITECTURE, API or DEPLOYMENT doc in the same PR.
+5. **Docs follow code:** change behaviour, change the matching module doc in the same PR.
 
 ---
 

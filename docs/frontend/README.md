@@ -4,7 +4,7 @@
 
 **Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**Web docs:** [Runbook](../../frontend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Deployment](DEPLOYMENT.md)
+**Web docs:** [Runbook](../../frontend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -63,9 +63,11 @@ The Flutter app in `app_frontend/` ([../app/README.md](../app/README.md)) covers
 | File | What it answers |
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Stack and versions, rendering, data flow, API client and endpoints, mock mode, auth, state, map and visuals, errors, hosting, planned architecture |
+| [PAGES.md](PAGES.md) | Every page: purpose, endpoints, refresh, components |
+| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Colours, AQI bands, type, elevation, components, product rules |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | EC2 + PM2 (live) and Amplify Hosting, build-time variables, contract check |
 
-Reading order: [frontend/README.md](../../frontend/README.md) → ARCHITECTURE → DEPLOYMENT. Backend lead: ARCHITECTURE §4 (endpoint table) → §8 of this file.
+Reading order: [frontend/README.md](../../frontend/README.md) → PAGES → DESIGN_SYSTEM → ARCHITECTURE → DEPLOYMENT. Backend lead: ARCHITECTURE §4 (endpoint table) → §8 of this file.
 
 ## 4. Quick start
 

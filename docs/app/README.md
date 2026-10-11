@@ -4,7 +4,7 @@
 
 **Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**App docs:** [Runbook](../../app_frontend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Deployment](DEPLOYMENT.md)
+**App docs:** [Runbook](../../app_frontend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Notifications and realtime](NOTIFICATIONS_AND_REALTIME.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -67,7 +67,10 @@ The backend that exists today serves the AI-ML read endpoints (`/v1/twin`, `/v1/
 |---|---|---|---|
 | 1 | [../../app_frontend/README.md](../../app_frontend/README.md) | First. Run, demo logins, which features talk to the real backend | Everyone |
 | 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | Before writing code. Layers, Riverpod, go_router, networking and fake mode, the API surface vs the backend, storage, realtime, push, location, maps, media, i18n, theme, flavors, security | App dev, AI agents |
-| 3 | [DEPLOYMENT.md](DEPLOYMENT.md) | Before shipping an APK. Build defines, Firebase, flavors, signing | App dev, release |
+| 3 | [SCREENS.md](SCREENS.md) | When building a screen. Every role, route and data source | App dev, designers |
+| 4 | [OFFLINE_AND_SYNC.md](OFFLINE_AND_SYNC.md) | Before touching a write. Local tables, outbox ops, retry rules, triggers | App dev, backend |
+| 5 | [NOTIFICATIONS_AND_REALTIME.md](NOTIFICATIONS_AND_REALTIME.md) | Before touching push or live data. FCM, channels, deep links, WebSockets | App dev |
+| 6 | [DEPLOYMENT.md](DEPLOYMENT.md) | Before shipping an APK. Build defines, Firebase, flavors, signing | App dev, release |
 
 Binding upstream docs: [../CONTRACTS.md](../CONTRACTS.md) holds the enums, units, endpoint index, the `is_simulated` rule and the uncertainty rule. [../backend/API.md](../backend/API.md) holds request/response shapes. The app's own contract snapshot is `app_frontend/openapi/openapi.json` (hand-written from API.md + CONTRACTS §13, see [ARCHITECTURE §6.1](ARCHITECTURE.md#61-http-clients-and-the-generated-client)).
 

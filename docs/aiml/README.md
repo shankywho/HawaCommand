@@ -4,7 +4,7 @@
 
 **Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**AI-ML docs:** [Runbook](../../AI-ML/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Engine API](../../AI-ML/CONTRACTS.md) · [Deployment](DEPLOYMENT.md)
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine API](../../AI-ML/CONTRACTS.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -53,8 +53,11 @@ The per-module table, the endpoint list and 18 known defects are in [AI-ML/READM
 |---|---|---|---|
 | 1 | [AI-ML/README.md](../../AI-ML/README.md) | First. Install, run, test, endpoints, scripts, Make targets, measured results, known issues | ~330 |
 | 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | Runtime as built (process, singletons, flows, state files, failure behaviour) and the Planned event-driven architecture | ~380 |
-| 3 | [AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) | Exact HTTP request/response shapes, in-process Python API, file formats | ~450 |
-| 4 | [DEPLOYMENT.md](DEPLOYMENT.md) | In-process vs separate service, models and data refresh, LLM configuration | ~90 |
+| 3 | [MODELS.md](MODELS.md) | Every model: twin, attribution, forecaster with metrics, GRAP, exposure, optimiser, What-If, causal verifier | ~230 |
+| 4 | [AGENTS.md](AGENTS.md) | Planner, Auditor, Forecaster, Communicator; tools, LLM providers, prompts, insights | ~140 |
+| 5 | [DATA_AND_TRAINING.md](DATA_AND_TRAINING.md) | Data sources and fallbacks, datasets, training, runtime state, simulation | ~130 |
+| 6 | [AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) | Exact HTTP request/response shapes, in-process Python API, file formats | ~450 |
+| 7 | [DEPLOYMENT.md](DEPLOYMENT.md) | In-process vs separate service, models and data refresh, LLM configuration | ~90 |
 
 ## 3. Processes at a glance
 
