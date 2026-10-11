@@ -82,7 +82,6 @@ HawaCommand/
 |   |-- cloudformation/        # hawa-integration.yaml (DynamoDB tables, Kinesis, IoT rule, SNS, IAM), hawa-redis.yaml, hawa-ecs.yaml
 |   `-- ec2/                   # PM2 ecosystem file and Caddyfile (HTTPS) for a single EC2 host
 |-- .github/workflows/         # backend-image.yml: build backend/Dockerfile and push to ECR (manual)
-|-- HawaCommand_Proposal.pdf   # Original proposal (v3)
 |-- LICENSE
 `-- README.md
 ```
@@ -251,7 +250,7 @@ Full request and response shapes: [docs/backend/API.md](docs/backend/API.md). AI
 | AI-ML | `python -m pytest -q` (plain `pytest` / `make test` fails to collect `tests/test_phase7_api_pipelines.py`) | 37 passed, 1 failed on a clean checkout (needs `data/processed/stations_hourly.parquet`); 38 passed after `make data && make train` |
 | Backend | `uv run pytest -q` (from `backend/`) | 96 passed (2026-10-11). On Windows, LightGBM needs the model files with LF endings; `.gitattributes` now keeps them LF |
 | Web | `pnpm typecheck`, `pnpm build` | Both pass; `pnpm lint` fails because no ESLint config is committed (it opens the interactive setup) |
-| Flutter | `make lint`, `make test` | Not run (no Flutter SDK on the reviewing machine); two legacy tests import the old package name and will not compile |
+| Flutter | `make lint`, `make test` | Not run (no Flutter SDK on the reviewing machine). The prototype files and the two tests that imported the old package name were removed on 2026-10-11 |
 
 The AI-ML suite is not hermetic: it rewrites four tracked JSON files under `AI-ML/data/`. Restore them with `git checkout -- AI-ML/data` after running it.
 
@@ -265,7 +264,7 @@ Per-component lists with file and line references are in each README. The WAQI a
 2. The backend's What-If HTTP branch looks for a `delta_gain_pct` key that AI-ML never returns, so it always falls back (`intel_client.py:933`).
 3. There is no user sign-in; officer writes and telemetry ingest are protected only by shared `X-Api-Key` values (`HAWA_ADMIN_API_KEY`, `HAWA_INGEST_API_KEY`). CORS allows every origin on both Python services.
 4. The Flutter app's field endpoints `/v1/auth/*`, `/v1/tasks*`, `/v1/inspections*` and `/v1/ws` are not served by the backend (`/v1/reports*`, `/v1/me/push-token`, `/v1/me/alert-subscription` and `/v1/ws/fleet` are).
-5. The committed PDF report and figures hard-code numbers that the code does not produce (for example an OR-Tools CVRP engine and 99.91 % attribution accuracy measured in-sample against rule-generated labels).
+5. `AI-ML/scripts/eval_metrics.py` scores the attribution classifier in-sample against rule-generated labels, so its accuracy figures measure rule recovery, not attribution accuracy.
 
 ---
 
@@ -310,5 +309,3 @@ The web console has an `amplify.yml` for Amplify Hosting. RDS and test CI are Pl
 - [AWS Setup Guide](docs/AWS_SETUP_GUIDE.md)
 - Component runbooks: [AI-ML](AI-ML/README.md) · [Backend](backend/README.md) · [Web](frontend/README.md) · [Flutter app](app_frontend/README.md)
 - Per-discipline docs: [docs/aiml/](docs/aiml/README.md) · [docs/backend/](docs/backend/README.md) · [docs/frontend/](docs/frontend/README.md) · [docs/app/](docs/app/README.md)
-- [Team Remaining Work and Role Prompts](docs/TEAM_REMAINING_WORK_AND_PROMPTS.md)
-- [Proposal](HawaCommand_Proposal.pdf)

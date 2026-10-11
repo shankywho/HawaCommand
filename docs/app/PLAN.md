@@ -1,6 +1,6 @@
 # Hackathon plan: the app slice
 
-> **Status (2026-10-10).** The app shell, five role shells, en/hi localisation, the outbox and the fake backend are built. The air map, air near me, alerts and school forecast are live against the backend. Every other flow waits on backend endpoints. Next steps: [TEAM_REMAINING_WORK_AND_PROMPTS.md](../TEAM_REMAINING_WORK_AND_PROMPTS.md#4-mobile-app-engineer-flutter); defects: [docs/app/README.md](README.md#9-known-issues). Milestones below are the original plan.
+> **Status (2026-10-10).** The app shell, five role shells, en/hi localisation, the outbox and the fake backend are built. The air map, air near me, alerts and school forecast are live against the backend. Every other flow waits on backend endpoints. Defects: [docs/app/README.md](README.md#9-known-issues). Milestones below are the original plan.
 
 
 Purpose: an hour-by-hour plan for the app developer, who also owns the agents. Covers milestones with acceptance criteria, backend dependencies with a mock-first fallback, cut rules, the demo-day checklist, the post-hackathon roadmap, and the contract proposals to raise.

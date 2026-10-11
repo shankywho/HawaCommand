@@ -186,7 +186,6 @@ Compile-time values from `app_frontend/lib/app/env.dart`. Pass each with `--dart
 | `ALERTS_CONTRACT` | `false` | Use the OpenAPI alerts contract instead of the backend's current shape |
 | `OPEN_AIR_CONTRACT` | `false` | Use the OpenAPI open-air contract (GeoJSON) instead of the backend's current shape |
 
-`HAWA_API_URL` appears only in the legacy prototype file `lib/core/config.dart`, which the live app does not use.
 
 ---
 

@@ -103,7 +103,7 @@ Do not use `make test` (plain `pytest` cannot import `scripts`) or `make api` (p
 
 ## 6. Links
 
-- Proposal (source of truth for intent): `../../HawaCommand_Proposal.pdf`, especially §6 (features), §8 (execution flow), §9.4 (algorithms), §12.5 (what is real), §16 (build plan).
+- Proposal (source of truth for intent, no longer in the repository): the original proposal v3, especially §6 (features), §8 (execution flow), §9.4 (algorithms), §12.5 (what is real), §16 (build plan).
 - Runbook, endpoints and known issues: [../../AI-ML/README.md](../../AI-ML/README.md)
 - Contracts as built: [../../AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md); system-wide target contracts: [../CONTRACTS.md](../CONTRACTS.md)
 - Data directory: [../../AI-ML/data/README.md](../../AI-ML/data/README.md); model cards: [forecaster](../../AI-ML/models/forecaster_model_card.md), [attribution](../../AI-ML/models/attribution_model_card.md)

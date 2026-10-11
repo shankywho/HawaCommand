@@ -3,7 +3,7 @@
 > **Status (reconciled 2026-10-10).** Product context from the proposal. As built, `frontend/` has the landing page, eight console pages (`/map`, `/forecast`, `/plans`, `/plans/[id]`, `/what-if`, `/impact`, `/fleet`, `/alerts`), `/login` and the `/route` driver view. With `NEXT_PUBLIC_API_URL` empty, the in-browser mock API in `src/mocks/` answers every call. The public open-data portal, WebSocket updates, deck.gl, next-intl i18n and alert compose are Planned. See [docs/frontend/README.md](README.md#1-implementation-status).
 
 
-Purpose: explains why the web app exists, who it serves, what it must show, and the product rules every screen follows. Drawn from `HawaCommand_Proposal.pdf` (cited as §n).
+Purpose: explains why the web app exists, who it serves, what it must show, and the product rules every screen follows. Drawn from the original HawaCommand proposal v3 (cited as §n; no longer in the repository).
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md)
 

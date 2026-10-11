@@ -12,7 +12,7 @@
 
 **Every team builds against this file.** It defines the names, IDs, enums, units, packets, events, tables and endpoints that cross a folder boundary. If you need to change something here, open a PR that touches this file **and** the code in `backend/contracts/` (`hawa_contracts`) in the same change, and tag all four leads.
 
-Source: [`HawaCommand_Proposal.pdf`](../HawaCommand_Proposal.pdf) §9 (data model, APIs, algorithms) and §10 (packet format). Context: [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md).
+Source: the original proposal (v3) §9 (data model, APIs, algorithms) and §10 (packet format). Context: [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md).
 
 Contents
 1. [Conventions](#1-conventions)

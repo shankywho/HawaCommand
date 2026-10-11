@@ -1,6 +1,6 @@
 # Backend Build Plan
 
-> **Status (2026-10-10).** Built: phases 1-5 as code plus unit tests (`backend/PHASES.md`), the AI-ML bridge with circuit breaker, live stations, 33 API operations, the optional AWS layer. Test run: 64 passed, 1 failed. Not built: persistence (the API never opens a DB session, no Alembic), Kafka producers and consumers, Redis, WebSocket, auth endpoints and enforcement, the field API the Flutter app expects, scheduler, notifier, Dockerfile, CI. Prioritised next steps: [TEAM_REMAINING_WORK_AND_PROMPTS.md](../TEAM_REMAINING_WORK_AND_PROMPTS.md#3-backend-engineer). Milestones below are the original plan.
+> **Status (2026-10-10).** Built: phases 1-5 as code plus unit tests, the AI-ML bridge with circuit breaker, live stations, 33 API operations, the optional AWS layer. Test run: 64 passed, 1 failed. Not built: persistence (the API never opens a DB session, no Alembic), Kafka producers and consumers, Redis, WebSocket, auth endpoints and enforcement, the field API the Flutter app expects, scheduler, notifier, Dockerfile, CI. Milestones below are the original plan.
 
 
 The backend lead's plan: prep before the clock starts, the 24-hour hackathon hour by hour, milestones with acceptance criteria, cross-team dependencies, cut rules, risks, and the post-hackathon phases.

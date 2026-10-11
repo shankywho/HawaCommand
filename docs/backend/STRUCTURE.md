@@ -13,9 +13,7 @@ Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATA_MODEL](
 ```text
 backend/
 ├── .env.example                      # HAWA_* settings with local defaults (no AWS, WAQI or OpenAQ keys)
-├── .gitkeep                          # empty placeholder from the initial scaffold
 ├── .python-version                   # 3.11
-├── PHASES.md                         # phase roadmap and status
 ├── alembic.ini                       # Alembic config: script_location=migrations, prepend_sys_path=src; URL from HAWA_DATABASE_URL
 ├── README.md                         # component quick start, status, known issues
 ├── docker-compose.yml                # local Postgres 16 + PostGIS 3.4, Redis 7, Kafka 3.8 (KRaft)
@@ -25,13 +23,6 @@ backend/
 │   ├── script.py.mako                # revision template
 │   └── versions/20261010_0001_initial_schema.py   # all 23 tables and indexes
 ├── uv.lock                           # uv lockfile (includes alembic and hawa-ml[llm] from ../AI-ML)
-├── docs/
-│   ├── PHASE_1_FOUNDATION.md         # contracts package
-│   ├── PHASE_2_CORE_RUNTIME.md       # settings, context, logging, errors, security, clock, CLI
-│   ├── PHASE_3_DATABASE_MODELS.md    # SQLAlchemy models and session
-│   ├── PHASE_4_API_SURFACE.md        # FastAPI app and routes
-│   ├── PHASE_5_WORKERS_AND_SIMULATOR.md  # ingest, simulator, dispatch saga classes
-│   └── PHASE_6_INTEGRATION.md        # AI-ML bridge, live data, AWS layer, citizen routes, integration tests
 ├── contracts/                        # installable package hawa-contracts 0.1.0
 │   ├── pyproject.toml                # setuptools build; deps pydantic, orjson
 │   ├── hawa_contracts/

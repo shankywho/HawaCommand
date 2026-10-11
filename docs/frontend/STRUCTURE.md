@@ -54,8 +54,6 @@ frontend/
 │       └── support.js                    Generated runtime for the .dc.html files
 │
 ├── public/                               Static files served from /
-│   ├── fonts/.gitkeep                    Empty placeholder (fonts load through next/font/google)
-│   ├── illustrations/.gitkeep            Empty placeholder
 │   └── logo.svg                          Pixel "H" logo, served at /logo.svg (not referenced by the code)
 │
 ├── scripts/

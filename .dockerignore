@@ -19,8 +19,6 @@ frontend
 app_frontend
 docs
 infrastructure
-*.pdf
-AI-ML/reports/figures
 AI-ML/data/processed
 AI-ML/data/cache
 AI-ML/tests

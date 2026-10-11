@@ -190,7 +190,5 @@ Subcommands:
 
 ## Further reading
 
-- [PHASES.md](PHASES.md): build phases and their status
-- [docs/PHASE_1_FOUNDATION.md](docs/PHASE_1_FOUNDATION.md) to [docs/PHASE_5_WORKERS_AND_SIMULATOR.md](docs/PHASE_5_WORKERS_AND_SIMULATOR.md)
 - [docs/backend/](../docs/backend/README.md): architecture, API, data model, events, caching, logging, deployment
 - [docs/CONTRACTS.md](../docs/CONTRACTS.md), [docs/AWS_SETUP_GUIDE.md](../docs/AWS_SETUP_GUIDE.md), [docs/AWS_INTEGRATION.md](../docs/AWS_INTEGRATION.md)

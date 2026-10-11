@@ -3,9 +3,8 @@
 set -e
 cd "$(dirname "$0")/.."
 fail=0
-# Legacy files from the first prototype (not imported anywhere; excluded in analysis_options.yaml).
-# Delete them, then drop this filter.
-legacy='lib/app/router.dart|lib/app/theme.dart|lib/core/(air|api_client|config|geo|i18n|prefs).dart|lib/features/auth/[a-z_]+\.dart|lib/features/(citizen|driver|hub)/|lib/features/school/[a-z_]+\.dart|lib/features/settings/settings_screen.dart|lib/widgets/'
+# The prototype theme still used by four citizen screens (excluded in analysis_options.yaml).
+legacy='lib/app/theme.dart'
 if grep -rn "package:hawa_api" lib | grep -v -E "lib/features/[a-z_]+/data/|lib/core/network/" | grep -v -E "$legacy"; then
   echo "hawa_api imported outside data/ or core/network/"; fail=1
 fi

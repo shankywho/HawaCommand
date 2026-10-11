@@ -2,7 +2,7 @@
 
 Entry point for everything under `backend/`: what the backend does today, what is still only designed, which document to read for what, how to run and test it, and the defects that are known.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../../backend/README.md](../../backend/README.md) · [../../backend/PHASES.md](../../backend/PHASES.md)
+Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../../backend/README.md](../../backend/README.md)
 
 ---
 
@@ -56,7 +56,7 @@ In one sentence: today the backend is a single FastAPI process that serves the w
 | [DEPLOYMENT.md](DEPLOYMENT.md) | `docker-compose.yml`, every environment variable, how to run, the AWS layer, what is not built for deployment | When running or shipping |
 | [PLAN.md](PLAN.md) | Milestones with their current status and the remaining work in priority order | At every checkpoint |
 
-Phase-by-phase build notes live next to the code: [../../backend/PHASES.md](../../backend/PHASES.md) and `backend/docs/PHASE_*.md`.
+The code is organised by layer under `backend/src/hawa_backend/` ([STRUCTURE.md](STRUCTURE.md)).
 
 ## 3. Reading order
 

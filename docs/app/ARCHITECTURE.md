@@ -93,7 +93,7 @@ Controllers depend on the repository *providers* (which return the `data` implem
 
 `lib/app/providers.dart` is the only place that binds core seams to feature implementations.
 
-**Legacy prototype files.** `lib/app/router.dart`, `lib/app/theme.dart`, `lib/core/{air,api_client,config,geo,i18n,prefs}.dart`, `lib/features/auth/*.dart` (top level), `lib/features/{citizen,driver,hub}/`, `lib/features/school/{school_alert_screen,school_data}.dart`, `lib/features/settings/settings_screen.dart` and `lib/widgets/` come from the first prototype (package `hawacommand_app`). They are excluded from analysis and filtered out of the guard. All except `lib/app/theme.dart` are unreachable; `theme.dart` is still imported by four citizen screens ([README Known issue 6](README.md#9-known-issues)).
+**Prototype theme.** `lib/app/theme.dart` (HawaColors/HawaFonts/HawaText, Geist fonts) is the one file left from the first prototype; four citizen screens still import it, so it is excluded from analysis and filtered out of the architecture guard ([README Known issue 6](README.md#9-known-issues)). The rest of the prototype (package `hawacommand_app`) was removed on 2026-10-11.
 
 ## 3. Features
 
@@ -631,7 +631,7 @@ The application id is a placeholder; confirm the domain before any store upload.
 | `LOG_LEVEL` | `info` | `package:logging` root level |
 | `SHOW_DEV_TOOLS` | `true` | Dev tools entry (never in `FLAVOR=prod`) |
 
-`Env.missingKeys()` only logs missing keys at startup; it does not stop the app. `HAWA_API_URL` is read only by the legacy `lib/core/config.dart`.
+`Env.missingKeys()` only logs missing keys at startup; it does not stop the app.
 
 No `env/*.json` file is committed ([README Known issue 2](README.md#9-known-issues)). A template for `app_frontend/env/dev.json`:
 

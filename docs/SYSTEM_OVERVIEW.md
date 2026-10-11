@@ -1,7 +1,7 @@
 # HawaCommand — System Overview
 
-> Source of truth: [`HawaCommand_Proposal.pdf`](../HawaCommand_Proposal.pdf) (Proposal v3, 27 Sep 2026, Environmental Hacks 2026 · Bharat Builds Tour · Track 01: Air).
-> Section references such as **§9.4** point to that PDF. Where this document changes the proposal's stack (for example Kafka replacing SQS/Kinesis, or FastAPI replacing Node Lambdas), the change is listed in [§8 Deviations from the proposal](#8-deviations-from-the-proposal).
+> Source of truth: the original HawaCommand proposal (v3, 27 Sep 2026, Environmental Hacks 2026 · Bharat Builds Tour · Track 01: Air), no longer kept in the repository.
+> Section references such as **§9.4** point to that proposal. Where this document changes the proposal's stack (for example Kafka replacing SQS/Kinesis, or FastAPI replacing Node Lambdas), the change is listed in [§8 Deviations from the proposal](#8-deviations-from-the-proposal).
 
 > **Reconciled with the code at commit `a33e043` (2026-10-10).** Sections 5-11 describe the target design from the proposal. Section 0 below describes what actually runs today; every feature in §4 carries its real status. Status words: **Implemented**, **Partial**, **Stub/Mock**, **Planned**.
 
@@ -347,7 +347,6 @@ HawaCommand/
 ├── infrastructure/
 │   └── cloudformation/    # hawa-integration.yaml
 ├── docs/                  # ← you are here (README, SYSTEM_OVERVIEW, CONTRACTS, AWS docs, aiml/ backend/ frontend/ app/)
-├── HawaCommand_Proposal.pdf
 ├── LICENSE
 └── README.md
 ```

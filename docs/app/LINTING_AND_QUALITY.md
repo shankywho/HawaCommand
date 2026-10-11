@@ -5,7 +5,6 @@
 > Gaps:
 > - There is no `.github/` CI and no repo-root hook manager, although `tool/hooks/pre_commit.sh` expects one.
 > - `make it` and `make golden` point at tests that do not exist.
-> - Two legacy tests (`test/data_mapping_test.dart`, `test/i18n_test.dart`) import the old package name and do not compile.
 >
 > Not run by the reviewer, because no Flutter SDK was available.
 
@@ -106,7 +105,7 @@ These are rules lints can't express. They run as one CI step (§9) and fail the 
 
 - `dart format` at **page width 100**, set once in `analysis_options.yaml` (`formatter: page_width: 100`, supported on Dart ≥ 3.7) so the IDE, CLI and CI agree.
 - **Why 100:** Riverpod + widget trees nest deeply, 80 columns wrap most `ref.watch(...)` lines, and 100 still fits side-by-side diffs on a laptop. One number for the whole app, never per-file.
-- The CLI formats non-generated tracked files only (see `make format` / `make format-check` in [STRUCTURE §10.7](STRUCTURE.md)). Generated files are rewritten by their generators.
+- The CLI formats non-generated tracked files only (see `make format` / `make format-check` in [STRUCTURE §9.3](STRUCTURE.md#93-makefile)). Generated files are rewritten by their generators.
 - IDE: format on save, `editor.rulers: [100]`.
 
 ## 5. `dart fix`

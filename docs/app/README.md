@@ -48,7 +48,7 @@ The backend that exists today serves the AI-ML read endpoints (`/v1/twin`, `/v1/
 | Maps (flutter_map, MapTiler or keyless Esri basemap, file tile cache, markers) | **Partial** | Corridor tile prefetch, cache size cap and polyline simplification exist but are never called |
 | Camera, EXIF strip, presigned upload | **Partial** | Capture and processing are real; uploads go to a fake S3 in the default build |
 | Deep links | **Partial** | Push and notification taps are routed. `hawa://` links from SMS/WhatsApp open the app but are not routed (Known issue 8) |
-| Tests | **Partial** | 5 current test files + 2 legacy files that no longer compile ([LINTING_AND_QUALITY §10](LINTING_AND_QUALITY.md#10-testing-strategy)) |
+| Tests | **Partial** | 5 test files ([LINTING_AND_QUALITY §10](LINTING_AND_QUALITY.md#10-testing-strategy)); the two prototype tests that did not compile were removed |
 | CI workflow, wired pre-commit hook, golden tests, integration test, mock server | **Planned** | Makefile targets reference them; the files do not exist |
 | iOS | **Partial** | Runner project only: no flavors, no Firebase, no `hawa://` scheme |
 
@@ -198,7 +198,7 @@ Pass it as `--dart-define=API_BASE_URL=…` or in `env/<flavor>.json`. `WS_URL` 
 | `make guard` | `sh tool/architecture_guard.sh` | Implemented |
 | `make lint` | `format-check` + `analyze` + `guard` | Implemented |
 | `make fix` | `dart fix --apply` then `make format` | Implemented |
-| `make test` | `flutter test --coverage` | Partial: fails on the 2 legacy test files (Known issue 1) |
+| `make test` | `flutter test --coverage` | Not run here (no Flutter SDK); the two prototype tests that did not compile were removed |
 | `make golden` | `flutter test --tags golden --update-goldens` | Planned: no golden tests exist |
 | `make it` | `flutter test integration_test/flow_b_driver_test.dart …` | Planned: `integration_test/` does not exist |
 | `make run FLAVOR=…` / `make apk FLAVOR=…` | `flutter run` / `flutter build apk --split-per-abi` with `env/$(FLAVOR).json` | Partial: needs the missing env file |
@@ -243,12 +243,12 @@ Defects found by reading the code. Paths are relative to `app_frontend/` unless 
 
 | # | Issue | Where |
 |---|---|---|
-| 1 | Two legacy tests import the old package `hawacommand_app` (the package is now `hawa_app`), so they do not compile and `make test` fails | `test/data_mapping_test.dart:2-5`, `test/i18n_test.dart:2-3`, `pubspec.yaml:1` |
+| 1 | Fixed (2026-10-11): the two prototype tests that imported the old package `hawacommand_app` were deleted with the rest of the prototype | — |
 | 2 | Only `env/staging.json.example` is committed (EC2 backend); `make run` / `make apk` for other flavors still need `env/<flavor>.json` created by hand. The repo-root `.gitignore` now re-includes `app_frontend/env/` | `Makefile:21-23`, `app_frontend/env/`, `.gitignore` (repo root) |
 | 3 | The air-map fixtures are not declared as assets, so `FakeAirMapRemoteSource` (the `air_map` fake mode and the fallback when the backend is down) throws "Unable to load asset". Tests read the files from disk and pass | `pubspec.yaml:69-77`, `lib/features/air_map/data/air_map_remote_source.dart:121` |
 | 4 | Make targets point at missing files: `tool/mock_server/`, `integration_test/flow_b_driver_test.dart`; `make golden` has no golden tests | `Makefile:20-21`, `Makefile:24` |
 | 5 | Citizen "Flag Missed Machine" pushes `/citizen/report/missed-machine`, but the route is registered under the capture route as `/citizen/report/new/missed-machine`, so go_router shows its error page. The "72-Hour AI Air Forecast" tile pushes `/school/forecast`, which the guard redirects to the citizen home | `lib/features/citizen_air/presentation/air_near_me_screen.dart:339,366`, `lib/app/router/routes.dart:45`, `lib/app/router/router.dart:228-232`, `lib/app/router/guards.dart:37-38` |
-| 6 | The "legacy, not imported" prototype theme `lib/app/theme.dart` is imported by four live citizen screens, so deleting the legacy files (as `analysis_options.yaml` and the README suggest) breaks the build. That theme uses Geist, GeistMono and Silkscreen fonts that `pubspec.yaml` does not declare, so those screens render in the fallback font | `lib/features/citizen_air/presentation/safe_route_screen.dart:4`, `live_operations_screen.dart:3`, `ward_scorecard_screen.dart:4`, `lib/features/citizen_reports/presentation/missed_machine_screen.dart:3`, `lib/app/theme.dart:21-26`, `analysis_options.yaml:17-19`, `pubspec.yaml:78-88` |
+| 6 | The prototype theme `lib/app/theme.dart`, the only prototype file left, is imported by four live citizen screens; move them to `lib/app/theme/` before deleting it. That theme uses Geist, GeistMono and Silkscreen fonts that `pubspec.yaml` does not declare, so those screens render in the fallback font | `lib/features/citizen_air/presentation/safe_route_screen.dart:4`, `live_operations_screen.dart:3`, `ward_scorecard_screen.dart:4`, `lib/features/citizen_reports/presentation/missed_machine_screen.dart:3`, `lib/app/theme.dart:21-26`, `analysis_options.yaml:17-19`, `pubspec.yaml:78-88` |
 | 7 | Cleartext HTTP is allowed in every flavor: the main manifest sets `usesCleartextTraffic="true"`; only the dev flavor has a restrictive network security config | `android/app/src/main/AndroidManifest.xml:26`, `android/app/src/dev/res/xml/network_security_config.xml` |
 | 8 | `hawa://` links from SMS/WhatsApp open the app but are not routed: the manifest declares the scheme and disables Flutter deep linking, and no Dart code reads the incoming intent | `android/app/src/main/AndroidManifest.xml:45-52` |
 | 9 | Fixed: the FCM background handler now initializes Firebase in its isolate from the same build defines, so background pushes are stored and shown | `lib/core/notifications/fcm_background_handler.dart` |
@@ -269,4 +269,4 @@ Defects found by reading the code. Paths are relative to `app_frontend/` unless 
 - Web console docs: [../frontend/README.md](../frontend/README.md)
 - AI-ML docs (twin, forecast, safe windows, attribution, verifier): [../aiml/README.md](../aiml/README.md)
 - App folder readme: [../../app_frontend/README.md](../../app_frontend/README.md)
-- Source proposal: `HawaCommand_Proposal.pdf` (§6 features, §7 users/flows, §8 timeline, §10 hardware, §12.4 privacy, §15 risks)
+- Source proposal: the original proposal v3, no longer in the repository (§6 features, §7 users/flows, §8 timeline, §10 hardware, §12.4 privacy, §15 risks)

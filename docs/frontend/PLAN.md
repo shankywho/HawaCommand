@@ -1,6 +1,6 @@
 # Web Frontend Build Plan
 
-> **Status (2026-10-10).** All console pages exist, and `pnpm typecheck` and `pnpm build` pass. `pnpm lint` fails because no ESLint config is committed. Open items: map overlays still use demo data, the What-If delta sign differs between backend and mocks, some copy is fixed, there is no sign-out, and the open-data portal, WebSocket and tests are Planned. Next steps: [TEAM_REMAINING_WORK_AND_PROMPTS.md](../TEAM_REMAINING_WORK_AND_PROMPTS.md#5-web-frontend-engineer). Milestones below are the original plan.
+> **Status (2026-10-10).** All console pages exist, and `pnpm typecheck` and `pnpm build` pass. `pnpm lint` fails because no ESLint config is committed. Open items: map overlays still use demo data, the What-If delta sign differs between backend and mocks, some copy is fixed, there is no sign-out, and the open-data portal, WebSocket and tests are Planned. Milestones below are the original plan.
 
 
 Purpose: the hour-by-hour plan for the frontend developer across the 24-hour hackathon. It covers milestones with acceptance criteria, backend dependencies, the mock-first strategy, cut rules, the demo-day checklist and the roadmap afterwards.

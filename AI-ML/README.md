@@ -64,7 +64,7 @@ pip install -e ".[dev]"             # installs hawa_ml itself (required, see not
 
 Install `hawa_ml` in editable mode. `make setup` only installs `requirements.txt`, so its own import check, `make api`, `uvicorn` and `scripts/eval_metrics.py` fail with `ModuleNotFoundError: No module named 'hawa_ml'` until `pip install -e .` has been run (the package lives in `src/`). A non-editable install is not supported: `settings.BASE_DIR` is computed from the source location and `config/`, `models/`, `data/` and `agents/prompts/` are not packaged.
 
-Optional extra `llm` (`pip install -e ".[llm]"`): `groq`, `openai`, `boto3` for the Groq and Bedrock LLM providers. Not declared anywhere: `ortools` (detected but unused), `matplotlib` (`scripts/generate_report_assets.py`), `reportlab` (the two PDF scripts).
+Optional extra `llm` (`pip install -e ".[llm]"`): `groq`, `openai`, `boto3` for the Groq and Bedrock LLM providers. Not declared anywhere: `ortools` (detected but unused).
 
 To run the engine inside the backend's environment instead (one venv for both services), use `make install` and `make aiml-api` from the repo root: `backend/pyproject.toml` depends on `hawa-ml[llm]` as an editable path dependency.
 
@@ -146,9 +146,6 @@ Scripts that call `sys.path.insert(0, "src")` work without the editable install;
 | `demo_seed.py` | Injects a known sprinkler intervention, writes 40 simulator steps, writes the demo scenario JSON | `data/internal/synthetic_data/known_interventions.json` (append), `data/interim/simulated_telemetry.jsonl`, `data/fixtures/demo_scenario.json` | Implemented |
 | `run_cycle.py` | One 3-hour cycle (`--once`, default) or a loop (`--loop --interval-sec 10800`) | nothing beyond logs | Partial (`--once` is a no-op flag; see §1) |
 | `eval_metrics.py` | Prints attribution accuracy/precision/recall/F1 and forecaster "PM2.5 >= 150" alert metrics on the last 20 % of `stations_hourly.parquet` | nothing | Partial: needs the editable install; evaluates in-sample (issue 9) |
-| `generate_report_assets.py` | Draws `reports/figures/fig1..fig8_*.png` | `reports/figures/` (relative to the working directory) | Stub/Mock: every number is hard-coded; figs 2, 6, 7, 8 are illustrative; needs `matplotlib` |
-| `generate_ai_ml_report_pdf.py` | Builds the evaluation whitepaper PDF | `reports/HawaCommand_AI_ML_Model_Evaluation_Report.pdf` | Stub/Mock: hard-coded text and tables, several claims contradict the code (issue 10); needs `reportlab` |
-| `generate_citizen_app_pdf.py` | Builds the HawaCitizen product blueprint PDF | `docs/HawaCitizen_App_Comprehensive_Blueprint.pdf` relative to the working directory (the committed copy is at the repo root `docs/`) | Stub/Mock (product spec text); needs `reportlab` |
 
 ### 4.4 Module entry points
 
@@ -227,7 +224,7 @@ The suite is not hermetic. Each run rewrites four tracked files (`data/fixtures/
 
 ## 7. Measured results
 
-All numbers below are copied from the committed `reports/*.json`. None are produced by an LLM. The `reports/figures/` PNGs and the PDF report are drawn from hard-coded values, not read from these files.
+All numbers below are copied from the committed `reports/*.json`. None are produced by an LLM.
 
 ### 7.1 Forecaster (`reports/forecast_metrics.json`)
 
@@ -300,8 +297,8 @@ Defects found while documenting. Nothing here has been fixed.
 6. **Open-Meteo cache files are truncated.** `_set_cache` dumps records holding pandas `Timestamp` objects; `json.dump` raises after writing `[{"timestamp": ` and the exception is swallowed (`src/hawa_ml/ingestion/openmeteo.py:48-54`, callers `:91`, `:130`). The cache never hits, so every online call goes to the network, including during tests.
 7. **The planner ignores the live twin.** `tool_get_hotspots` ranks `load_grid(500.0)`, which has no `pm25_est`, so every cell defaults to PM2.5 180 / PM10 280 (`src/hawa_ml/agents/tools.py:27-31`, `src/hawa_ml/exposure/engine.py:49`, `:101`). In `run_3hour_cycle` the auditor then checks the plan against a different hotspot list (`src/hawa_ml/pipelines/cycle.py:72-74`). With these defaults every hotspot classifies as `unknown`, and sprinklers and smog guns are dispatched to unknown causes.
 8. **What-If is a constant ratio.** The baseline is `ai_person_hours_avoided * 0.32` (`src/hawa_ml/optimization/whatif.py:35-36`), so `gain_percentage` is 212.5 % for any input. `schools_ai` has an operator-precedence error and effectively counts hotspots with `rank <= 3` (`whatif.py:31`).
-9. **`eval_metrics.py` is in-sample.** The classifier is trained on the full dataset (`train_all.py`) and then scored on the last 20 % of the same rows against labels produced by the same rules (`scripts/eval_metrics.py:16-36`; training at `scripts/train_all.py:36`), so the 99.91 % figures in the PDF measure rule recovery, not attribution accuracy. The script also lacks the `sys.path` insert the other scripts have.
-10. **Report assets contradict the code.** `scripts/generate_report_assets.py` and `scripts/generate_ai_ml_report_pdf.py` hard-code their numbers and claim an OR-Tools CVRP engine, a 140,352-row training set, anisotropic advection, a calibrator MAE drop from 42.6 to 9.4, latency figures and endpoints (`/attribution`, `/exposure/hotspots`, `/causal/verify`) that do not exist in the code.
+9. **`eval_metrics.py` is in-sample.** The classifier is trained on the full dataset (`train_all.py`) and then scored on the last 20 % of the same rows against labels produced by the same rules (`scripts/eval_metrics.py:16-36`; training at `scripts/train_all.py:36`), so its 99.91 % figures measure rule recovery, not attribution accuracy. The script also lacks the `sys.path` insert the other scripts have.
+10. **Report assets removed (2026-10-11).** The evaluation PDF, its eight figures and the three generator scripts were deleted: they hard-coded their numbers and claimed an OR-Tools CVRP engine, a 140,352-row training set, anisotropic advection, a calibrator MAE drop from 42.6 to 9.4, latency figures and endpoints (`/attribution`, `/exposure/hotspots`, `/causal/verify`) that do not exist in the code.
 11. **`make test` and `make setup` fail as written.** `Makefile:32` runs plain `pytest` (issue in §6); `make setup` never installs `hawa_ml`, so its check at `Makefile:15` fails.
 12. **Logging configuration misuse.** Every module calls `configure_logging("<module name>")`, but the parameter is a level (`src/hawa_ml/logging_conf.py:36-38`), so all modules share the `hawa_ml` logger at INFO and `LOG_LEVEL` is never applied.
 13. **Bedrock provider needs the `llm` extra.** `BedrockLLMClient` imports `boto3` (`src/hawa_ml/agents/llm_provider.py:53`), which is only in the `llm` extra (`pip install -e ".[llm]"`, included by the backend's dependency `hawa-ml[llm]`) and not in `requirements.txt`; without it the import error is caught and template text is returned.

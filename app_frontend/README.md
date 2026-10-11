@@ -24,7 +24,7 @@ make lint test               # format check, analyze --fatal-infos, architecture
 
 Build-time defines (`lib/app/env.dart`): `FLAVOR`, `API_BASE_URL`, `WS_URL`, `USE_FAKE_API` (default `true`), `FAKE_FEATURES`, `REAL_FEATURES`, `MAP_TILE_URL`, `MAP_API_KEY`, `MAP_FALLBACK_TILE_URL`, `MAP_FALLBACK_ATTRIBUTION`, plus routing and geocoding URLs. `Env.flavor` comes from the `FLAVOR` define, not the Gradle flavor.
 
-Implementation status and the full known-issues list: [docs/app/README.md](../docs/app/README.md). These docs were checked by reading the code; `make lint` and `make test` were not run (no Flutter SDK on the reviewing machine). Two legacy tests (`test/data_mapping_test.dart`, `test/i18n_test.dart`) import the old package name `hawacommand_app` and will not compile.
+Implementation status and the full known-issues list: [docs/app/README.md](../docs/app/README.md). These docs were checked by reading the code; `make lint` and `make test` were not run (no Flutter SDK on the reviewing machine).
 
 **Demo login** (fake auth, OTP `123456`): driver 98100 12345 · inspector 98100 22222 · school 98100 33333 · site 98100 44444 · driver + citizen 98100 55555 · any other number is a citizen. Dev tools (Settings → Dev tools) can simulate a HawaTag spray, verification, a route change, the tag going offline, a test push and going offline.
 
@@ -51,4 +51,4 @@ Basemap: MapTiler when `MAP_API_KEY` is set, else Esri World Street Map (keyless
 
 `lib/app` (env, router, theme, l10n) · `lib/core` (network + fake backend, drift storage, outbox sync, realtime, notifications, location, media, maps, widgets) · `lib/features/<feature>/{domain,data,application,presentation}`. See `docs/app/STRUCTURE.md`.
 
-**Legacy prototype files** (excluded from analysis). Most are unused, but `lib/app/theme.dart` is still imported by four citizen screens (safe route, live operations, ward scorecard, missed machine), so do not delete it until those screens move to `lib/app/theme/`: `lib/app/router.dart`, `lib/app/theme.dart`, `lib/core/{air,api_client,config,geo,i18n,prefs}.dart`, `lib/features/auth/*.dart` (top level), `lib/features/{citizen,driver,hub}/`, `lib/features/school/{school_alert_screen,school_data}.dart`, `lib/features/settings/settings_screen.dart`, `lib/widgets/`, `test/data_mapping_test.dart`, `test/i18n_test.dart`.
+**Prototype theme.** `lib/app/theme.dart` is the only file left from the first prototype. Four citizen screens (safe route, live operations, ward scorecard, missed machine) still import it, so it stays excluded from analysis until they move to `lib/app/theme/`.

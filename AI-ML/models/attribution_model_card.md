@@ -21,7 +21,7 @@
 - **Inference API:** `AttributionClassifier.predict_source(pm25, pm10, no2=35, co=1.2, so2=10, hour=12, month=11, temp=20, rh=65, ws=2.5)` returns `(SourceClass, confidence, {class: probability})`. Without the booster file it returns a fixed probability vector chosen by the PM2.5/PM10 ratio (< 0.45, > 0.70, otherwise).
 
 ## Evaluation
-- `scripts/eval_metrics.py` scores the booster on the last 20 % of rows by time against the weak labels. Because the booster was trained on all rows, this is in-sample. The 99.91 % weighted precision/recall/F1 on 28,071 rows quoted in `reports/HawaCommand_AI_ML_Model_Evaluation_Report.pdf` and `reports/figures/fig4_source_attribution.png` comes from this procedure and is hard-coded in those generators; no metrics file is written.
+- `scripts/eval_metrics.py` scores the booster on the last 20 % of rows by time against the weak labels. Because the booster was trained on all rows, this is in-sample. The 99.91 % weighted precision/recall/F1 on 28,071 rows once quoted in an evaluation PDF (removed from the repository) came from this procedure; no metrics file is written.
 - There is no comparison against ground-truth source labels, inspections or citizen reports.
 
 ## Recommended downstream action mapping
