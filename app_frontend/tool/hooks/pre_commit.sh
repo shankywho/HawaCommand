@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # app_frontend/tool/hooks/pre_commit.sh: format check on staged Dart files + analyze when any are
-# staged (docs/app/LINTING_AND_QUALITY.md §7). Called from the repo-root hook manager.
+# staged. Called from the repo-root hook manager.
 set -euo pipefail
 root="$(git rev-parse --show-toplevel)"
 files="$(git -C "$root" diff --cached --name-only --diff-filter=ACMR -- 'app_frontend/*.dart' \

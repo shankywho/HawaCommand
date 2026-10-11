@@ -1,20 +1,27 @@
-# AWS setup guide (console, step by step)
+# AWS integration guide
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · **AWS setup** · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · **AWS guide** · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
 
-**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · **AWS setup guide** · [AWS integration](AWS_INTEGRATION.md) · [Cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md) · [Environment variables](ENVIRONMENT_VARIABLES.md)
+**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · **AWS integration guide** · [Environment variables](ENVIRONMENT_VARIABLES.md)
 
 <!-- nav:end -->
 
-This guide takes the HawaCommand backend from "S3 uploads work" to every service in the [cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md): citizen grievances and fleet telemetry in DynamoDB, live fleet tracking in Redis, telemetry through IoT Core and Kinesis, alerts over SNS and Firebase push, settings in Secrets Manager, and optionally a container on ECS behind HTTPS.
+<p align="center">
+<img src="https://img.shields.io/badge/region-ap--south--1%20Mumbai-FF9900?logo=amazonwebservices&logoColor=white" alt="Region">
+<img src="https://img.shields.io/badge/checklist-complete-2EA44F" alt="Checklist complete">
+<img src="https://img.shields.io/badge/verify-hawa%20aws--check-0969DA" alt="hawa aws-check">
+</p>
 
-Region is **Asia Pacific (Mumbai) ap-south-1** throughout. Check the region picker (top right of the console) before every step.
+Why HawaCommand runs on AWS, the integration checklist, and the console steps that set every service up.
 
-**Already in place (from you):** the IAM user, the S3 bucket `hawa-citizen-evidence-prod` with its policies, the EC2 instance role `hawa-backend-ec2-role`, and the backend running on EC2 with PM2.
-
-Every feature switches on only when its variable is set, and falls back to process memory when it is not. You can do the steps in any order and test after each one. After each step, run this on the EC2 instance to confirm:
+- Architecture of each service: [AWS architecture](AWS_ARCHITECTURE.md)
+- Every variable: [environment variables](ENVIRONMENT_VARIABLES.md)
+- Region: **Asia Pacific (Mumbai) ap-south-1** for everything; check the region picker before each step.
+- Starting point: an IAM user, the S3 bucket `hawa-citizen-evidence-prod`, the EC2 role `hawa-backend-ec2-role`, and the backend on EC2 with PM2.
+- Every feature switches on when its variable is set and falls back to process memory when it is not.
+- After each step, verify on the instance:
 
 ```bash
 cd ~/HawaCommand/backend && uv run hawa aws-check
@@ -24,7 +31,54 @@ It prints `[OK]`, `[FAIL]` (with the AWS error) or `[skip]` for each service.
 
 ---
 
+## Why AWS
+
+| Need | AWS service | Why this service |
+|---|---|---|
+| Keep citizen photo evidence private and cheap | S3 | Private bucket, pre-signed uploads straight from the phone, no bytes through the API |
+| Grievances queryable by ward and status | DynamoDB | Serverless, pay per request, GSIs for ward and owner, point-in-time recovery |
+| Telemetry from many vehicles | IoT Core + Kinesis | MQTT for low-power trackers, an ordered and replayable stream, bursts absorbed |
+| A live fleet map in milliseconds | ElastiCache | GEO commands for nearby vehicles, pub/sub for the WebSocket |
+| Reach citizens and officials by ward | SNS | Email and SMS with filter policies, no mail server to run |
+| No secrets on disk | IAM + Secrets Manager + KMS | Instance role instead of keys, encrypted secrets and streams |
+| Plans explained in plain language | Bedrock | Managed LLMs with IAM auth, no API keys |
+| Scale past one server | ECR + ECS Fargate + ALB + CloudFormation | Repeatable stacks, autoscaling, rolling deploys |
+
+- **Close to the users:** ap-south-1 keeps latency low for officers and field staff in Delhi.
+- **Resilient by design:** each service is optional, so one outage degrades one feature, not the product.
+- **Stateless backend:** with DynamoDB and ElastiCache holding state, the API scales from one EC2 instance to many Fargate tasks without code changes.
+
+---
+
+## Integration checklist
+
+Every item has code, a console step below and a check in `hawa aws-check`.
+
+| # | Item | Code | Step | Status |
+|---|---|---|---|---|
+| 1 | S3 evidence bucket, pre-signed upload and read-back | `aws/uploads.py` | [1](#1-iam-give-the-ec2-role-the-new-permissions) | Done |
+| 2 | DynamoDB `hawa-citizen-grievances` + `WardStatusIndex` + `OwnerIndex` | `services/reports.py` | [2](#2-dynamodb-citizen-grievances-table) | Done |
+| 3 | DynamoDB `hawa-fleet-telemetry` with `ttl_epoch` | `services/fleet.py` | [3](#3-dynamodb-fleet-telemetry-table) | Done |
+| 4 | Kinesis `hawa-sensor-data`, producer and consumer | `aws/events.py`, `aws/kinesis_consumer.py` | [4](#4-kinesis-stream-and-iot-core-rule) | Done |
+| 5 | IoT Core rule `hawa/vehicles/+/telemetry` to Kinesis | rule + `hawa simulate-fleet` | [4b](#4b-iot-core-rule) | Done |
+| 6 | ElastiCache: `geo:fleet:active`, `grid:pm25:500m:*` | `core/redis_store.py`, `services/twin_cache.py` | [5](#5-elasticache-redisvalkey) | Done |
+| 7 | SNS topic, email/SMS, ward-filtered fan-out | `services/alerts.py` | [6](#6-sns-alerts-topic-email-and-sms) | Done |
+| 8 | Firebase key in Secrets Manager, push | `services/push.py` | [7](#7-firebase-cloud-messaging-and-its-secrets-manager-secret) | Ready |
+| 9 | Least-privilege IAM policy | `hawa-integration.yaml` | [1](#1-iam-give-the-ec2-role-the-new-permissions) | Done |
+| 10 | Backend settings from Secrets Manager | `core/config.py` | [9](#9-optional-move-backend-secrets-into-secrets-manager) | Ready |
+| 11 | Docker image, ECR, ECS Fargate, ALB, autoscaling | `backend/Dockerfile`, `hawa-ecs.yaml` | [10](#10-optional-container-image-in-ecr-ecs-fargate-and-alb) | Ready |
+| 12 | Route 53 + HTTPS | `hawa-ecs.yaml`, `Caddyfile` | [11](#11-optional-domain-and-https) | Ready |
+| 13 | Bedrock, SageMaker, Step Functions | `llm_provider.py`, `aws/forecast.py`, `aws/dispatch.py` | [16](#16-optional-bedrock-sagemaker-and-step-functions) | Ready |
+| 14 | End-to-end smoke tests | live audit, WebSocket, reports | [12](#12-smoke-tests) | Done |
+
+- **Done:** running on the deployment. **Ready:** code and steps in place, switched on by one variable.
+- Report `status` values are the app's (`submitted`, `verifying`, `verified`, `rejected`, `ticketed`, `closed`); an SLA breach is computed on open reports.
+
+---
+
 ## Contents
+
+- [Why AWS](#why-aws) · [Integration checklist](#integration-checklist)
 
 0. [Deploy the new code to EC2](#0-deploy-the-new-code-to-ec2)
 1. [IAM: give the EC2 role the new permissions](#1-iam-give-the-ec2-role-the-new-permissions)
@@ -41,7 +95,8 @@ It prints `[OK]`, `[FAIL]` (with the AWS error) or `[skip]` for each service.
 12. [Smoke tests](#12-smoke-tests)
 13. [Every variable in one table](#13-every-variable-in-one-table)
 14. [Costs and clean-up](#14-costs-and-clean-up)
-15. [What is still not done](#15-what-is-still-not-done)
+15. [Next for a city rollout](#15-next-for-a-city-rollout)
+16. [Optional: Bedrock, SageMaker and Step Functions](#16-optional-bedrock-sagemaker-and-step-functions)
 
 **Shortcut:** steps 1–4 and the SNS topic in step 6 are also one CloudFormation stack, `infrastructure/cloudformation/hawa-integration.yaml`. In the console go to CloudFormation → **Create stack** → **With new resources** → **Upload a template file**, and set the parameter `BackendRoleName` to `hawa-backend-ec2-role`. It creates the same resources as the console steps below, plus the IoT rule's role. Then continue at step 5.
 
@@ -582,19 +637,55 @@ After the demo, delete the stream, the cache, and the ECS stack (CloudFormation 
 
 ---
 
-## 15. What is still not done
+## 15. Next for a city rollout
 
-- **Sign-in:** there are no real accounts. The backend trusts the `sub` of the app's in-app fake sign-in token to tell citizens apart (`HAWA_TRUST_CLIENT_TOKENS`). Officer routes use one shared key, `HAWA_ADMIN_API_KEY`.
-- **No officer UI for the new routes:** reports and broadcasts have no web console screens yet. Use `/docs` or curl.
-- **The alert area is stored but not used:** a citizen's area (`/v1/me/alert-subscription`) does not yet filter pushes. Every install gets topic broadcasts, and SNS subscribers filter by ward.
-- **Report verification is rules, not a vision model:** photo present in S3, location inside Delhi, and the twin cell's fingerprint rules compared with the citizen's category.
-- **No physical HawaTag devices:** telemetry comes from `hawa simulate-fleet` or the MQTT test client. The IoT path is the same one a device would use, with a device certificate and policy you would create under **IoT Core** → **Manage** → **Things**.
-- **Flutter changes are unbuilt:** the Flutter SDK was not available where this was written, so the Dart changes were reviewed but not compiled. Run `make app-apk` and `cd app_frontend && fvm flutter analyze` first.
+- **Sign-in:** Amazon Cognito for officers and citizens, replacing the shared `HAWA_ADMIN_API_KEY` and the app's session-token identity (`HAWA_TRUST_CLIENT_TOKENS`).
+- **Officer screens for reports and broadcasts:** the API is complete (`/v1/reports`, `/v1/alerts/broadcast`); the console uses Swagger at `/docs` today.
+- **Area-targeted push:** the citizen alert area (`/v1/me/alert-subscription`) is stored; next it filters pushes, as SNS ward filters already do for email and SMS.
+- **Vision check on report photos:** today's verification is S3 presence, location and fingerprint rules.
+- **Physical HawaTags:** register each tracker under **IoT Core** → **Manage** → **Things** with a certificate and policy; it publishes to the same topic the simulator uses.
+
+---
+
+## 16. Optional: Bedrock, SageMaker and Step Functions
+
+These services are wired in code and switched on by one variable each. The demo runs without them.
+
+### 16a. Bedrock for the agents
+
+- Set in `AI-ML/.env`: `LLM_PROVIDER=bedrock`, `AWS_REGION`, `BEDROCK_MODEL_ID`.
+- Console: **Bedrock** → **Model access** → enable the model in the region (or use a cross-region inference profile ID).
+- IAM: add `bedrock:InvokeModel` to the role.
+- Failure is silent by design: agents fall back to template text. Verify:
+  ```bash
+  python -c "from hawa_ml.agents.llm_provider import llm_client; print(type(llm_client).__name__, llm_client.generate('Say OK'))"
+  ```
+  Expect `BedrockLLMClient OK`.
+
+### 16b. SageMaker or Step Functions forecast
+
+- Variable: `HAWA_AWS_FORECAST_ENDPOINT` (SageMaker) or `HAWA_AWS_FORECAST_STATE_MACHINE_ARN` (Express workflow, wins if both are set).
+- Used by `GET /v1/forecast/{cell_id}`; results are cached in the DynamoDB table `hawa-cache` (`HAWA_AWS_CACHE_TABLE`).
+- Request: `{"cell_id": "<id>"}`. Response must contain a `horizons` list:
+  ```json
+  {"cell_id": "C-1", "horizons": [{"horizon_h": 1, "pm25_p10": 150.0, "pm25_p50": 200.0, "pm25_p90": 260.0,
+    "aqi_p50": 310, "aqi_category": "Very Poor", "grap_stage": "Stage II", "grap_stage_number": 2}]}
+  ```
+- Easiest handler: wrap `hawa_ml.forecasting.predict.ForecastPredictor().predict_cell_forecast(cell_id)` (horizons 1, 3, 6, 12, 24, 48, 72) in a SageMaker serverless endpoint; package `models/*.txt`, `config/*.yaml` and `hawa_ml/`.
+- Verify: `curl -s localhost:8000/v1/forecast/C-1 | jq '.series|length'` prints `73`; the second call is served from `hawa-cache`.
+
+### 16c. Step Functions dispatch on plan approval
+
+- Variable: `HAWA_AWS_DISPATCH_STATE_MACHINE_ARN` (Standard workflow).
+- Input sent on approval: `{"planId", "ward", "window": {start, end, label}, "groups": [...]}`; the execution ARN comes back as `executionArn` in the plan.
+- Suggested states: DynamoDB `PutItem` (`pk = "dispatch:<planId>"`) then SNS `Publish` to the alerts topic.
+- If the workflow publishes to SNS, set `HAWA_AWS_ALERT_ON_PLAN_APPROVAL=false` so officers are not notified twice.
+- IAM: `states:StartExecution` for the backend; `dynamodb:PutItem` and `sns:Publish` for the workflow role.
 
 <!-- footer:start -->
 
 ---
 
-[Back to top](#aws-setup-guide-console-step-by-step) · [Docs hub](README.md) · [Project README](../README.md)
+[Back to top](#aws-integration-guide) · [Docs hub](README.md) · [Project README](../README.md)
 
 <!-- footer:end -->

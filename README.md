@@ -15,7 +15,7 @@ A fully developed prototype, deployed on AWS: every flow runs end to end, from a
 <a href="#built-on-aws"><img src="https://img.shields.io/badge/AWS%20services-22%20integrated%20%C2%B7%209%20live-FF9900?logo=amazonwebservices&logoColor=white" alt="AWS services"></a>
 <a href="docs/backend/API.md"><img src="https://img.shields.io/badge/API-50%20operations%20%2B%20WebSocket-2563EB?logo=fastapi&logoColor=white" alt="API"></a>
 <a href="#testing"><img src="https://img.shields.io/badge/tests-135%20passing-2EA44F?logo=pytest&logoColor=white" alt="Tests"></a>
-<a href="docs/README.md"><img src="https://img.shields.io/badge/docs-58%20pages-2563EB?logo=readthedocs&logoColor=white" alt="Docs"></a>
+<a href="docs/README.md"><img src="https://img.shields.io/badge/docs-34%20pages-2563EB?logo=readthedocs&logoColor=white" alt="Docs"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-C0392B" alt="MIT licence"></a>
 
 <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python">
@@ -91,19 +91,19 @@ flowchart LR
 | Stage | What it does | Where |
 |---|---|---|
 | Sense | Live WAQI / OpenAQ stations, HawaTag vehicle telemetry over **IoT Core + Kinesis**, citizen photo reports to **S3** | [backend](backend/README.md), [AWS architecture](docs/AWS_ARCHITECTURE.md) |
-| Map | Gaussian-process kriging over **10,600 cells** of 500 m, each with PM2.5, PM10 and confidence | [AI-ML models](docs/aiml/MODELS.md) |
+| Map | Gaussian-process kriging over **10,600 cells** of 500 m, each with PM2.5, PM10 and confidence | [AI-ML architecture](docs/aiml/ARCHITECTURE.md) |
 | Attribute | Fingerprint rules label each hotspot: road dust, traffic, burning, regional smoke, industrial | [AI-ML README](AI-ML/README.md) |
 | Forecast | **21 LightGBM quantile models**, 1 to 72 h, with CPCB AQI and the CAQM GRAP stage | [forecaster card](AI-ML/models/forecaster_model_card.md) |
-| Decide | Ranks hotspots by **people exposed** (population, schools, hospitals), not raw AQI; drafts a cause-matched dispatch plan | [AI-ML agents](docs/aiml/AGENTS.md) |
+| Decide | Ranks hotspots by **people exposed** (population, schools, hospitals), not raw AQI; drafts a cause-matched dispatch plan | [AI-ML architecture](docs/aiml/ARCHITECTURE.md) |
 | Act | Officer approves in the console; drivers get Hindi-first routes; **SNS** alerts and push go out | [web](frontend/README.md), [app](app_frontend/README.md) |
-| Verify | Synthetic control with placebo tests: effect size with a 95 % interval | [causal verifier](docs/aiml/MODELS.md) |
+| Verify | Synthetic control with placebo tests: effect size with a 95 % interval | [AI-ML runbook](AI-ML/README.md) |
 
 ---
 
 ## Built on AWS
 
 **22 AWS services integrated: 9 live on the deployment, 4 more wired in code, 9 in the infrastructure-as-code path.**
-Every service is optional and falls back to process memory, so the demo survives any single outage. Deep dive: [AWS architecture](docs/AWS_ARCHITECTURE.md) · Setup: [AWS setup guide](docs/AWS_SETUP_GUIDE.md).
+Every service is optional and falls back to process memory, so the demo survives any single outage. Deep dive: [AWS architecture](docs/AWS_ARCHITECTURE.md) · Setup: [AWS integration guide](docs/AWS_SETUP_GUIDE.md).
 
 Legend: ![live](https://img.shields.io/badge/-live-2EA44F) running on the deployment (see [/readyz](http://ec2-13-207-49-123.ap-south-1.compute.amazonaws.com:8000/readyz)) · ![wired](https://img.shields.io/badge/-wired-0969DA) in code, switched on by one variable · ![IaC](https://img.shields.io/badge/-IaC-8250DF) template or workflow in the repo
 
@@ -129,7 +129,7 @@ Legend: ![live](https://img.shields.io/badge/-live-2EA44F) running on the deploy
 | 18 | ![Application Auto Scaling](https://img.shields.io/badge/Auto%20Scaling-FF4F8B?logo=amazonaws&logoColor=white) | CPU target tracking at 70 %, up to 6 tasks | `hawa-ecs.yaml` | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
 | 19 | ![Amazon CloudWatch](https://img.shields.io/badge/CloudWatch-FF4F8B?logo=amazoncloudwatch&logoColor=white) | Container logs and Container Insights | `/ecs/hawa-command-backend` | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
 | 20 | ![AWS Certificate Manager](https://img.shields.io/badge/Certificate%20Manager-DD344C?logo=amazonaws&logoColor=white) | TLS 1.3 certificate for the load balancer | `CertificateArn` parameter | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
-| 21 | ![Amazon Route 53](https://img.shields.io/badge/Route%2053-8C4FFF?logo=amazonroute53&logoColor=white) | `api.<domain>` record for the API | [setup guide §11](docs/AWS_SETUP_GUIDE.md#11-optional-domain-and-https) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
+| 21 | ![Amazon Route 53](https://img.shields.io/badge/Route%2053-8C4FFF?logo=amazonroute53&logoColor=white) | `api.<domain>` record for the API | [AWS guide §11](docs/AWS_SETUP_GUIDE.md#11-optional-domain-and-https) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
 | 22 | ![AWS Amplify](https://img.shields.io/badge/Amplify%20Hosting-FF9900?logo=awsamplify&logoColor=white) | Build spec for hosting the web console | [`frontend/amplify.yml`](frontend/amplify.yml) | ![IaC](https://img.shields.io/badge/-IaC-8250DF) |
 
 - One command checks every configured service: `uv run hawa aws-check` ([CLI](backend/README.md#5-cli)).
@@ -220,7 +220,7 @@ flowchart LR
 |---|---|
 | **Idea and impact** | Real fleet, real gap: 733 machines on static schedules. We rank by people exposed and prove what worked ([problem](#the-problem), [system overview](docs/SYSTEM_OVERVIEW.md)) |
 | **Built on AWS** | 22 services integrated, 9 live: EC2, IAM, S3, DynamoDB, Kinesis, IoT Core, ElastiCache, SNS, KMS ([table](#built-on-aws), [deep dive](docs/AWS_ARCHITECTURE.md)) |
-| **Design and usability** | One-click plan approval, Hindi-first driver view, bilingual offline-first app, outdoor theme ([web pages](docs/frontend/PAGES.md), [app screens](docs/app/SCREENS.md)) |
+| **Design and usability** | One-click plan approval, Hindi-first driver view, bilingual offline-first app, outdoor theme ([web architecture](docs/frontend/ARCHITECTURE.md), [app architecture](docs/app/ARCHITECTURE.md)) |
 | **Execution** | A fully developed prototype, deployed and live ([demo](#live-demo)); 135 automated tests; `hawa aws-check` verifies the cloud wiring ([testing](#testing)) |
 | **Demo video** | 3 minutes: the problem, the officer loop, the field app, and where AWS fits |
 
@@ -253,7 +253,7 @@ HawaCommand/
 └── Makefile            install, run and build targets
 ```
 
-Full tree: [backend](docs/backend/STRUCTURE.md) · [AI-ML](docs/aiml/STRUCTURE.md) · [web](docs/frontend/STRUCTURE.md) · [app](docs/app/STRUCTURE.md)
+Module docs (architecture, API, deployment): [backend](docs/backend/README.md) · [AI-ML](docs/aiml/README.md) · [web](docs/frontend/README.md) · [app](docs/app/README.md)
 
 ---
 
@@ -270,7 +270,7 @@ make app-apk                                   # Android APK (staging flavor)
 ```
 
 - Nothing is required to start: without keys, AWS or Redis, everything runs on fixtures and memory.
-- Settings: [environment variables](docs/ENVIRONMENT_VARIABLES.md) · AWS: [setup guide](docs/AWS_SETUP_GUIDE.md).
+- Settings: [environment variables](docs/ENVIRONMENT_VARIABLES.md) · AWS: [integration guide](docs/AWS_SETUP_GUIDE.md).
 - Component runbooks: [backend](backend/README.md) · [AI-ML](AI-ML/README.md) · [web](frontend/README.md) · [app](app_frontend/README.md).
 
 ### Commands
@@ -346,7 +346,7 @@ Component-level detail: [system overview](docs/SYSTEM_OVERVIEW.md#0-the-system-a
 | [Docs hub](docs/README.md) | Every doc, grouped by reader |
 | [System overview](docs/SYSTEM_OVERVIEW.md) | Product, users, architecture, status |
 | [AWS architecture](docs/AWS_ARCHITECTURE.md) | Each AWS service: why, how, resources, IAM, fallback |
-| [AWS setup guide](docs/AWS_SETUP_GUIDE.md) | Console steps for every service |
+| [AWS integration guide](docs/AWS_SETUP_GUIDE.md) | Why AWS, integration checklist, console steps for every service |
 | [Environment variables](docs/ENVIRONMENT_VARIABLES.md) | Every setting in every component |
 | [API reference](docs/backend/API.md) | Every route |
 | [Contracts](docs/CONTRACTS.md) | IDs, enums, units, packets shared by all teams |

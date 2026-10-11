@@ -2,15 +2,15 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**Backend docs:** [Runbook](../../backend/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+**Backend docs:** [Runbook](../../backend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [API](API.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
 Entry point for everything under `backend/`: what the backend does today, what is still only designed, which document to read for what, how to run and test it, and the defects that are known.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [API](API.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../../backend/README.md](../../backend/README.md)
+Related: [ARCHITECTURE](ARCHITECTURE.md) · [API](API.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../../backend/README.md](../../backend/README.md)
 
 ---
 
@@ -42,15 +42,15 @@ Status vocabulary used in every backend document: **Implemented** (works as desc
 | Ingest, simulator, dispatch saga | **Partial** | Plain Python classes, unit-tested; not connected to MQTT, Kafka or the database | `src/hawa_backend/workers/` |
 | CLI `hawa` | **Implemented** | `version`, `config`, `check`, `aws-check`, `simulate-fleet`, `consume-telemetry` | `src/hawa_backend/cli.py` |
 | Local infrastructure | **Implemented** | `docker-compose.yml` with PostGIS 16, Redis 7, Kafka 3.8 (KRaft); the backend uses the Redis when `HAWA_REDIS_URL` points at it | `backend/docker-compose.yml` |
-| PostGIS geometry, partitions | **Planned** | none (Alembic itself is Implemented) | [DATA_MODEL.md](DATA_MODEL.md) |
-| Kafka producers and consumers, outbox relay | **Planned** | Topic names and event models only | [EVENTS.md](EVENTS.md) |
-| Redis live state | **Implemented** | Fleet geo index, twin snapshot, plans, push tokens, alert log, pub/sub, Kinesis checkpoints | `core/redis_store.py`, [CACHING.md](CACHING.md) |
-| Redis rate limits, idempotency keys, OTP store | **Planned** | Key builders only | [CACHING.md](CACHING.md) |
+| PostGIS geometry, partitions | **Planned** | none (Alembic itself is Implemented) | — |
+| Kafka producers and consumers, outbox relay | **Planned** | Topic names and event models only | — |
+| Redis live state | **Implemented** | Fleet geo index, twin snapshot, plans, push tokens, alert log, pub/sub, Kinesis checkpoints | `core/redis_store.py` |
+| Redis rate limits, idempotency keys, OTP store | **Planned** | Key builders only | — |
 | WebSocket `/v1/ws/fleet` | **Implemented** | Snapshot then every ping; task-event socket `/v1/ws` is Planned | `api/routes/fleet.py`, [API.md](API.md) |
 | Auth endpoints, RBAC, ward scoping | **Planned** | none | [API.md](API.md) §6 |
 | Scheduler, notifier, feeds-worker, alert-engine, MQTT bridge, other workers | **Planned** | none | [ARCHITECTURE.md](ARCHITECTURE.md) §8 |
-| Metrics, tracing, dashboards | **Planned** | none | [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) §6 |
-| Dockerfile, image build, IaC | **Implemented** | `backend/Dockerfile` (build from the repo root); `.github/workflows/backend-image.yml` pushes it to ECR (manual trigger); CloudFormation `hawa-integration.yaml`, `hawa-redis.yaml`, `hawa-ecs.yaml` in `infrastructure/cloudformation/`. Test CI and CDK are Planned | [DEPLOYMENT.md](DEPLOYMENT.md), [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md) |
+| Metrics, tracing, dashboards | **Planned** | none | — |
+| Dockerfile, image build, IaC | **Implemented** | `backend/Dockerfile` (build from the repo root); `.github/workflows/backend-image.yml` pushes it to ECR (manual trigger); CloudFormation `hawa-integration.yaml`, `hawa-redis.yaml`, `hawa-ecs.yaml` in `infrastructure/cloudformation/`. Test CI and CDK are Planned | [DEPLOYMENT.md](DEPLOYMENT.md), [AWS integration guide](../AWS_SETUP_GUIDE.md) |
 
 In one sentence: today the backend is a single FastAPI process that serves the web console and the Flutter app by translating AI-ML output (live, in-process or fixture) into the frontend's camelCase contract, keeps plan, fleet and alert state in Redis or memory, stores citizen reports and telemetry in DynamoDB, and talks to S3, Kinesis and SNS. The event-driven, database-backed design in the rest of these documents is the target, and is labelled **Planned** wherever it appears.
 
@@ -58,22 +58,15 @@ In one sentence: today the backend is a single FastAPI process that serves the w
 
 | File | What it covers | Read when |
 |---|---|---|
-| [CONTEXT.md](CONTEXT.md) | Backend role per loop step (as built vs target), users and flows, honesty rule as implemented, non-functional targets, risks, non-goals | First |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | The one running process, module layering, the hotspot/forecast fallback chain, the circuit breaker, live station ingestion, plan flow, security and resilience as built, then the target process architecture | Before changing any code |
-| [STRUCTURE.md](STRUCTURE.md) | The real `backend/` tree with one line per file; tooling (pyproject, pytest, ruff, uv.lock) | When creating files |
-| [DATA_MODEL.md](DATA_MODEL.md) | The 23 SQLAlchemy tables column by column, migrations and seed, what is not built (PostGIS, partitions) | Before touching models |
 | [API.md](API.md) | Every registered route with parameters, real response examples, status codes and data source; errors, CORS, headers, auth; planned endpoints listed separately | Before touching routes or clients |
-| [EVENTS.md](EVENTS.md) | What the contracts declare (topics, groups, envelope, events) vs what is wired (nothing on Kafka; optional SNS/Kinesis helpers) | Before adding a producer or consumer |
-| [CACHING.md](CACHING.md) | What runs in Redis today (fleet, twin snapshot, plans, alerts) vs the full planned design | Before adding caching |
-| [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) | `core/logging.py` and `core/context.py` exactly; what is logged today; planned metrics and tracing | Before adding logs or metrics |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | `docker-compose.yml`, every environment variable, how to run, the AWS layer, what is not built for deployment | When running or shipping |
-| [PLAN.md](PLAN.md) | Milestones with their current status and the remaining work in priority order | At every checkpoint |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | EC2 + PM2 (live), the Docker image, ECS Fargate, configuration and operations | When running or shipping |
 
-The code is organised by layer under `backend/src/hawa_backend/` ([STRUCTURE.md](STRUCTURE.md)).
+The code is organised by layer under `backend/src/hawa_backend/`.
 
 ## 3. Reading order
 
-**Humans:** this README → [API.md](API.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → the rest as needed.
+**Humans:** this README → [API.md](API.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → [DEPLOYMENT.md](DEPLOYMENT.md).
 
 **AI coding agents:** treat the code and this README's status table as the truth; treat `../CONTRACTS.md` as binding for names that already exist in `hawa_contracts`. Do not assume any **Planned** item exists.
 

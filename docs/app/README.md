@@ -2,15 +2,15 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**App docs:** [Runbook](../../app_frontend/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+**App docs:** [Runbook](../../app_frontend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
 Purpose: the index, quick start, implementation status and known issues for the Flutter app in `app_frontend/`, used by drivers, inspectors, school principals, citizens and site managers.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md) · [app_frontend/README.md](../../app_frontend/README.md)
+Related: [ARCHITECTURE](ARCHITECTURE.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [app_frontend/README.md](../../app_frontend/README.md)
 
 > These docs were reconciled with the code by static reading (HEAD `a33e043`). Flutter was not available while doing so, so no `make lint` or `make test` result is recorded here. The code is the source of truth: when a doc and the code disagree, fix the doc.
 
@@ -48,7 +48,7 @@ The backend that exists today serves the AI-ML read endpoints (`/v1/twin`, `/v1/
 | Citizen Safe route, Ward scorecard, Missed machine screens | **Stub/Mock** | Hard-coded demo data. The backend's `/v1/citizen/safe-route`, `/wards/leaderboard`, `/reports/missed-machine` are not called yet |
 | Site manager score | **Stub/Mock** | `sites_me.json` via the fake backend |
 | Alerts inbox and detail | **Partial** | Live command-center broadcast log (`GET /v1/alerts`) mapped to inbox items; acks stay on the phone. The contract inbox (`ALERTS_CONTRACT=true`) needs endpoints the backend lacks |
-| Offline cache (drift), outbox, drainer, conflict resolver, sync triggers | **Implemented** | Executes against the fake backend in the default build ([OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md)). Some cleanup jobs are never called |
+| Offline cache (drift), outbox, drainer, conflict resolver, sync triggers | **Implemented** | Executes against the fake backend in the default build (OFFLINE_AND_SYNC). Some cleanup jobs are never called |
 | Network stack: three Dio clients, 8 interceptors, typed failures, generated `hawa_api` | **Implemented** | The generated client targets a hand-written contract snapshot, not the backend's real OpenAPI |
 | Realtime | **Partial** | The live radar uses the backend's `/v1/ws/fleet`. Task events: `FakeRealtimeClient` drives the demo; `WsClient` is complete but the backend serves no `/v1/ws` |
 | Push notifications (FCM) and Crashlytics | **Partial** | Code is wired. Firebase options come from the `FIREBASE_*` build defines (`lib/firebase/firebase_options_env.dart`); without them both are disabled. Each install subscribes to the FCM topic `FCM_TOPIC` (backend broadcasts), and report updates are pushed to the token registered with `PUT /v1/me/push-token` ([AWS_SETUP_GUIDE §7–8](../AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)). Local notifications and in-app banners work |
@@ -57,7 +57,7 @@ The backend that exists today serves the AI-ML read endpoints (`/v1/twin`, `/v1/
 | Maps (flutter_map, MapTiler or keyless Esri basemap, file tile cache, markers) | **Partial** | Corridor tile prefetch, cache size cap and polyline simplification exist but are never called |
 | Camera, EXIF strip, presigned upload | **Implemented** | Capture and processing are real; report photos go to the real S3 bucket with `citizen_reports` in `REAL_FEATURES`, inspection photos stay on the fake S3 |
 | Deep links | **Partial** | Push and notification taps are routed. `hawa://` links from SMS/WhatsApp open the app but are not routed (Known issue 8) |
-| Tests | **Partial** | 5 test files ([LINTING_AND_QUALITY §10](LINTING_AND_QUALITY.md#10-testing-strategy)); the two prototype tests that did not compile were removed |
+| Tests | **Partial** | 5 test files; the two prototype tests that did not compile were removed |
 | CI workflow, wired pre-commit hook, golden tests, integration test, mock server | **Planned** | Makefile targets reference them; the files do not exist |
 | iOS | **Partial** | Runner project only: no flavors, no Firebase, no `hawa://` scheme |
 
@@ -65,13 +65,9 @@ The backend that exists today serves the AI-ML read endpoints (`/v1/twin`, `/v1/
 
 | # | Doc | Read it when | Main readers |
 |---|---|---|---|
-| 1 | [CONTEXT.md](CONTEXT.md) | First. Who the users are, the flows, field realities, privacy and non-goals, with what is built today | Everyone |
+| 1 | [../../app_frontend/README.md](../../app_frontend/README.md) | First. Run, demo logins, which features talk to the real backend | Everyone |
 | 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | Before writing code. Layers, Riverpod, go_router, networking and fake mode, the API surface vs the backend, storage, realtime, push, location, maps, media, i18n, theme, flavors, security | App dev, AI agents |
-| 3 | [STRUCTURE.md](STRUCTURE.md) | When creating files. The `app_frontend/` tree | App dev, AI agents |
-| 4 | [SCREENS.md](SCREENS.md) | When building a screen. Routes, data, states, copy and the push catalogue | App dev, designers |
-| 5 | [OFFLINE_AND_SYNC.md](OFFLINE_AND_SYNC.md) | Before touching any mutation. Drift schema, outbox, idempotency, conflicts, triggers, cleanup | App dev, backend |
-| 6 | [LINTING_AND_QUALITY.md](LINTING_AND_QUALITY.md) | Before the first commit. Lints, Make targets, hooks, the test files and DoD | App dev, AI agents |
-| 7 | [PLAN.md](PLAN.md) | When planning work. What was built against the hackathon plan, what remains, contract proposals | App dev, team lead |
+| 3 | [DEPLOYMENT.md](DEPLOYMENT.md) | Before shipping an APK. Build defines, Firebase, flavors, signing | App dev, release |
 
 Binding upstream docs: [../CONTRACTS.md](../CONTRACTS.md) holds the enums, units, endpoint index, the `is_simulated` rule and the uncertainty rule. [../backend/API.md](../backend/API.md) holds request/response shapes. The app's own contract snapshot is `app_frontend/openapi/openapi.json` (hand-written from API.md + CONTRACTS §13, see [ARCHITECTURE §6.1](ARCHITECTURE.md#61-http-clients-and-the-generated-client)).
 
@@ -104,7 +100,7 @@ Binding upstream docs: [../CONTRACTS.md](../CONTRACTS.md) holds the enums, units
 | `site_manager` | Site: Site · More | `/site` | Stub/Mock |
 | `officer`, `admin`, `analyst`, unknown | none: `/unsupported-role` ("Use the web console") | — | Implemented |
 
-A user holding several app roles picks one on `/auth/role` and can switch from **More → Switch role**; a push for another held role switches automatically ([ARCHITECTURE §5.4](ARCHITECTURE.md#54-roles-and-role-switching)). Every role can open the citizen air map from **More** (`/map`). Screen-by-screen detail is in [SCREENS.md](SCREENS.md).
+A user holding several app roles picks one on `/auth/role` and can switch from **More → Switch role**; a push for another held role switches automatically ([ARCHITECTURE §5.4](ARCHITECTURE.md#54-roles-and-role-switching)). Every role can open the citizen air map from **More** (`/map`).
 
 ## 6. Quick start
 
@@ -238,12 +234,12 @@ Pass it as `--dart-define=API_BASE_URL=…` or in `env/<flavor>.json`. `WS_URL` 
 | Navigation | go_router 18, `StatefulShellRoute.indexedStack` per role, pure redirect guard, push deep links | [ARCHITECTURE §5](ARCHITECTURE.md#5-navigation-go_router) |
 | Networking | Dio 5 + generated `hawa_api` + interceptor chain; `CommandCenterApi` for the backend's live read endpoints | [ARCHITECTURE §6](ARCHITECTURE.md#6-networking) |
 | Fake mode | In-app `FakeBackend` from fixtures, per-feature switch via `Env.isFake` | [ARCHITECTURE §6.6](ARCHITECTURE.md#66-the-in-app-fake-backend) |
-| Offline | drift (SQLite, WAL) cache + outbox with `Idempotency-Key`, server authoritative | [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) |
+| Offline | drift (SQLite, WAL) cache + outbox with `Idempotency-Key`, server authoritative | OFFLINE_AND_SYNC |
 | Realtime | WS `/v1/ws?token=` client (`tasks:me`, `alerts:me`) in foreground + FCM data messages; fake realtime in fake mode | [ARCHITECTURE §10](ARCHITECTURE.md#10-realtime-websocket--fcm) |
 | Location | geolocator foreground service, **only during a shift**, battery-aware | [ARCHITECTURE §11](ARCHITECTURE.md#11-location-and-shift) |
 | Maps | flutter_map 8 + MapTiler raster with a key, else keyless Esri World Street Map; never OSM tile servers | [ARCHITECTURE §12](ARCHITECTURE.md#12-maps) |
 | i18n | `flutter_localizations` + ARB, en + hi, Inter + Noto Sans Devanagari bundled | [ARCHITECTURE §14](ARCHITECTURE.md#14-internationalisation-en--hi) |
-| Lints | `very_good_analysis` 10.3 + strict modes + `tool/architecture_guard.sh` | [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) |
+| Lints | `very_good_analysis` 10.3 + strict modes + `tool/architecture_guard.sh` | LINTING_AND_QUALITY |
 | Crash reporting | Firebase Crashlytics wrapper, off until Firebase exists and `CRASH_REPORTING=true` | [ARCHITECTURE §17](ARCHITECTURE.md#17-errors-logging-and-crash-reporting) |
 
 ## 9. Known issues
@@ -274,7 +270,7 @@ Defects found by reading the code. Paths are relative to `app_frontend/` unless 
 - System context: [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
 - Contracts: [../CONTRACTS.md](../CONTRACTS.md) (§3 enums, §6 REST + WS index, §10 AQI/GRAP, §13 field-app additions)
 - Backend API (target shapes): [../backend/API.md](../backend/API.md); backend run instructions: [../../backend/README.md](../../backend/README.md)
-- Design tokens: [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
+- Design tokens: `frontend/tailwind.config.ts` (web) and `lib/app/theme/tokens.dart` (app)
 - Web console docs: [../frontend/README.md](../frontend/README.md)
 - AI-ML docs (twin, forecast, safe windows, attribution, verifier): [../aiml/README.md](../aiml/README.md)
 - App folder readme: [../../app_frontend/README.md](../../app_frontend/README.md)

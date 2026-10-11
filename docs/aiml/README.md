@@ -2,15 +2,15 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**AI-ML docs:** [Runbook](../../AI-ML/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Engine API](../../AI-ML/CONTRACTS.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
 Index and entry point for everything the `AI-ML/` folder owns: models, optimiser, verifier, agents, and how they are run. These documents describe the code as it exists, and keep the original blueprint as clearly labelled **Planned** target design.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../../AI-ML/README.md](../../AI-ML/README.md) · [../../AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
+Related: [ARCHITECTURE](ARCHITECTURE.md) · [../../AI-ML/README.md](../../AI-ML/README.md) · [../../AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
 
 ---
 
@@ -52,14 +52,9 @@ The per-module table, the endpoint list and 18 known defects are in [AI-ML/READM
 | # | Document | Read it when | Lines (approx.) |
 |---|---|---|---|
 | 1 | [AI-ML/README.md](../../AI-ML/README.md) | First. Install, run, test, endpoints, scripts, Make targets, measured results, known issues | ~330 |
-| 2 | [CONTEXT.md](CONTEXT.md) | Problem, what ML does in each loop step (built vs planned), data realities, honesty rule, KPIs, non-goals | ~180 |
-| 3 | [ARCHITECTURE.md](ARCHITECTURE.md) | Runtime as built (process, singletons, flows, state files, failure behaviour) and the Planned event-driven architecture | ~380 |
-| 4 | [STRUCTURE.md](STRUCTURE.md) | File-by-file tree of `AI-ML/`, tooling, Make targets, config | ~300 |
-| 5 | [MODELS.md](MODELS.md) | Every algorithm as implemented (formulas, parameters, fallbacks, metrics) with its target design | ~700 |
-| 6 | [AGENTS.md](AGENTS.md) | Agents, LLM providers, runtime prompts, fallbacks; Planned Strands/Bedrock design | ~600 |
-| 7 | [DATA_AND_TRAINING.md](DATA_AND_TRAINING.md) | Data sources, dataset build, training, evaluation, runtime state files; Planned feature store and MLflow | ~330 |
-| 8 | [PLAN.md](PLAN.md) | Milestone status, remaining work, cut rules, roadmap | ~170 |
-| 9 | [AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) | Exact HTTP request/response shapes, in-process Python API, file formats | ~450 |
+| 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | Runtime as built (process, singletons, flows, state files, failure behaviour) and the Planned event-driven architecture | ~380 |
+| 3 | [AI-ML/CONTRACTS.md](../../AI-ML/CONTRACTS.md) | Exact HTTP request/response shapes, in-process Python API, file formats | ~450 |
+| 4 | [DEPLOYMENT.md](DEPLOYMENT.md) | In-process vs separate service, models and data refresh, LLM configuration | ~90 |
 
 ## 3. Processes at a glance
 

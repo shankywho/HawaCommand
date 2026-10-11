@@ -2,17 +2,17 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · **Architecture** · [Screens](SCREENS.md) · [Offline and sync](OFFLINE_AND_SYNC.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+**App docs:** [Runbook](../../app_frontend/README.md) · [Index](README.md) · **Architecture** · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
 Purpose: how the Flutter app in `app_frontend/` is built, covering layers, state, navigation, networking and fake mode, the API surface against the real backend, storage, realtime, push, location, maps, media, i18n, theming, flavors, errors, security, performance and accessibility, plus the key sequences.
 
-Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.md) · [SCREENS](SCREENS.md) · [OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md)
+Related: [README](README.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md)
 
-> Status: this doc describes the code at HEAD. Design targets that are not built are marked **Planned**; the status vocabulary is defined in [README §2](README.md#2-implementation-status). File paths are relative to `app_frontend/`. The file tree is in [STRUCTURE.md](STRUCTURE.md).
+> Status: this doc describes the code at HEAD. Design targets that are not built are marked **Planned**; the status vocabulary is defined in [README §2](README.md#2-implementation-status). File paths are relative to `app_frontend/`.
 
 ---
 
@@ -21,12 +21,12 @@ Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.m
 | # | Principle | Status |
 |---|---|---|
 | 1 | **The local database is the UI's source of truth.** Screens watch drift streams (tables or `cached_payloads` JSON). The network refreshes the cache and the outbox pushes changes | Implemented |
-| 2 | **The server is authoritative.** Local writes are optimistic overlays reconciled against server events ([OFFLINE_AND_SYNC §7](OFFLINE_AND_SYNC.md#7-conflict-resolution)) | Implemented |
+| 2 | **The server is authoritative.** Local writes are optimistic overlays reconciled against server events | Implemented |
 | 3 | **Typed client for the field contract.** Every contract call goes through the generated `packages/hawa_api`. Deliberate exceptions: the presigned S3 upload, the WebSocket, `CommandCenterApi` (untyped reads of the endpoints the backend serves today) and `externalDio` (OSRM, Photon) | Implemented |
 | 4 | **Every mutation is idempotent.** Outbox ops carry a UUIDv7 that doubles as the `Idempotency-Key`; other mutating calls get a generated key | Implemented |
 | 5 | **Honesty and uncertainty are UI invariants.** `is_simulated` → badge; model output → range or confidence (CONTRACTS §1) | Partial: the widgets exist and are used widely, but `UncertaintyText` is unused and the four hard-coded citizen screens rely only on a screen chip |
 | 6 | **Contracts over guesses.** Enums keep wire names and an `unknown` member (`core/utils/contract_enums.dart`, generator option `enumUnknownDefaultCase`) | Implemented |
-| 7 | **Field-first.** Offline, low-end devices, sunlight, gloves, Hindi ([CONTEXT §8](CONTEXT.md#8-field-realities-and-design-responses)) | Implemented in the shells; performance budgets unmeasured |
+| 7 | **Field-first.** Offline, low-end devices, sunlight, gloves, Hindi | Implemented in the shells; performance budgets unmeasured |
 | 8 | **Mock-first.** Every feature has a fake remote source on the in-app fake backend, switched per feature by `Env.isFake` (§6.5) | Implemented |
 
 ## 2. Layers
@@ -105,7 +105,7 @@ Controllers depend on the repository *providers* (which return the `data` implem
 
 ## 3. Features
 
-| Feature | Screens (see [SCREENS.md](SCREENS.md)) | Data sources: fake / real | Real backend today |
+| Feature | Screens | Data sources: fake / real | Real backend today |
 |---|---|---|---|
 | `auth` | splash, language, phone, OTP | `FakeAuthRemoteSource` / `HttpAuthRemoteSource` | not served |
 | `shell` | role picker, permission education, unsupported role, five role shells, More sheet | `permission_handler` + geolocator | n/a |
@@ -237,20 +237,20 @@ Order in `dioProvider`. Dio runs request hooks and error hooks in insertion orde
 
 | # | Interceptor | Request | Response / error |
 |---|---|---|---|
-| 0 | `ForcedOfflineInterceptor` (not in prod) | Rejects with a connection error while Dev tools "Go offline" is on | — |
-| 1 | `RequestIdInterceptor` | New UUIDv7 `X-Request-Id` per attempt, stored in `extra['request_id']` | Copies an echoed `X-Request-Id` into `extra` |
-| 2 | `IdempotencyInterceptor` | `POST/PUT/PATCH/DELETE` outside `/v1/auth/`: `Idempotency-Key` from `extra['idempotency_key']`, an existing header, or a new UUIDv7 stored back in `extra` (stable across retries) | — |
-| 3 | `AuthInterceptor` | `Authorization: Bearer <access>` (skipped for `/v1/auth/*` except `/logout` and `/switch-role`). If the JWT `exp` is under 60 s away, awaits the shared refresh first | — |
-| 4 | `RefreshInterceptor` (`QueuedInterceptor`) | — | On `401` from a non-auth path: if no one refreshed since the request left, runs the single-flight refresh, then replays once (`extra['after_refresh']`). A failed refresh calls `SessionExpired` |
-| 5 | `RetryInterceptor` | — | Connection/timeouts, `429`, `502/503/504`, `409` `idempotency(.|_)in_progress`: up to 2 retries at 0.5 s / 1.5 s + 0–250 ms jitter, or `Retry-After` if ≤ 10 s. Only `GET`/`PUT`/`DELETE` or requests carrying an `Idempotency-Key` |
-| 6 | `ProblemJsonInterceptor` | — | Converts every `DioException` into a typed `Failure` set as `DioException.error` (§6.4) |
-| 7 | `LoggingInterceptor` (disabled in prod) | Stamps `started_at` | Logs `METHOD path → status Nms rid=…` at FINE, redacted; feeds `ServerClock` from the `Date` header (also in prod) |
+| 1 | `ForcedOfflineInterceptor` (not in prod) | Rejects with a connection error while Dev tools "Go offline" is on | — |
+| 2 | `RequestIdInterceptor` | New UUIDv7 `X-Request-Id` per attempt, stored in `extra['request_id']` | Copies an echoed `X-Request-Id` into `extra` |
+| 3 | `IdempotencyInterceptor` | `POST/PUT/PATCH/DELETE` outside `/v1/auth/`: `Idempotency-Key` from `extra['idempotency_key']`, an existing header, or a new UUIDv7 stored back in `extra` (stable across retries) | — |
+| 4 | `AuthInterceptor` | `Authorization: Bearer <access>` (skipped for `/v1/auth/*` except `/logout` and `/switch-role`). If the JWT `exp` is under 60 s away, awaits the shared refresh first | — |
+| 5 | `RefreshInterceptor` (`QueuedInterceptor`) | — | On `401` from a non-auth path: if no one refreshed since the request left, runs the single-flight refresh, then replays once (`extra['after_refresh']`). A failed refresh calls `SessionExpired` |
+| 6 | `RetryInterceptor` | — | Connection/timeouts, `429`, `502/503/504`, `409` `idempotency(.|_)in_progress`: up to 2 retries at 0.5 s / 1.5 s + 0–250 ms jitter, or `Retry-After` if ≤ 10 s. Only `GET`/`PUT`/`DELETE` or requests carrying an `Idempotency-Key` |
+| 7 | `ProblemJsonInterceptor` | — | Converts every `DioException` into a typed `Failure` set as `DioException.error` (§6.4) |
+| 8 | `LoggingInterceptor` (disabled in prod) | Stamps `started_at` | Logs `METHOD path → status Nms rid=…` at FINE, redacted; feeds `ServerClock` from the `Date` header (also in prod) |
 
 `failureOf(error)` unwraps a `Failure` from any error; data sources rethrow it.
 
 ### 6.3 Refresh, single-flight
 
-`SingleFlightRefresh.run()` shares one in-flight `Future` between `AuthInterceptor`, `RefreshInterceptor` and `WsClient`. The refresher is `TokenRefresherImpl` (`features/auth/data/token_refresher.dart`): it reads the refresh token, calls `POST /v1/auth/refresh` through a `HawaApi` built on the **bare** Dio (so the refresh cannot loop through the chain) and saves the rotated pair. On failure the session controller's `onExpired` pauses the drainer, disconnects realtime and moves to `SessionSignedOut(expired: true)`. Data and outbox are kept for the same user; a different user signing in wipes first ([OFFLINE_AND_SYNC §10](OFFLINE_AND_SYNC.md#10-storage-limits-cleanup-and-logout)).
+`SingleFlightRefresh.run()` shares one in-flight `Future` between `AuthInterceptor`, `RefreshInterceptor` and `WsClient`. The refresher is `TokenRefresherImpl` (`features/auth/data/token_refresher.dart`): it reads the refresh token, calls `POST /v1/auth/refresh` through a `HawaApi` built on the **bare** Dio (so the refresh cannot loop through the chain) and saves the rotated pair. On failure the session controller's `onExpired` pauses the drainer, disconnects realtime and moves to `SessionSignedOut(expired: true)`. Data and outbox are kept for the same user; a different user signing in wipes first.
 
 ### 6.4 Typed failures
 
@@ -379,7 +379,7 @@ The app reshapes the live endpoints itself: `AirMapMapper` (hotspots `at: [lon, 
 
 ### 7.3 Proposed contract additions the app depends on
 
-The consolidated list is [PLAN §11](PLAN.md#11-contract-proposals-to-raise). In short: the whole field surface above (auth, me, tasks, shifts, inspections, schools, reports, uploads, sites, WS), `roles[]` + switch-role, alert ack, inspection on-site, alert subscription, `/open/v1/air?bbox=` as a FeatureCollection, the FCM data payload (§10.3), problem+json codes, idempotency retention and stable `operationId`s.
+In short: the whole field surface above (auth, me, tasks, shifts, inspections, schools, reports, uploads, sites, WS), `roles[]` + switch-role, alert ack, inspection on-site, alert subscription, `/open/v1/air?bbox=` as a FeatureCollection, the FCM data payload (§10.3), problem+json codes, idempotency retention and stable `operationId`s.
 
 ## 8. Models
 
@@ -398,7 +398,7 @@ The consolidated list is [PLAN §11](PLAN.md#11-contract-proposals-to-raise). In
 
 | Store | Package | Holds | Notes |
 |---|---|---|---|
-| SQLite `hawa.sqlite` (app documents) | drift 2.35 | `routes`, `tasks`, `stops`, `alerts`, `reports_draft`, `outbox_ops`, `sync_state`, `media_files`, `location_pings`, `safe_windows`, `cached_payloads` | `NativeDatabase.createInBackground`, `PRAGMA journal_mode=WAL`, `busy_timeout=5000`. `schemaVersion 1`, `onCreate` only (no migrations yet). Schema in [OFFLINE_AND_SYNC §3](OFFLINE_AND_SYNC.md) |
+| SQLite `hawa.sqlite` (app documents) | drift 2.35 | `routes`, `tasks`, `stops`, `alerts`, `reports_draft`, `outbox_ops`, `sync_state`, `media_files`, `location_pings`, `safe_windows`, `cached_payloads` | `NativeDatabase.createInBackground`, `PRAGMA journal_mode=WAL`, `busy_timeout=5000`. `schemaVersion 1`, `onCreate` only (no migrations yet). Schema in `lib/core/storage/tables/` |
 | Secure storage | flutter_secure_storage 11 | `access_token`, `refresh_token`, `user_id`, `me_json` (cached `/v1/me`), `install_id` | Access token also cached in memory. `InMemoryTokenStore` for tests |
 | Prefs | shared_preferences | `language`, `active_role`, `display_mode`, `data_saver`, `cvd_palette`, `citizen_privacy_accepted`, `notification_prefs`, `last_app_version` (never written), `dev_fake_offline`, `active_shift`, `citizen_manual_area`, `perm_education_<kind>` | `SettingsStore` + reactive `AppPreferencesController` |
 | Files | path_provider | `media/<uuid>.jpg` + `_thumb.jpg` (app documents), `fake_backend_state.json` (app documents), `tiles/` (app support) | |
@@ -528,7 +528,7 @@ The manifest sets `default_notification_icon` (`ic_stat_hawa`) and `default_noti
 |---|---|
 | Driver | Route polyline, numbered stop markers, own position during a shift |
 | Inspector | Suspect pins, back-trajectory line, target detail map |
-| Citizen and `/map` | AI pollution overlay from the twin grid, hotspots, forecast slider, clean-air routes (see [SCREENS.md](SCREENS.md)) |
+| Citizen and `/map` | AI pollution overlay from the twin grid, hotspots, forecast slider, clean-air routes |
 
 ### 12.3 Tile caching and offline
 
@@ -567,7 +567,7 @@ The manifest sets `default_notification_icon` (`ic_stat_hawa`) and `default_noti
 
 ## 15. Theming
 
-Tokens mirror [../frontend/DESIGN_SYSTEM.md](../frontend/DESIGN_SYSTEM.md) by hand in `lib/app/theme/tokens.dart` (`HawaTokens`). `HawaColors` (`ThemeExtension`, `context.hawaColors`) resolves semantic colours per mode; `AppTheme.light/dark/outdoor` build a Material 3 `ColorScheme` from the tokens (no seed), `HawaTypography` builds the text theme, `AqiPalette` gives AQI fills.
+Tokens mirror the web console's design tokens by hand in `lib/app/theme/tokens.dart` (`HawaTokens`). `HawaColors` (`ThemeExtension`, `context.hawaColors`) resolves semantic colours per mode; `AppTheme.light/dark/outdoor` build a Material 3 `ColorScheme` from the tokens (no seed), `HawaTypography` builds the text theme, `AqiPalette` gives AQI fills.
 
 | Token | Light | Dark | On-colour | Use |
 |---|---|---|---|---|

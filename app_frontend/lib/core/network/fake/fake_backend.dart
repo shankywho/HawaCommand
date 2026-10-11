@@ -1,4 +1,4 @@
-// In-process stand-in for the HawaCommand API, built from assets/fixtures (docs/app/PLAN.md §6).
+// In-process stand-in for the HawaCommand API, built from assets/fixtures.
 //
 // Pure Dart on purpose (only `dart:` imports): the same engine serves fake mode inside the app
 // and the HTTP + WebSocket mock server in tool/mock_server, so both behave identically.

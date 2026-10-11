@@ -69,7 +69,7 @@ flutter:
   assets:
     - assets/images/
     - assets/fonts/OFL.txt
-    # Fixtures back the dev fake mode and the tests (docs/app/PLAN.md §6). Flavor-gating them
+    # Fixtures back the dev fake mode and the tests. Flavor-gating them
     # (`flavors: [dev]`) would break the tests, which run without a flavor, so they ship in all
     # builds; prod never reads them because USE_FAKE_API is false there.
     - assets/fixtures/api/

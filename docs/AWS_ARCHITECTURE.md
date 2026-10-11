@@ -2,9 +2,9 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · **AWS architecture** · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · **AWS architecture** · [AWS guide](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
 
-**Cloud docs:** **AWS architecture** · [AWS setup guide](AWS_SETUP_GUIDE.md) · [AWS integration](AWS_INTEGRATION.md) · [Cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md) · [Environment variables](ENVIRONMENT_VARIABLES.md)
+**Cloud docs:** **AWS architecture** · [AWS integration guide](AWS_SETUP_GUIDE.md) · [Environment variables](ENVIRONMENT_VARIABLES.md)
 
 <!-- nav:end -->
 
@@ -21,10 +21,9 @@
 
 How HawaCommand uses each AWS service, which resource it touches, which code calls it, and what happens when it is down.
 
-- Setup steps: [AWS setup guide](AWS_SETUP_GUIDE.md)
+- Setup steps: [AWS integration guide](AWS_SETUP_GUIDE.md)
 - Every variable: [environment variables](ENVIRONMENT_VARIABLES.md#optional-aws-layer)
-- Checklist status: [cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md)
-- Older engineering runbook: [AWS integration](AWS_INTEGRATION.md)
+- Checklist status: [integration checklist](AWS_SETUP_GUIDE.md#integration-checklist)
 
 ---
 
@@ -187,7 +186,7 @@ flowchart LR
 |---|---|
 | Why | Least privilege; no long-lived keys on the server |
 | Resources | Role `hawa-backend-ec2-role`, managed policy `hawa-backend-access`, IoT rule role `hawa-iot-to-kinesis` |
-| Policy | [setup guide §1](AWS_SETUP_GUIDE.md#1-iam-give-the-ec2-role-the-new-permissions) and [`hawa-integration.yaml`](../infrastructure/cloudformation/hawa-integration.yaml) |
+| Policy | [AWS guide §1](AWS_SETUP_GUIDE.md#1-iam-give-the-ec2-role-the-new-permissions) and [`hawa-integration.yaml`](../infrastructure/cloudformation/hawa-integration.yaml) |
 
 ### 4.3 Amazon S3
 
@@ -279,7 +278,7 @@ flowchart LR
 
 - LLM provider for the Planner, Auditor, Forecaster and Communicator agents.
 - Switch: `LLM_PROVIDER=bedrock`, `BEDROCK_MODEL_ID` in `AI-ML/.env`; uses the instance role.
-- Fallback: deterministic template text. Code: [`agents/llm_provider.py`](../AI-ML/src/hawa_ml/agents/llm_provider.py), docs: [agents](aiml/AGENTS.md).
+- Fallback: deterministic template text. Code: [`agents/llm_provider.py`](../AI-ML/src/hawa_ml/agents/llm_provider.py), docs: agents.
 
 ### 4.12 AWS Step Functions and Amazon SageMaker ![wired](https://img.shields.io/badge/-wired-0969DA)
 
@@ -288,7 +287,7 @@ flowchart LR
 | Forecast for a cell | `StartSyncExecution` (Express) or SageMaker `InvokeEndpoint`, cached in DynamoDB | `HAWA_AWS_FORECAST_STATE_MACHINE_ARN`, `HAWA_AWS_FORECAST_ENDPOINT` |
 | Dispatch on plan approval | `StartExecution` (Standard), execution ARN returned in the plan | `HAWA_AWS_DISPATCH_STATE_MACHINE_ARN` |
 
-- Code: [`aws/forecast.py`](../backend/src/hawa_backend/aws/forecast.py), [`aws/dispatch.py`](../backend/src/hawa_backend/aws/dispatch.py). Contracts: [AWS integration tasks 2–3](AWS_INTEGRATION.md#task-2-sagemaker-forecast-endpoint).
+- Code: [`aws/forecast.py`](../backend/src/hawa_backend/aws/forecast.py), [`aws/dispatch.py`](../backend/src/hawa_backend/aws/dispatch.py). Contracts: [AWS guide §16](AWS_SETUP_GUIDE.md#16-optional-bedrock-sagemaker-and-step-functions).
 
 ### 4.13 Container path ![IaC](https://img.shields.io/badge/-IaC-8250DF)
 
@@ -350,7 +349,7 @@ Example output:
 ```
 
 - `GET /readyz` shows the same picture from the running process.
-- End-to-end smoke tests: [setup guide §12](AWS_SETUP_GUIDE.md#12-smoke-tests).
+- End-to-end smoke tests: [AWS guide §12](AWS_SETUP_GUIDE.md#12-smoke-tests).
 
 ---
 
@@ -363,8 +362,7 @@ Example output:
 | [`hawa-ecs.yaml`](../infrastructure/cloudformation/hawa-ecs.yaml) | ECS cluster, Fargate service, ALB, target group, HTTPS listener, autoscaling, log group, roles |
 
 - All three pass `cfn-lint`.
-- Costs and clean-up: [setup guide §14](AWS_SETUP_GUIDE.md#14-costs-and-clean-up).
-
+- Costs and clean-up: [AWS guide §14](AWS_SETUP_GUIDE.md#14-costs-and-clean-up).
 
 <!-- footer:start -->
 

@@ -2,15 +2,15 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · **API** · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · **API** · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · **API** · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Architecture](ARCHITECTURE.md) · **API** · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
 Purpose: the exact REST surface served by `hawa_backend.api.app:app` today (every registered route, its parameters, a real response, status codes and where the data comes from), followed by the planned surface that is designed but not built.
 
-Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../frontend/README.md](../frontend/README.md) · [../app/README.md](../app/README.md) · [../aiml/ARCHITECTURE.md](../aiml/ARCHITECTURE.md)
+Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../frontend/README.md](../frontend/README.md) · [../app/README.md](../app/README.md) · [../aiml/ARCHITECTURE.md](../aiml/ARCHITECTURE.md)
 
 > Status (2026-10-11): 50 operations on 45 paths (verified against `/openapi.json`) plus one WebSocket (`/v1/ws/fleet`). Officer write routes and telemetry ingest take a shared `X-Api-Key` when `HAWA_ADMIN_API_KEY` / `HAWA_INGEST_API_KEY` are set; there is still no user sign-in. No route reads or writes the SQL database. Citizen reports, fleet telemetry, alerts and push are covered in [§9b](#9b-citizen-reports-me-fleet-telemetry-broadcasts); AWS setup is in [../AWS_SETUP_GUIDE.md](../AWS_SETUP_GUIDE.md). Everything in §11 is **Planned**.
 

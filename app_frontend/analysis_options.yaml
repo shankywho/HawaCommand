@@ -1,4 +1,4 @@
-# app_frontend/analysis_options.yaml (docs/app/LINTING_AND_QUALITY.md §2)
+# app_frontend/analysis_options.yaml
 include: package:very_good_analysis/analysis_options.yaml
 
 formatter:

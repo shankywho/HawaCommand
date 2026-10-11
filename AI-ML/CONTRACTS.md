@@ -2,9 +2,9 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS guide](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
 
-**AI-ML docs:** [Runbook](README.md) · [Index](../docs/aiml/README.md) · [Context](../docs/aiml/CONTEXT.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · [Models](../docs/aiml/MODELS.md) · [Agents](../docs/aiml/AGENTS.md) · [Data and training](../docs/aiml/DATA_AND_TRAINING.md) · **Engine contracts** · [Structure](../docs/aiml/STRUCTURE.md) · [Plan](../docs/aiml/PLAN.md)
+**AI-ML docs:** [Runbook](README.md) · [Index](../docs/aiml/README.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · **Engine API** · [Deployment](../docs/aiml/DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -133,7 +133,7 @@ Status vocabulary: **Implemented**, **Partial**, **Stub/Mock**, **Planned** (see
 
 ### 3.3 `GET /forecast/{cell_id}`
 
-> Status: Partial. `cell_id` is only echoed; the 7 horizons depend on the `pm25` query value and the current UTC time (see [docs/aiml/MODELS.md §7](../docs/aiml/MODELS.md)).
+> Status: Partial. `cell_id` is only echoed; the 7 horizons depend on the `pm25` query value and the current UTC time.
 
 | Query | Type | Default |
 |---|---|---|

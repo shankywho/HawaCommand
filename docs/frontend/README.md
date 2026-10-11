@@ -2,15 +2,15 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**Web docs:** [Runbook](../../frontend/README.md) · **Index** · [Context](CONTEXT.md) · [Architecture](ARCHITECTURE.md) · [Pages](PAGES.md) · [Design system](DESIGN_SYSTEM.md) · [Quality](LINTING_AND_QUALITY.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md) · [Design export](../../frontend/design/EXPORT_NOTES.md)
+**Web docs:** [Runbook](../../frontend/README.md) · **Index** · [Architecture](ARCHITECTURE.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
 Purpose: the entry point for anyone working on `frontend/`, the Next.js app that holds the public landing page, the officer console and a mobile driver view. It says what is built, how to run and check it, how it talks to the backend, and what is known to be broken.
 
-Related: [CONTEXT](CONTEXT.md) · [ARCHITECTURE](ARCHITECTURE.md) · [STRUCTURE](STRUCTURE.md) · [PAGES](PAGES.md) · [DESIGN_SYSTEM](DESIGN_SYSTEM.md) · [LINTING_AND_QUALITY](LINTING_AND_QUALITY.md) · [PLAN](PLAN.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../../frontend/README.md](../../frontend/README.md)
+Related: [ARCHITECTURE](ARCHITECTURE.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../backend/API.md](../backend/API.md) · [../../frontend/README.md](../../frontend/README.md)
 
 ---
 
@@ -38,7 +38,7 @@ Status vocabulary used in every frontend doc: **Implemented** (works end to end 
 | Map renderer | `src/lib/visuals/hawa-gl.js` | Partial | Vendored `<hawa-gl>` web component on MapLibre GL 4.7.1. deck.gl layers are Planned |
 | Hindi | driver view, causes, alert preview | Partial | Hindi strings are hard-coded where the design has them. No i18n framework, no `/hi` routes (Planned) |
 | Open data portal | `/open` | Planned | Only a footer link to the backend's `GET /open/v1/air` exists |
-| Other blueprint pages | hotspots, GRAP, interventions, schools, reports, inspections, sites, devices, integrity, coverage, evidence, admin | Planned | See [PAGES §5](PAGES.md#5-planned-pages) |
+| Other blueprint pages | hotspots, GRAP, interventions, schools, reports, inspections, sites, devices, integrity, coverage, evidence, admin | Planned | — |
 | Typecheck | `pnpm typecheck` | Implemented | Passes (§6) |
 | Production build | `pnpm build` | Implemented | Passes (§6) |
 | Lint | `pnpm lint` | Planned | The script exists but ESLint is not installed or configured; it fails (§6) |
@@ -62,15 +62,10 @@ The Flutter app in `app_frontend/` ([../app/README.md](../app/README.md)) covers
 
 | File | What it answers |
 |---|---|
-| [CONTEXT.md](CONTEXT.md) | Who uses the web, the officer flow as built, features F1–F22 with web status, demo-scene mapping, honesty and uncertainty rules, Hindi, non-goals |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Stack and versions, rendering, data flow, API client and endpoints, mock mode, auth, state, map and visuals, errors, hosting, planned architecture |
-| [STRUCTURE.md](STRUCTURE.md) | The complete `frontend/` tree, one line per file, dependency rules |
-| [PAGES.md](PAGES.md) | Page by page: file, what it renders, hooks, endpoints, behaviour without a backend, status; planned pages |
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Tokens from `tailwind.config.ts` and `globals.css`, fonts, CPCB colour scale as coded, components, map and chart styling, motion, accessibility |
-| [LINTING_AND_QUALITY.md](LINTING_AND_QUALITY.md) | What quality tooling exists (TypeScript, build, contract verifier) and what is Planned (ESLint, Prettier, hooks, tests, CI) |
-| [PLAN.md](PLAN.md) | What was built against the original milestones, remaining work in priority order, demo checklist |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | EC2 + PM2 (live) and Amplify Hosting, build-time variables, contract check |
 
-Reading order: new teammate: CONTEXT → ARCHITECTURE → PAGES → DESIGN_SYSTEM. AI coding agent: STRUCTURE → ARCHITECTURE §4 → the PAGES section for the task. Backend lead: ARCHITECTURE §4 (endpoint table) → §8 of this file.
+Reading order: [frontend/README.md](../../frontend/README.md) → ARCHITECTURE → DEPLOYMENT. Backend lead: ARCHITECTURE §4 (endpoint table) → §8 of this file.
 
 ## 4. Quick start
 

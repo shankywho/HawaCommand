@@ -6,9 +6,9 @@
 <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python"> <img src="https://img.shields.io/badge/scikit----learn-GP%20twin-F7931E?logo=scikitlearn&logoColor=white" alt="scikit-learn"> <img src="https://img.shields.io/badge/LightGBM-21%20models-02569B" alt="LightGBM"> <img src="https://img.shields.io/badge/FastAPI-13%20routes-009688?logo=fastapi&logoColor=white" alt="FastAPI"> <img src="https://img.shields.io/badge/tests-38%20passing-2EA44F?logo=pytest&logoColor=white" alt="tests"> <img src="https://img.shields.io/badge/port-8100-6E7781" alt="port">
 </p>
 
-**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS guide](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
 
-**AI-ML docs:** **Runbook** · [Index](../docs/aiml/README.md) · [Context](../docs/aiml/CONTEXT.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · [Models](../docs/aiml/MODELS.md) · [Agents](../docs/aiml/AGENTS.md) · [Data and training](../docs/aiml/DATA_AND_TRAINING.md) · [Engine contracts](CONTRACTS.md) · [Structure](../docs/aiml/STRUCTURE.md) · [Plan](../docs/aiml/PLAN.md)
+**AI-ML docs:** **Runbook** · [Index](../docs/aiml/README.md) · [Architecture](../docs/aiml/ARCHITECTURE.md) · [Engine API](CONTRACTS.md) · [Deployment](../docs/aiml/DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -57,7 +57,7 @@ Status vocabulary used in all AI-ML docs: **Implemented** (works as described), 
 | Operational cycle, evening master plan | `pipelines/cycle.py`, `master_plan.py` | Partial | Sensing is simulated; the planner re-ranks hotspots from a constant PM field instead of the cycle's twin (issue 7) |
 | HTTP API | `api/main.py`, `api/routes.py` | Implemented | 13 routes, mounted at `/`, `/v1` and `/internal/v1`; no authentication; CORS `*` |
 | Kafka workers, Postgres/Redis/S3/MLflow, trainer CLI, internal `/simulate` `/optimize` `/exposure` `/models` `/alerts/draft` | — | Planned | Target design in [docs/aiml/ARCHITECTURE.md](../docs/aiml/ARCHITECTURE.md) |
-| Citizen Eyes, anti-gaming guard, coverage router, site score, TinyML spike, HawaEye, evidence narrative, power proxy, MQTT ingest | — | Planned | Target designs in [docs/aiml/MODELS.md](../docs/aiml/MODELS.md) |
+| Citizen Eyes, anti-gaming guard, coverage router, site score, TinyML spike, HawaEye, evidence narrative, power proxy, MQTT ingest | — | Planned | Target designs in [AI-ML architecture](../docs/aiml/ARCHITECTURE.md) |
 
 The physical sensor fleet does not exist; all mobile, school-sentinel and HawaTag data is produced by `simulation/device_sim.py`. Causal verification has only been demonstrated on a seeded synthetic panel with a known injected effect.
 
@@ -327,13 +327,7 @@ Defects found while documenting. Nothing here has been fixed.
 | Document | Contents |
 |---|---|
 | [docs/aiml/README.md](../docs/aiml/README.md) | Documentation index and status summary |
-| [docs/aiml/CONTEXT.md](../docs/aiml/CONTEXT.md) | Problem, loop, features and honesty rules |
 | [docs/aiml/ARCHITECTURE.md](../docs/aiml/ARCHITECTURE.md) | Runtime architecture as built, target architecture (Planned) |
-| [docs/aiml/STRUCTURE.md](../docs/aiml/STRUCTURE.md) | File-by-file tree |
-| [docs/aiml/MODELS.md](../docs/aiml/MODELS.md) | Every algorithm as implemented, with target designs |
-| [docs/aiml/AGENTS.md](../docs/aiml/AGENTS.md) | Agents, LLM providers, runtime prompts |
-| [docs/aiml/DATA_AND_TRAINING.md](../docs/aiml/DATA_AND_TRAINING.md) | Data sources, dataset build, training and evaluation |
-| [docs/aiml/PLAN.md](../docs/aiml/PLAN.md) | Milestone status and remaining work |
 | [models/forecaster_model_card.md](models/forecaster_model_card.md), [models/attribution_model_card.md](models/attribution_model_card.md) | Model cards |
 
 <!-- footer:start -->

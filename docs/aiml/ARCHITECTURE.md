@@ -2,9 +2,9 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](../backend/API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · [Context](CONTEXT.md) · **Architecture** · [Models](MODELS.md) · [Agents](AGENTS.md) · [Data and training](DATA_AND_TRAINING.md) · [Engine contracts](../../AI-ML/CONTRACTS.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+**AI-ML docs:** [Runbook](../../AI-ML/README.md) · [Index](README.md) · **Architecture** · [Engine API](../../AI-ML/CONTRACTS.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -13,7 +13,7 @@
 
 How the AI-ML processes run: what each consumes and produces, which tables and Redis keys it touches, the sequence of every loop flow, and how it fails safely.
 
-Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.md) · [MODELS](MODELS.md) · [AGENTS](AGENTS.md) · [DATA_AND_TRAINING](DATA_AND_TRAINING.md) · [PLAN](PLAN.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
+Related: [README](README.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md)
 
 ---
 
@@ -24,7 +24,7 @@ AI-ML runs as three deployables built from one Python package set (`AI-ML/src`) 
 - **`intel-worker`**: long-running aiokafka consumers, one consumer group per command or event stream. All asynchronous work (twin, attribution, forecast, plan drafting with agents, verification, photo verification, training) enters here, and only through Kafka (CONTRACTS §7).
 - **`intel-service`**: an internal FastAPI app for the few synchronous calls the backend `api` needs while an officer waits (What-If, re-optimise an edited plan, exposure lookup, model versions).
 - **`trainer`**: a CLI (`hawa-trainer`) that trains, evaluates, gates and registers models. It is launched by the `intel-trainer` consumer on `cmd.train.run` and can be run by hand.
-- **`hawa_agents`**: the Strands Agents library (Forecaster, Planner, Auditor, Communicator, Citizen Eyes verifier) used by `intel-worker` and `intel-service`. See [AGENTS.md](AGENTS.md).
+- **`hawa_agents`**: the Strands Agents library (Forecaster, Planner, Auditor, Communicator, Citizen Eyes verifier) used by `intel-worker` and `intel-service`.
 
 ```mermaid
 flowchart LR
@@ -213,7 +213,7 @@ All keys carry the `hawa:{env}:` prefix. AI-ML uses only the `ml:` namespace, `l
 
 | Prefix | Content | Writer |
 |---|---|---|
-| `s3://hawa-{env}-lake/features/{feature_set}/v{n}/date=YYYY-MM-DD/` | Parquet feature store ([DATA_AND_TRAINING §5](DATA_AND_TRAINING.md#5-feature-engineering-and-feature-store)) | trainer, feature scripts |
+| `s3://hawa-{env}-lake/features/{feature_set}/v{n}/date=YYYY-MM-DD/` | Parquet feature store | trainer, feature scripts |
 | `s3://hawa-{env}-lake/snapshots/{snapshot_id}/` | Frozen training snapshots + manifest (file hashes) | trainer |
 | `s3://hawa-{env}-lake/verify/{intervention_id}/pre.parquet` | Pre-period series for treated cell and donor candidates frozen at spray end | intel-verify-scheduler |
 | `s3://hawa-{env}-models/` | MLflow artifact store | MLflow |
@@ -445,7 +445,7 @@ Other rules:
 | `/internal/v1/exposure` | 1 s | 2 s | 503 |
 | Trainer job (per model) | 45 min | 90 min | Kill, keep champion, audit event |
 
-Per-agent LLM timeouts are in [AGENTS.md §9](AGENTS.md#9-failure-handling-refusal-timeout-invalid-output).
+
 
 ### 7.2 Concurrency inside a process
 
@@ -590,15 +590,15 @@ These are needed by AI-ML and are not (fully) defined in [CONTRACTS.md](../CONTR
 | P-04 | Evidence narrative | New consumer group `intel-report` on `hawa.cmd.report.v1`; `cmd.evidence_report.build` data `{report_id, period_start, period_end, ward_ids}`; AI-ML writes `s3://hawa-{env}-reports/evidence/{report_id}/narrative.json` and publishes `evidence_report.narrative_ready {report_id, s3_key, model_version}` on new topic `hawa.evidence.report.v1` (key `report_id`, 30 d) consumed by backend `evidence-report` | CONTRACTS §8 says "AI-ML supplies narrative" but defines no channel |
 | P-05 | Internal API | `POST /internal/v1/alerts/draft` (caller: backend alert-engine, api). Request `{audience, kind, lang: ["en","hi"], channels[], facts: {pollutant, cause, p10, p50, p90, window_start, window_end, place_name, safe_windows[], advice_codes[]}}` → `AlertDraft`. p95 ≤ 4 s; on timeout/refusal returns the template-filled draft with `source: "template"` | Flow C (19:00 school alerts) needs Communicator text; alert-engine is backend |
 | P-06 | Outbox | AI-ML may **insert** into `outbox_event` within its own transactions; `outbox-relay` publishes them | Exactly-once-effect publication of AI-ML outputs (CONTRACTS §8 lists backend only) |
-| P-07 | Reading weight | Shared pure function `hawa_contracts.quality.reading_weight(trust, speed_kmh, flags) -> float` used by ingest to fill `reading.weight` ([MODELS §3.3](MODELS.md#33-method)); add the speed curve to CONTRACTS §10.3 | `reading.cleaned.weight` exists but its formula is undefined |
+| P-07 | Reading weight | Shared pure function `hawa_contracts.quality.reading_weight(trust, speed_kmh, flags) -> float` used by ingest to fill `reading.weight`; add the speed curve to CONTRACTS §10.3 | `reading.cleaned.weight` exists but its formula is undefined |
 | P-08 | Cause gating | Stricter hard rule on top of the CONTRACTS §3 matrix: `sprinkler`, `anti_smog_gun`, `sweeper` only if `P(dust) ≥ 0.5` and `P(burning) + P(regional_smoke) < 0.3` and cell `confidence ≥ 0.3`. `mixed` resolves to the argmax of the non-mixed class probabilities. Hotspots and cells store `cause_probs` JSONB | Prevents water on smoke when the label is uncertain |
-| P-09 | Columns on AI-ML tables | `cell_state`: `run_id`, `exposure_ph_pm10`, `cause_probs`. `hotspot`: `run_id`, `track_id`, `rank`, `ward_id`, `cell_ids`, `peak_cell_id`, `pm25_peak`, `pm10_peak`, `exposure_ph`, `exposure_ph_next3h`, `cause_label`, `cause_conf`, `cause_probs`, `suspect_geom`, `suspect_conf`, `suspect_ref_type`, `suspect_ref_id`, `trajectory` (LineString), `trajectory_spread_m`, `trigger`, `evidence` JSONB, `model_version`. `forecast`: `pollutant` (`pm25` BUILD, `pm10` STRETCH), `valid_at`. `grap_outlook`: `stage_p50`, `prob_ge` JSONB, `recommended_stage`, `early_action`, `drivers` JSONB, `lead_h`. `plan_task`: `target_cell_ids` (g500), `expected_effect` JSONB (`p10/p50/p90` ph), `review_flags` text[], `swapped_from_asset_type`, `alert_draft` JSONB. `plan_review`, `plan_simulation`, `effectiveness_library`, `coverage_gap`, `site_score`, `integrity_flag`: columns as defined in [AGENTS §13](AGENTS.md#13-summarising-transcripts-into-plan_review) and MODELS §11, §13–§16. `citizen_report`: `verification` JSONB, `verification_conf`, `matched_spike_event_id`, `match_distance_m`, `needs_human_review`, `verification_model_version`. `model_version`: `name, version, semver, git_sha, mlflow_run_id, stage, metrics, gates, promoted_at` | Backend DATA_MODEL.md owns full columns; these are what AI-ML writes |
+| P-09 | Columns on AI-ML tables | `cell_state`: `run_id`, `exposure_ph_pm10`, `cause_probs`. `hotspot`: `run_id`, `track_id`, `rank`, `ward_id`, `cell_ids`, `peak_cell_id`, `pm25_peak`, `pm10_peak`, `exposure_ph`, `exposure_ph_next3h`, `cause_label`, `cause_conf`, `cause_probs`, `suspect_geom`, `suspect_conf`, `suspect_ref_type`, `suspect_ref_id`, `trajectory` (LineString), `trajectory_spread_m`, `trigger`, `evidence` JSONB, `model_version`. `forecast`: `pollutant` (`pm25` BUILD, `pm10` STRETCH), `valid_at`. `grap_outlook`: `stage_p50`, `prob_ge` JSONB, `recommended_stage`, `early_action`, `drivers` JSONB, `lead_h`. `plan_task`: `target_cell_ids` (g500), `expected_effect` JSONB (`p10/p50/p90` ph), `review_flags` text[], `swapped_from_asset_type`, `alert_draft` JSONB. `citizen_report`: `verification` JSONB, `verification_conf`, `matched_spike_event_id`, `match_distance_m`, `needs_human_review`, `verification_model_version`. `model_version`: `name, version, semver, git_sha, mlflow_run_id, stage, metrics, gates, promoted_at` | The backend schema owns full columns; these are what AI-ML writes |
 | P-10 | What-If baseline | Backend-owned table (or seed) `asset_usual_route (asset_id, route_geom LineString, service_days, start_times[], cell_ids[], is_simulated)` | "Usual routes" baseline (F13) needs the fixed routes |
 | P-11 | Plan cells | Clarify: `plan_task.cell_id` is the **g1k** planning cell (CONTRACTS §2); precise targets go in `plan_task.target_cell_ids` (g500). `impact.cell_id` stays g500 | CONTRACTS §2 says plans use 1 km cells but sprays and impacts are 500 m |
 | P-12 | Plan row race | `POST /v1/plans/draft` returns `plan_id` before AI-ML inserts the `drafting` row; api treats a missing row for a known `cmd.plan.draft` as `queued` | Avoid 404 in the first second |
 | P-13 | Producer list | `hawa.cmd.plan.v1` producers: "intel-worker (intel-spike, intel-plan)" since `intel-plan` issues spike drafts on `twin.updated` | CONTRACTS lists intel-spike only |
 | P-14 | DB role | Backend infra creates role `hawa_ml` with write grants limited to AI-ML tables, `processed_event`, `outbox_event` | Enforce CONTRACTS §8 in the database |
-| P-15 | Simulator truth | Backend simulator writes ground truth to `s3://hawa-{env}-lake/sim/truth/` (schemas in [DATA_AND_TRAINING §6](DATA_AND_TRAINING.md#6-synthetic-data-contract-with-the-backend-simulator)); production code never reads it | Verifier and calibration validation on known truth |
+| P-15 | Simulator truth | Backend simulator writes ground truth to `s3://hawa-{env}-lake/sim/truth/`; production code never reads it | Verifier and calibration validation on known truth |
 | P-16 | Plan command | `cmd.plan.draft` data additive `focus_hotspot_ids?` (spike mode) | Spike drafts target one hotspot |
 | P-17 | Payloads | `hotspot.updated`, `grap.outlook_issued`, `school.safe_window_computed`, `report.verified`/`report.rejected`, `integrity.flagged` payloads as in §3.1 | CONTRACTS leaves them undefined |
 | P-18 | Metrics endpoint | `intel-service` exposes `GET /metrics` (infra only) | Prometheus scraping |

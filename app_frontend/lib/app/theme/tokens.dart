@@ -1,6 +1,6 @@
 import 'package:flutter/painting.dart';
 
-/// Colour, radius and spacing tokens mirrored by hand from docs/frontend/DESIGN_SYSTEM.md
+/// Colour, radius and spacing tokens mirrored by hand from the web console theme (frontend/tailwind.config.ts)
 /// (§2.1, §2.2, §6). If that file changes, update this one in the same PR.
 abstract final class HawaTokens {
   // Brand and semantic (DESIGN_SYSTEM §2.1).

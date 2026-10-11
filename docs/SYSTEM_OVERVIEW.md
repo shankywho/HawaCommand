@@ -2,7 +2,7 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../README.md) · [Docs hub](README.md) · **Overview** · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · **Overview** · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS guide](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · [Contracts](CONTRACTS.md)
 
 <!-- nav:end -->
 

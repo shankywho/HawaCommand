@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Architecture guard (docs/app/LINTING_AND_QUALITY.md §2.3): rules lints cannot express.
+# Architecture guard: rules lints cannot express.
 set -e
 cd "$(dirname "$0")/.."
 fail=0

@@ -6,9 +6,9 @@
 <img src="https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white" alt="Flutter"> <img src="https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white" alt="Dart"> <img src="https://img.shields.io/badge/Riverpod-3-00B4AB" alt="Riverpod"> <img src="https://img.shields.io/badge/offline-outbox%20%2B%20drift-6E7781?logo=sqlite&logoColor=white" alt="offline"> <img src="https://img.shields.io/badge/languages-English%20%C2%B7%20Hindi-0E7C66" alt="languages"> <img src="https://img.shields.io/badge/push-FCM-FFCA28?logo=firebase&logoColor=white" alt="push">
 </p>
 
-**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS setup](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
+**Navigate:** [Project](../README.md) · [Docs hub](../docs/README.md) · [Overview](../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../docs/AWS_ARCHITECTURE.md) · [AWS guide](../docs/AWS_SETUP_GUIDE.md) · [API](../docs/backend/API.md) · [Environment](../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../docs/CONTRACTS.md)
 
-**App docs:** **Runbook** · [Index](../docs/app/README.md) · [Context](../docs/app/CONTEXT.md) · [Architecture](../docs/app/ARCHITECTURE.md) · [Screens](../docs/app/SCREENS.md) · [Offline and sync](../docs/app/OFFLINE_AND_SYNC.md) · [Quality](../docs/app/LINTING_AND_QUALITY.md) · [Structure](../docs/app/STRUCTURE.md) · [Plan](../docs/app/PLAN.md)
+**App docs:** **Runbook** · [Index](../docs/app/README.md) · [Architecture](../docs/app/ARCHITECTURE.md) · [Deployment](../docs/app/DEPLOYMENT.md)
 
 <!-- nav:end -->
 
@@ -58,7 +58,7 @@ Implementation status and the full known-issues list: [docs/app/README.md](../do
 - Add `citizen_reports,citizen_subscription,push` to `REAL_FEATURES` (as in `env/staging.json.example`) to use them.
 - Auth, tasks, inspections and sites stay on the fake backend until the backend implements them (`openapi/openapi.json`, generated client in `packages/hawa_api`).
 - Outbox writes follow the same per-feature rule, so a real report and a fake sign-in work together.
-- Push needs the `FIREBASE_*` defines ([AWS setup guide §7-8](../docs/AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)).
+- Push needs the `FIREBASE_*` defines ([AWS guide §7-8](../docs/AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)).
 
 ## Clean-air routing (citizen map)
 
@@ -68,7 +68,7 @@ Basemap: MapTiler when `MAP_API_KEY` is set, else Esri World Street Map (keyless
 
 ## Layout
 
-`lib/app` (env, router, theme, l10n) · `lib/core` (network + fake backend, drift storage, outbox sync, realtime, notifications, location, media, maps, widgets) · `lib/features/<feature>/{domain,data,application,presentation}`. See `docs/app/STRUCTURE.md`.
+`lib/app` (env, router, theme, l10n) · `lib/core` (network + fake backend, drift storage, outbox sync, realtime, notifications, location, media, maps, widgets) · `lib/features/<feature>/{domain,data,application,presentation}`.
 
 **Prototype theme.** `lib/app/theme.dart` is the only file left from the first prototype. Four citizen screens (safe route, live operations, ward scorecard, missed machine) still import it, so it stays excluded from analysis until they move to `lib/app/theme/`.
 

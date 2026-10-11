@@ -2,7 +2,7 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · **Contracts**
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS guide](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · [Environment](ENVIRONMENT_VARIABLES.md) · **Contracts**
 
 <!-- nav:end -->
 
@@ -283,7 +283,7 @@ Every message on every `hawa.*` topic (except `hawa.logs.v1`, which is logifyx A
 
 Kafka headers: `content-type: application/json`, `hawa-type: <type>`, `hawa-version: <n>`, `traceparent: <W3C trace context>`.
 Message **key**: as listed per topic below (guarantees ordering per key).
-Delivery: **at-least-once**. Every consumer is idempotent on `event_id` (see [backend/EVENTS.md](backend/EVENTS.md)).
+Delivery: **at-least-once**. Every consumer is idempotent on `event_id`.
 The API never produces directly inside a request; it writes to the `outbox_event` table in the same DB transaction and `outbox-relay` publishes.
 
 ### 5.2 Topics
@@ -468,7 +468,7 @@ Asynchronous work (twin, attribution, forecast, plan drafting with agents, verif
 
 ## 8. Database table ownership
 
-One PostgreSQL 16 + PostGIS database, schema `hawa`. **Alembic in `backend/` owns every DDL change.** "Writer" = service allowed to `INSERT/UPDATE`. Everyone may read. Full columns: [backend/DATA_MODEL.md](backend/DATA_MODEL.md).
+One PostgreSQL 16 + PostGIS database, schema `hawa`. **Alembic in `backend/` owns every DDL change.** "Writer" = service allowed to `INSERT/UPDATE`. Everyone may read.
 
 | Table | Purpose | Writer |
 |---|---|---|
@@ -490,7 +490,7 @@ One PostgreSQL 16 + PostGIS database, schema `hawa`. **Alembic in `backend/` own
 | `asset`, `asset_shift` | Machines and teams, depot, capacity, shifts | backend |
 | `plan` | Plan header with `version` (optimistic concurrency, `ETag "v{n}"`). **API inserts** the row in `drafting` in the same transaction as the `cmd.plan.draft` outbox row; **AI-ML** upserts (`ON CONFLICT (id)`) and moves it `drafting` → `draft` / `failed`; **backend** owns every later transition (and emits `plan.failed` with `failure_reason: "timeout"` for drafts stuck > 10 min). A DB trigger stops `hawa_ml` changing plans outside `drafting`. | backend + AI-ML (state-partitioned) |
 | `plan_task` | Tasks: asset, planning cell `cell_id` (`g1k`), **`target_cell_ids`** (`g500[]`, where the machine actually works and where impact is measured), kind, ETA window, order, `reason_text` (+ `reason_text_hi`), `expected_effect` `{p10,p50,p90}` | AI-ML inserts/edits while plan is `drafting`; backend updates status after |
-| `dispatch_saga` (optional) | Saga state per plan. Default design derives saga state from `plan` / `plan_task` statuses and timestamps ([backend/EVENTS.md](backend/EVENTS.md)); add this table only if that proves insufficient | backend dispatch-worker |
+| `dispatch_saga` (optional) | Saga state per plan. Default design derives saga state from `plan` / `plan_task` statuses and timestamps; add this table only if that proves insufficient | backend dispatch-worker |
 | `asset_usual_route` | "Usual routes" baseline for What-If: `asset_id`, `route_geom`, `service_days`, `start_times`, `cell_ids`, `is_simulated` | backend seed |
 | `plan_review` | Agent transcript summary: planner rationale, auditor objections, resolutions, tool calls | AI-ML |
 | `plan_simulation` | What-If results (plan vs baseline) | AI-ML |
@@ -514,7 +514,7 @@ One PostgreSQL 16 + PostGIS database, schema `hawa`. **Alembic in `backend/` own
 
 ## 9. Redis key namespaces
 
-Prefix every key with `hawa:{env}:` (e.g. `hawa:local:`). TTLs are defaults; see [backend/CACHING.md](backend/CACHING.md).
+Prefix every key with `hawa:{env}:` (e.g. `hawa:local:`).
 
 | Pattern | Type | Owner | TTL | Purpose |
 |---|---|---|---|---|
@@ -554,17 +554,17 @@ The official AQI uses 24 h averages for PM. HawaCommand computes an **indicative
 | 301–400 | very_poor | 121–250 | 351–430 | `aqi.very_poor` |
 | 401–500 | severe | > 250 | > 430 | `aqi.severe` |
 
-Colour values are defined once in [frontend/DESIGN_SYSTEM.md](frontend/DESIGN_SYSTEM.md) and mirrored in the Flutter theme.
+
 
 ### 10.2 GRAP stages (Delhi-NCR)
 
 | Stage | Trigger (AQI) | Name |
 |---|---|---|
-| 0 | ≤ 200 | none |
-| 1 | 201–300 | Stage I — Poor |
-| 2 | 301–400 | Stage II — Very Poor |
-| 3 | 401–450 | Stage III — Severe |
-| 4 | > 450 | Stage IV — Severe+ |
+| 1 | ≤ 200 | none |
+| 2 | 201–300 | Stage I — Poor |
+| 3 | 301–400 | Stage II — Very Poor |
+| 4 | 401–450 | Stage III — Severe |
+| 5 | > 450 | Stage IV — Severe+ |
 
 The GRAP Copilot (F6) maps the P50 forecast (and the probability that P90 crosses a threshold) 24–48 h ahead to a stage, and produces a ward checklist of stage actions **before** formal invocation. The checklist text is config (`backend/src/hawa_backend/config/grap_actions.yaml`), not model output.
 
@@ -659,21 +659,21 @@ The four area doc sets proposed additions while being written. The ones below ar
 
 | Area | Additions | Detailed in |
 |---|---|---|
-| Plans | `PATCH /v1/plans/{id}` with `{base_version, ops[]}` + `If-Match` (ops `move \| reassign \| retime \| remove \| add \| resolve_objection \| lock`, returns `violations[]`); `GET /v1/plans/{id}/versions`; `POST /v1/plans/{id}/reoptimize`; `GET /v1/plans/{id}/simulation?version=`; approve `{version, note?}`, reject `{version, reason, redraft?}`; 409 codes `plan_version_conflict`, `plan_not_draft`, `unresolved_blocking_objections`; `version` on every `plan.*` event | [backend/API.md](backend/API.md), [frontend/PAGES.md](frontend/PAGES.md) |
-| Impact | `GET /v1/interventions/{id}/impact` returns `series[]{ts, treated, synthetic, synthetic_low, synthetic_high}`, `ci_level`, `spray`, `pre_period{rmse}`, `donors[]{cell_id, weight}`, `stage`, `evidence_level`, `injected_effect_pct` (simulated only); `intervention` gains `verify_after`, `verification_status`, `evidence_level`, `injected_effect_pct` | [aiml/MODELS.md](aiml/MODELS.md), [backend/DATA_MODEL.md](backend/DATA_MODEL.md) |
+| Plans | `PATCH /v1/plans/{id}` with `{base_version, ops[]}` + `If-Match` (ops `move \| reassign \| retime \| remove \| add \| resolve_objection \| lock`, returns `violations[]`); `GET /v1/plans/{id}/versions`; `POST /v1/plans/{id}/reoptimize`; `GET /v1/plans/{id}/simulation?version=`; approve `{version, note?}`, reject `{version, reason, redraft?}`; 409 codes `plan_version_conflict`, `plan_not_draft`, `unresolved_blocking_objections`; `version` on every `plan.*` event | [backend/API.md](backend/API.md) |
+| Impact | `GET /v1/interventions/{id}/impact` returns `series[]{ts, treated, synthetic, synthetic_low, synthetic_high}`, `ci_level`, `spray`, `pre_period{rmse}`, `donors[]{cell_id, weight}`, `stage`, `evidence_level`, `injected_effect_pct` (simulated only); `intervention` gains `verify_after`, `verification_status`, `evidence_level`, `injected_effect_pct` | [aiml/ARCHITECTURE.md](aiml/ARCHITECTURE.md) |
 | Map data | `GET /v1/fleet/trails`, `GET /v1/pois?bbox=&kind=`, `GET /v1/wards`, `GET /v1/coverage/summary` | [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) |
 | Officer admin | `GET /v1/schools?ward=`, `GET /v1/reports?status=&ward=`, `POST /v1/inspections`, `POST /v1/inspections/{id}/assign`, `GET/POST /v1/users`, `PATCH /v1/users/{id}`, `PUT /v1/users/{id}/ward-scopes`, `POST /v1/alerts/preview` | [backend/API.md](backend/API.md) |
-| Field app | shifts `POST /v1/shifts/{id}/start \| end \| locations`; `PATCH /v1/me {lang, notification_prefs}`; `POST /v1/alerts/{id}/ack`; `GET /v1/inspections/{id}` (evidence bundle); `POST /v1/inspections/{id}/on-site`; `GET/PUT /v1/me/alert-subscription`; `DELETE /v1/me/push-token`; OTP `channel: sms \| whatsapp`; `tasks/mine` returns `shift`, `route{route_id, version, geometry, bbox}`, `asset{tag_status, tag_last_seen_at}` and per-stop `sequence, window_start, window_end, place_name{en,hi}, instructions{en,hi}, completion_source` | [app/ARCHITECTURE.md](app/ARCHITECTURE.md), [app/SCREENS.md](app/SCREENS.md) |
+| Field app | shifts `POST /v1/shifts/{id}/start \| end \| locations`; `PATCH /v1/me {lang, notification_prefs}`; `POST /v1/alerts/{id}/ack`; `GET /v1/inspections/{id}` (evidence bundle); `POST /v1/inspections/{id}/on-site`; `GET/PUT /v1/me/alert-subscription`; `DELETE /v1/me/push-token`; OTP `channel: sms \| whatsapp`; `tasks/mine` returns `shift`, `route{route_id, version, geometry, bbox}`, `asset{tag_status, tag_last_seen_at}` and per-stop `sequence, window_start, window_end, place_name{en,hi}, instructions{en,hi}, completion_source` | [app/ARCHITECTURE.md](app/ARCHITECTURE.md) |
 | Public | `GET /open/v1/reports/{public_code}` (+ `citizen_report.public_code`); open air items add `dominant_pollutant, confidence, cause_label, cause_conf, aqi_category, is_simulated`; `include_simulated` param | [backend/API.md](backend/API.md) |
 | Auth | `GET /v1/auth/jwks.json`; login/refresh body `{access_token, refresh_token, expires_in, token_type, user}`; CORS allows `Authorization, Content-Type, Idempotency-Key, If-Match, X-Request-Id, X-Correlation-Id` and exposes `X-Request-Id, X-Correlation-Id, ETag, Retry-After, X-Twin-As-Of` | [backend/API.md](backend/API.md) |
 | WebSocket | server echoes `Sec-WebSocket-Protocol: bearer`; messages carry `event_id` + per-connection `seq`; `sys` channel (`subscribed, unsubscribed, ping, pong, resync, token_expiring, error`); client ops `pong`, `auth`; `fleet.positions` message `{id, kind, asset_type?, device_id?, position:[lon,lat], heading_deg, speed_kmh, status, spraying, ts, is_simulated}`; new channels `forecast`, `plans:{ward_id}`, `alerts`, `reports`, `integrity`; close codes 4400, 4401, 4403, 4408, 4429, 1013 | [backend/API.md](backend/API.md) |
-| Events | intel-worker produces `device.calibrated` / `device.trust_changed`; api produces WhatsApp delivery statuses on `hawa.alert.delivery.v1`; `task.updated` on `hawa.task.lifecycle.v1`; `task.verified` carries the impact summary; payloads for `hotspot.updated`, `grap.outlook_issued`, `school.safe_window_computed`, `report.verified/rejected`, `integrity.flagged` | [backend/EVENTS.md](backend/EVENTS.md), [aiml/ARCHITECTURE.md](aiml/ARCHITECTURE.md) |
-| Database | partition `cell_state` and `forecast` by day and `audit_log` by month; sequence `hawa.tile_version_seq`; per-service DB roles (`hawa_api`, `hawa_ingest`, `hawa_feeds`, `hawa_dispatch`, `hawa_notifier`, `hawa_outbox`, `hawa_scheduler`, `hawa_ml`, `hawa_analytics`, `hawa_migrator`); `hawa_ml` writes only AI-ML tables, their columns on `citizen_report`, `processed_event` and `outbox_event` | [backend/DATA_MODEL.md](backend/DATA_MODEL.md) |
-| Redis | `idem:{user_id}:{key}` (24 h), `lock:cache:{key_hash}`, `cache:open:{endpoint}:{tile_version}:{params_hash}`, `cache:grap:{ward_id}:{issued_at}`, `cache:forecast_grid:…`, `cache:impact_summary:…`, `cache:effectiveness:{query_hash}`, pointers `twin:run_id` / `forecast:issued_at`, pub/sub `ws:user:{user_id}`, `wa:conv:{sha256(wa_id)}` | [backend/CACHING.md](backend/CACHING.md) |
-| IDs | weather point `wx-{source}-{lat:.2f}-{lon:.2f}`, FIRMS tile `firms-{lat0.5}-{lon0.5}`, grid `delhi-{year}-v{n}` | [backend/DATA_MODEL.md](backend/DATA_MODEL.md) |
-| AI-ML | water-machine hard gate: `P(dust) ≥ 0.5`, `P(burning) + P(regional_smoke) < 0.3`, cell confidence ≥ 0.3; shared `hawa_contracts.quality.reading_weight(trust, speed_kmh, flags)`; simulator ground truth at `s3://hawa-{env}-lake/sim/truth/` (read only by evaluation code); `cmd.train.run` adds `twin_eval`, `verifier_eval` | [aiml/MODELS.md](aiml/MODELS.md), [aiml/DATA_AND_TRAINING.md](aiml/DATA_AND_TRAINING.md) |
+| Events | intel-worker produces `device.calibrated` / `device.trust_changed`; api produces WhatsApp delivery statuses on `hawa.alert.delivery.v1`; `task.updated` on `hawa.task.lifecycle.v1`; `task.verified` carries the impact summary; payloads for `hotspot.updated`, `grap.outlook_issued`, `school.safe_window_computed`, `report.verified/rejected`, `integrity.flagged` | [aiml/ARCHITECTURE.md](aiml/ARCHITECTURE.md) |
+| Database | partition `cell_state` and `forecast` by day and `audit_log` by month; sequence `hawa.tile_version_seq`; per-service DB roles (`hawa_api`, `hawa_ingest`, `hawa_feeds`, `hawa_dispatch`, `hawa_notifier`, `hawa_outbox`, `hawa_scheduler`, `hawa_ml`, `hawa_analytics`, `hawa_migrator`); `hawa_ml` writes only AI-ML tables, their columns on `citizen_report`, `processed_event` and `outbox_event` | — |
+| Redis | `idem:{user_id}:{key}` (24 h), `lock:cache:{key_hash}`, `cache:open:{endpoint}:{tile_version}:{params_hash}`, `cache:grap:{ward_id}:{issued_at}`, `cache:forecast_grid:…`, `cache:impact_summary:…`, `cache:effectiveness:{query_hash}`, pointers `twin:run_id` / `forecast:issued_at`, pub/sub `ws:user:{user_id}`, `wa:conv:{sha256(wa_id)}` | — |
+| IDs | weather point `wx-{source}-{lat:.2f}-{lon:.2f}`, FIRMS tile `firms-{lat0.5}-{lon0.5}`, grid `delhi-{year}-v{n}` | — |
+| AI-ML | water-machine hard gate: `P(dust) ≥ 0.5`, `P(burning) + P(regional_smoke) < 0.3`, cell confidence ≥ 0.3; shared `hawa_contracts.quality.reading_weight(trust, speed_kmh, flags)`; simulator ground truth at `s3://hawa-{env}-lake/sim/truth/` (read only by evaluation code); `cmd.train.run` adds `twin_eval`, `verifier_eval` | [aiml/ARCHITECTURE.md](aiml/ARCHITECTURE.md) |
 | Errors | canonical code catalogue in [backend/API.md §1.5](backend/API.md); problem `type` = `urn:hawa:problem:<code>`; app-branching codes `otp_invalid, otp_expired, otp_rate_limited, already_in_state, transition_already_past, task_already_done, task_cancelled, inspection_already_closed, upload_expired, media_too_large` | [backend/API.md](backend/API.md) |
-| Privacy | the API never returns other users' phone numbers to app roles, not even masked | [app/CONTEXT.md](app/CONTEXT.md) |
+| Privacy | the API never returns other users' phone numbers to app roles, not even masked | — |
 
 <!-- footer:start -->
 

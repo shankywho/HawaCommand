@@ -2,15 +2,15 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · **Environment** · [Contracts](CONTRACTS.md)
+**Navigate:** [Project](../README.md) · [Docs hub](README.md) · [Overview](SYSTEM_OVERVIEW.md) · [AWS architecture](AWS_ARCHITECTURE.md) · [AWS guide](AWS_SETUP_GUIDE.md) · [API](backend/API.md) · **Environment** · [Contracts](CONTRACTS.md)
 
-**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · [AWS setup guide](AWS_SETUP_GUIDE.md) · [AWS integration](AWS_INTEGRATION.md) · [Cloud checklist](CLOUD_ENGINEER_INTEGRATION_CHECKLIST.md) · **Environment variables**
+**Cloud docs:** [AWS architecture](AWS_ARCHITECTURE.md) · [AWS integration guide](AWS_SETUP_GUIDE.md) · **Environment variables**
 
 <!-- nav:end -->
 
 Every setting HawaCommand reads: where it lives, its default, and what it changes. Nothing is strictly required to start; every service runs with no variables set, using fixtures, synthetic data and template text. Variables unlock live data, LLM-written text, AWS and a non-default database.
 
-Related: [root README](../README.md#quick-start) · [backend/.env.example](../backend/.env.example) · [AI-ML/.env.example](../AI-ML/.env.example) · [frontend/.env.example](../frontend/.env.example) · [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md) (console steps for every AWS variable) · [AWS_INTEGRATION.md](AWS_INTEGRATION.md)
+Related: [root README](../README.md#quick-start) · [backend/.env.example](../backend/.env.example) · [AI-ML/.env.example](../AI-ML/.env.example) · [frontend/.env.example](../frontend/.env.example) · [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md) (console steps for every AWS variable)
 
 ---
 

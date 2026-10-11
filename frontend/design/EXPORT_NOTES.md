@@ -2,9 +2,7 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../../docs/README.md) · [Overview](../../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../../docs/AWS_ARCHITECTURE.md) · [AWS setup](../../docs/AWS_SETUP_GUIDE.md) · [API](../../docs/backend/API.md) · [Environment](../../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../../docs/CONTRACTS.md)
-
-**Web docs:** [Runbook](../README.md) · [Index](../../docs/frontend/README.md) · [Context](../../docs/frontend/CONTEXT.md) · [Architecture](../../docs/frontend/ARCHITECTURE.md) · [Pages](../../docs/frontend/PAGES.md) · [Design system](../../docs/frontend/DESIGN_SYSTEM.md) · [Quality](../../docs/frontend/LINTING_AND_QUALITY.md) · [Structure](../../docs/frontend/STRUCTURE.md) · [Plan](../../docs/frontend/PLAN.md) · **Design export**
+**Navigate:** [Project](../../README.md) · [Docs hub](../../docs/README.md) · [Overview](../../docs/SYSTEM_OVERVIEW.md) · [AWS architecture](../../docs/AWS_ARCHITECTURE.md) · [AWS guide](../../docs/AWS_SETUP_GUIDE.md) · [API](../../docs/backend/API.md) · [Environment](../../docs/ENVIRONMENT_VARIABLES.md) · [Contracts](../../docs/CONTRACTS.md)
 
 <!-- nav:end -->
 

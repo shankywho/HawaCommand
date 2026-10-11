@@ -2,15 +2,15 @@
 
 <!-- nav:start -->
 
-**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS setup](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
+**Navigate:** [Project](../../README.md) · [Docs hub](../README.md) · [Overview](../SYSTEM_OVERVIEW.md) · [AWS architecture](../AWS_ARCHITECTURE.md) · [AWS guide](../AWS_SETUP_GUIDE.md) · [API](API.md) · [Environment](../ENVIRONMENT_VARIABLES.md) · [Contracts](../CONTRACTS.md)
 
-**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · [Context](CONTEXT.md) · **Architecture** · [API](API.md) · [Data model](DATA_MODEL.md) · [Events](EVENTS.md) · [Caching](CACHING.md) · [Logging](LOGGING_AND_OBSERVABILITY.md) · [Deployment](DEPLOYMENT.md) · [Structure](STRUCTURE.md) · [Plan](PLAN.md)
+**Backend docs:** [Runbook](../../backend/README.md) · [Index](README.md) · **Architecture** · [API](API.md) · [Deployment](DEPLOYMENT.md)
 
 <!-- nav:end -->
 
 How the backend is built today: the one process that runs, how a request flows through the AI-ML fallback chain, the circuit breaker and live-data cache exactly as coded, the plan flow, the worker classes, and the optional AWS layer. The event-driven multi-process design the project is aiming for follows in §10, labelled **Planned**.
 
-Related: [README](README.md) · [CONTEXT](CONTEXT.md) · [STRUCTURE](STRUCTURE.md) · [API](API.md) · [EVENTS](EVENTS.md) · [CACHING](CACHING.md) · [DATA_MODEL](DATA_MODEL.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../aiml/ARCHITECTURE.md](../aiml/ARCHITECTURE.md)
+Related: [README](README.md) · [API](API.md) · [DEPLOYMENT](DEPLOYMENT.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../SYSTEM_OVERVIEW.md](../SYSTEM_OVERVIEW.md) · [../aiml/ARCHITECTURE.md](../aiml/ARCHITECTURE.md)
 
 > Status: one FastAPI process, stateless apart from in-memory plans and two in-process caches. No database, Redis, Kafka or MQTT connection is made at runtime.
 
@@ -310,7 +310,7 @@ There is no approval gate beyond the officer calling `approve`: no status check,
 | `publish_alert(message, **attrs)` | tests only | SNS `Publish` to `HAWA_AWS_ALERTS_TOPIC_ARN` | `None` |
 | `publish_sensor_reading(device_id, payload)` | tests only | Kinesis `PutRecord` to `HAWA_AWS_SENSOR_STREAM`, partition key = device id | `None` |
 
-boto3 clients use adaptive retries (3 attempts), 3 s connect and 10 s read timeouts, and run in `asyncio.to_thread`. Settings, the cache table schema and the infrastructure template are in [DEPLOYMENT.md](DEPLOYMENT.md) §5 and [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md).
+boto3 clients use adaptive retries (3 attempts), 3 s connect and 10 s read timeouts, and run in `asyncio.to_thread`. Settings, the cache table schema and the infrastructure template are in [DEPLOYMENT.md](DEPLOYMENT.md) §5 and [AWS integration guide](../AWS_SETUP_GUIDE.md).
 
 ## 8. Security as built
 
