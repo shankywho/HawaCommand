@@ -8,6 +8,9 @@ from hawa_ml.exposure.routing import safe_route_optimizer
 from hawa_ml.forecasting.safe_window import safe_window_calculator
 from hawa_ml.simulation.audit import iot_auditor, FLEET_TELEMETRY
 
+from ...services import fleet, geo
+from ...services._util import iso, utcnow
+
 router = APIRouter(prefix="/v1/citizen", tags=["Citizen Experience"])
 
 
@@ -27,6 +30,14 @@ class MissedMachineReport(BaseModel):
     cell_id: str
     ward: str
     reported_by: Optional[str] = "citizen_mobile_app"
+    # Where the machine should have worked; defaults to the centre of cell_id
+    lat: Optional[float] = Field(None, ge=-90, le=90)
+    lon: Optional[float] = Field(None, ge=-180, le=180)
+    window_minutes: int = Field(180, ge=15, le=24 * 60, description="How far back to look at telemetry")
+
+
+MIN_DWELL_MINUTES = 15.0
+PENALTY_INR = 25000
 
 
 # --- Endpoints ---
@@ -73,10 +84,18 @@ async def get_safe_breath_window(
 async def get_live_operations(
     ward: Optional[str] = Query(None, description="Optional ward filter"),
 ):
-    """Returns real-time municipal fleet tracking and causal-verified completed misting runs."""
-    active_fleet = list(FLEET_TELEMETRY.values())
+    """Real-time municipal fleet tracking and causal-verified completed misting runs.
+
+    Vehicles with live HawaTag telemetry (services/fleet.py) come first, flagged live=true; the
+    simulated demo vehicles follow unless a live vehicle has the same id."""
+    live = [fleet.to_live_ops(r) for r in await fleet.live_fleet()]
+    live_ids = {v["asset_id"] for v in live}
+    simulated = [
+        dict(v, live=False, simulated=True) for v in FLEET_TELEMETRY.values() if v["asset_id"] not in live_ids
+    ]
+    active_fleet = live + simulated
     if ward:
-        active_fleet = [v for v in active_fleet if ward.lower() in v["ward"].lower()]
+        active_fleet = [v for v in active_fleet if ward.lower() in str(v["ward"]).lower()]
 
     # Verified interventions backed by Causal Synthetic Control
     verified_interventions = [
@@ -115,7 +134,8 @@ async def get_live_operations(
     ]
 
     return {
-        "as_of": "2026-10-08T03:00:00Z",
+        "as_of": iso(utcnow()),
+        "live_fleet_count": len(live),
         "active_fleet_count": len(active_fleet),
         "active_fleet": active_fleet,
         "verified_interventions": verified_interventions,
@@ -124,14 +144,65 @@ async def get_live_operations(
 
 @router.post("/reports/missed-machine")
 async def report_missed_machine(report: MissedMachineReport):
-    """Audits citizen complaint flags against IoT telemetry hardware (No-Ghost-Worker Engine)."""
-    audit_result = iot_auditor.audit_missed_intervention(
-        asset_id=report.asset_id,
-        cell_id=report.cell_id,
-        ward=report.ward,
-        reported_by=report.reported_by or "citizen_mobile_app",
-    )
-    return audit_result
+    """Audits citizen complaint flags against IoT telemetry hardware (No-Ghost-Worker Engine).
+
+    With live telemetry for the asset (services/fleet.py, DynamoDB fleet table when configured), the
+    verdict comes from its real track: at least 15 min within 500 m of the site with the pump running.
+    Without any, the simulated auditor in hawa_ml answers and evidence_source is "simulated"."""
+    track = await fleet.track(report.asset_id, report.window_minutes)
+    if not track:
+        result = iot_auditor.audit_missed_intervention(
+            asset_id=report.asset_id,
+            cell_id=report.cell_id,
+            ward=report.ward,
+            reported_by=report.reported_by or "citizen_mobile_app",
+        )
+        return dict(result, evidence_source="simulated")
+
+    lat, lon = report.lat, report.lon
+    if lat is None or lon is None:
+        center = geo.cell_center(report.cell_id)
+        if center:
+            lat, lon = center
+    evidence = fleet.evaluate(track, lat, lon, report.window_minutes)
+    latest = evidence.pop("latest")
+    worked = evidence["sprayed"] and evidence["dwell_minutes"] >= MIN_DWELL_MINUTES
+    now = utcnow()
+    result = {
+        "report_id": f"AUD-{int(now.timestamp())}",
+        "timestamp": iso(now),
+        "asset_id": report.asset_id,
+        "ward": report.ward,
+        "cell_id": report.cell_id,
+        "reported_by": report.reported_by,
+        "evidence_source": "live_telemetry",
+        "evidence": evidence,
+        "telemetry": fleet.to_live_ops(dict(latest, status=fleet.status_of(latest))),
+    }
+    if worked:
+        result.update(
+            verdict="MACHINE_ACTIVE_VERIFIED",
+            sla_breach=False,
+            message=(
+                f"HawaTag telemetry shows {report.asset_id} spent {evidence['dwell_minutes']} min within "
+                f"{int(evidence['radius_m'])} m of the site with the pump running "
+                f"(peak {evidence['max_pump_flow_lpm']} L/min, about {evidence['litres_estimated']} L)."
+            ),
+        )
+    else:
+        where = "" if evidence["closest_m"] is None else f" It came no closer than {evidence['closest_m']:.0f} m."
+        result.update(
+            verdict="SLA_BREACH_CONFIRMED",
+            sla_breach=True,
+            penalty_fine_inr=PENALTY_INR,
+            message=(
+                f"HawaTag telemetry for {report.asset_id} over the last {report.window_minutes} min shows "
+                f"{evidence['dwell_minutes']} min on site (15 required) and "
+                f"{'pump activity' if evidence['sprayed'] else 'no pump activity'} near it.{where} "
+                f"Non-compliance penalty of ₹{PENALTY_INR:,} recommended."
+            ),
+        )
+    return result
 
 
 @router.get("/wards/leaderboard")

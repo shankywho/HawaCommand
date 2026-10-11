@@ -1,9 +1,15 @@
 """Intervention plans, reviews, approvals, and What-If comparisons."""
+import json
+import logging
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
-from ...aws import start_dispatch
+from ...aws import get_aws_settings, start_dispatch
+from ...core.redis_store import get_redis, mark_failed
+from ...services import alerts as alert_service
+
+logger = logging.getLogger("hawa_backend.plans")
 
 router = APIRouter(prefix="/v1/plans", tags=["Plans"])
 
@@ -23,8 +29,11 @@ class RequestChangesRequest(BaseModel):
 
 DEFAULT_PLAN_ID = "214"
 
-# In-memory store for interactive plan state mutations
+# Plans by id. With HAWA_REDIS_URL set, every change is also written to the Redis hash PLANS_KEY and read
+# back from it, so several backend processes (PM2 cluster, ECS tasks) share plan state; this dict is then a
+# per-process cache. Without Redis it is the only copy and a restart resets it.
 _ACTIVE_PLANS: Dict[str, Dict[str, Any]] = {}
+PLANS_KEY = "plans:active"
 
 
 def _get_or_create_default_plan(plan_id: str = "214") -> Dict[str, Any]:
@@ -109,18 +118,60 @@ def _get_or_create_default_plan(plan_id: str = "214") -> Dict[str, Any]:
     return _ACTIVE_PLANS[plan_id]
 
 
-def _require_plan(plan_id: str) -> Dict[str, Any]:
-    """The seeded demo plan or a plan drafted this session; anything else is a 404."""
-    if plan_id == DEFAULT_PLAN_ID or plan_id in _ACTIVE_PLANS:
-        return _get_or_create_default_plan(plan_id) if plan_id == DEFAULT_PLAN_ID else _ACTIVE_PLANS[plan_id]
+async def _save(plan: Dict[str, Any]) -> None:
+    _ACTIVE_PLANS[plan["id"]] = plan
+    r = await get_redis()
+    if r is not None:
+        try:
+            await r.hset(PLANS_KEY, plan["id"], json.dumps(plan, ensure_ascii=False))
+        except Exception as exc:
+            logger.warning("Redis plan write failed: %s", exc)
+            mark_failed()
+
+
+async def _load(plan_id: str) -> Optional[Dict[str, Any]]:
+    r = await get_redis()
+    if r is not None:
+        try:
+            raw = await r.hget(PLANS_KEY, plan_id)
+            if raw:
+                _ACTIVE_PLANS[plan_id] = json.loads(raw)
+        except Exception as exc:
+            logger.warning("Redis plan read failed: %s", exc)
+            mark_failed()
+    return _ACTIVE_PLANS.get(plan_id)
+
+
+async def _all_plans() -> List[Dict[str, Any]]:
+    r = await get_redis()
+    if r is not None:
+        try:
+            for raw in await r.hvals(PLANS_KEY):
+                plan = json.loads(raw)
+                _ACTIVE_PLANS[plan["id"]] = plan
+        except Exception as exc:
+            logger.warning("Redis plan list failed: %s", exc)
+            mark_failed()
+    return list(_ACTIVE_PLANS.values())
+
+
+async def _require_plan(plan_id: str) -> Dict[str, Any]:
+    """The seeded demo plan or a drafted plan; anything else is a 404."""
+    plan = await _load(plan_id)
+    if plan is not None:
+        return plan
+    if plan_id == DEFAULT_PLAN_ID:
+        plan = _get_or_create_default_plan(plan_id)
+        await _save(plan)
+        return plan
     raise HTTPException(status_code=404, detail=f"Plan '{plan_id}' not found")
 
 
 @router.get("")
 async def list_plans():
-    _get_or_create_default_plan(DEFAULT_PLAN_ID)
+    await _require_plan(DEFAULT_PLAN_ID)
     now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    plans = sorted(_ACTIVE_PLANS.values(), key=lambda p: p.get("draftedAt", ""), reverse=True)
+    plans = sorted(await _all_plans(), key=lambda p: p.get("draftedAt", ""), reverse=True)
     return {
         "asOf": now_iso,
         "simulated": True,
@@ -130,7 +181,7 @@ async def list_plans():
 
 @router.get("/{plan_id}")
 async def get_plan_detail(plan_id: str = Path(...)):
-    return _require_plan(plan_id)
+    return await _require_plan(plan_id)
 
 
 @router.post("/draft")
@@ -138,14 +189,13 @@ async def draft_plan(req: DraftPlanRequest):
     from ...core.intel_client import get_intel_client
     intel = get_intel_client()
     plan = await intel.draft_plan(ward=req.ward, window_start=req.windowStart)
-    plan_id = plan["id"]
-    _ACTIVE_PLANS[plan_id] = plan
+    await _save(plan)
     return plan
 
 
 @router.post("/{plan_id}/approve")
 async def approve_plan(plan_id: str = Path(...), req: Optional[ApprovePlanRequest] = None):
-    plan = _require_plan(plan_id)
+    plan = await _require_plan(plan_id)
     plan["status"] = "approved"
     plan["approvedAt"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     if req and req.note:
@@ -155,23 +205,30 @@ async def approve_plan(plan_id: str = Path(...), req: Optional[ApprovePlanReques
         plan["executionArn"] = arn
     else:
         plan.pop("executionArn", None)
+    if get_aws_settings().alert_on_plan_approval:
+        sent = await alert_service.alert_on_plan_approval(plan)
+        if sent and sent.get("snsMessageId"):
+            plan["alertMessageId"] = sent["snsMessageId"]
+    await _save(plan)
     return plan
 
 
 @router.post("/{plan_id}/request-changes")
 async def request_changes(plan_id: str = Path(...), req: RequestChangesRequest = ...):
-    plan = _require_plan(plan_id)
+    plan = await _require_plan(plan_id)
     plan["status"] = "changes_requested"
     plan["changesNote"] = req.note
+    await _save(plan)
     return plan
 
 
 @router.post("/{plan_id}/suggestions/{comment_id}/apply")
 async def apply_suggestion(plan_id: str = Path(...), comment_id: str = Path(...)):
-    plan = _require_plan(plan_id)
+    plan = await _require_plan(plan_id)
     for c in plan.get("comments", []):
         if c["id"] == comment_id:
             c["status"] = "applied"
+    await _save(plan)
     return plan
 
 

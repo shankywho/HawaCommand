@@ -7,7 +7,7 @@ and a size range, so the bucket stays private and the backend never handles the 
 import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from .clients import get_s3_client
 from .settings import get_aws_settings
@@ -45,6 +45,32 @@ def _presign(bucket: str, key: str, content_type: str, sha256: str, max_bytes: i
     return get_s3_client().generate_presigned_post(
         Bucket=bucket, Key=key, Fields=fields, Conditions=conditions, ExpiresIn=ttl
     )
+
+
+def presign_get(key: Optional[str]) -> Optional[str]:
+    """Time-limited GET URL for an evidence photo (needs s3:GetObject), or None when uploads are off."""
+    s = get_aws_settings()
+    if not (key and s.enabled and s.evidence_bucket):
+        return None
+    return get_s3_client().generate_presigned_url(
+        "get_object", Params={"Bucket": s.evidence_bucket, "Key": key}, ExpiresIn=s.evidence_read_ttl_seconds
+    )
+
+
+def object_exists(key: str) -> Optional[bool]:
+    """True/False when the bucket is configured (HeadObject needs s3:GetObject), None when it is not
+    or the check itself failed (e.g. permission missing), so callers do not reject on an unknown."""
+    s = get_aws_settings()
+    if not (s.enabled and s.evidence_bucket):
+        return None
+    try:
+        get_s3_client().head_object(Bucket=s.evidence_bucket, Key=key)
+        return True
+    except Exception as exc:
+        code = str(getattr(exc, "response", {}).get("Error", {}).get("Code", ""))
+        if code in ("404", "NoSuchKey", "NotFound"):
+            return False
+        return None
 
 
 async def presign_upload(purpose: str, content_type: str, content_length: int, sha256: str) -> Dict[str, Any]:

@@ -1,8 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:hawa_app/firebase/firebase_options_env.dart';
 
-/// Output of `flutterfire configure` for `hawacommand-dev` (ARCHITECTURE §16).
-///
-/// No Firebase project exists for this build yet, so this returns null and the app runs without
-/// FCM and Crashlytics (fake push via the fake backend still works). Replace with the generated
-/// options once the project is created.
-FirebaseOptions? devFirebaseOptions() => null;
+/// Firebase for the dev flavor (ARCHITECTURE §16): the `FIREBASE_*` build defines, or null (no FCM,
+/// no Crashlytics; fake push via the fake backend still works). See firebase_options_env.dart.
+FirebaseOptions? devFirebaseOptions() => firebaseOptionsFromEnv();

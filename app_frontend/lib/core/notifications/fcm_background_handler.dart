@@ -9,6 +9,7 @@ import 'package:hawa_app/core/notifications/local_notifications.dart';
 import 'package:hawa_app/core/notifications/push_payload.dart';
 import 'package:hawa_app/core/storage/app_database.dart';
 import 'package:hawa_app/core/sync/background_sync.dart';
+import 'package:hawa_app/firebase/firebase_options_env.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Top-level background handler (ARCHITECTURE §10.2): no Riverpod container in this isolate.
@@ -16,7 +17,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// notification and schedules a one-off sync.
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  if (Firebase.apps.isEmpty) return;
+  // This isolate has no Firebase app yet: initialize it with the same build-define options as
+  // bootstrap() (every flavor uses firebaseOptionsFromEnv()).
+  if (Firebase.apps.isEmpty) {
+    final options = firebaseOptionsFromEnv();
+    if (options == null) return;
+    await Firebase.initializeApp(options: options);
+  }
   final payload = PushPayload.fromData({...message.data});
   final db = AppDatabase.open();
   try {

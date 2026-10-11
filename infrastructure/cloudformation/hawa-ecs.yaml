@@ -1,0 +1,275 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  HawaCommand backend on ECS Fargate behind an Application Load Balancer, with CPU auto scaling.
+  Needs the image in ECR (backend/Dockerfile) and the hawa-integration stack's policy (BackendPolicyArn).
+  Several tasks share state only when Redis (HAWA_REDIS_URL) and the DynamoDB tables are configured; without
+  Redis keep DesiredCount = MaxCount = 1, because plans and live positions would live in one task's memory.
+
+Parameters:
+  ImageUri:
+    Type: String
+    Description: e.g. 123456789012.dkr.ecr.ap-south-1.amazonaws.com/hawa-command-backend:v1.0.0
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PublicSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: At least two public subnets in different AZs (for the load balancer and the tasks)
+  BackendPolicyArn:
+    Type: String
+    Description: Output BackendPolicyArn of the hawa-integration stack
+  BackendSecretArn:
+    Type: String
+    Default: ''
+    Description: Optional Secrets Manager secret (JSON) the task may read; its name also goes in HAWA_AWS_SECRETS_ID
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: ACM certificate for HTTPS (e.g. api.example.in); empty = HTTP only on port 80
+  Cpu:
+    Type: String
+    Default: '1024'
+  Memory:
+    Type: String
+    Default: '2048'
+  DesiredCount:
+    Type: Number
+    Default: 1
+  MaxCount:
+    Type: Number
+    Default: 1
+    Description: Raise to 6 once Redis and the DynamoDB tables are configured
+  RedisUrl:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: Output RedisUrl of hawa-redis.yaml; empty = process memory (keep MaxCount at 1)
+
+Conditions:
+  Https: !Not [!Equals [!Ref CertificateArn, '']]
+  HasSecret: !Not [!Equals [!Ref BackendSecretArn, '']]
+
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: hawa-cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/hawa-command-backend
+      RetentionInDays: 14
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: ecs-tasks.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: ecs-tasks.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref BackendPolicyArn
+      Policies:
+        - !If
+          - HasSecret
+          - PolicyName: read-backend-secret
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action: secretsmanager:GetSecretValue
+                  Resource: !Ref BackendSecretArn
+          - !Ref AWS::NoValue
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: HawaCommand ALB
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - {IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0}
+        - {IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0}
+
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: HawaCommand backend tasks, 8000 from the ALB only
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: hawa-backend-alb
+      Scheme: internet-facing
+      Subnets: !Ref PublicSubnetIds
+      SecurityGroups: [!Ref LoadBalancerSecurityGroup]
+      LoadBalancerAttributes:
+        # WebSocket clients (/v1/ws/fleet) get a heartbeat every 25 s
+        - Key: idle_timeout.timeout_seconds
+          Value: '120'
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: hawa-backend-tg
+      VpcId: !Ref VpcId
+      Protocol: HTTP
+      Port: 8000
+      TargetType: ip
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher: {HttpCode: '200'}
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '30'
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions: !If
+        - Https
+        - - Type: redirect
+            RedirectConfig: {Protocol: HTTPS, Port: '443', StatusCode: HTTP_301}
+        - - Type: forward
+            TargetGroupArn: !Ref TargetGroup
+
+  HttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: Https
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: hawa-command-backend
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: !Ref Cpu
+      Memory: !Ref Memory
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      RuntimePlatform: {CpuArchitecture: X86_64, OperatingSystemFamily: LINUX}
+      ContainerDefinitions:
+        - Name: backend
+          Image: !Ref ImageUri
+          Essential: true
+          PortMappings:
+            - {ContainerPort: 8000, Protocol: tcp}
+          # Non-secret settings. Put secrets (JWT secret, API keys, WAQI/OpenAQ tokens, Redis auth) in the
+          # Secrets Manager secret named by HAWA_AWS_SECRETS_ID instead.
+          Environment:
+            - {Name: HAWA_ENV, Value: production}
+            - {Name: HAWA_AWS_ENABLED, Value: 'true'}
+            - {Name: HAWA_AWS_REGION, Value: !Ref AWS::Region}
+            - {Name: HAWA_REDIS_URL, Value: !Ref RedisUrl}
+            - {Name: HAWA_AWS_EVIDENCE_BUCKET, Value: hawa-citizen-evidence-prod}
+            - {Name: HAWA_AWS_GRIEVANCES_TABLE, Value: hawa-citizen-grievances}
+            - {Name: HAWA_AWS_FLEET_TABLE, Value: hawa-fleet-telemetry}
+            - {Name: HAWA_AWS_SENSOR_STREAM, Value: hawa-sensor-data}
+            - {Name: HAWA_AWS_ALERTS_TOPIC_ARN, Value: !Sub 'arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:hawa-citizen-push-alerts'}
+            - {Name: HAWA_AWS_SECRETS_ID, Value: hawa/backend}
+            - {Name: HAWA_AWS_FCM_SECRET_ID, Value: hawa/firebase/service-account}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: backend
+          HealthCheck:
+            Command: [CMD-SHELL, 'curl -fsS http://127.0.0.1:8000/healthz || exit 1']
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 120
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: [HttpListener]
+    Properties:
+      ServiceName: hawa-command-backend
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref TaskDefinition
+      HealthCheckGracePeriodSeconds: 180
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref PublicSubnetIds
+          SecurityGroups: [!Ref TaskSecurityGroup]
+      LoadBalancers:
+        - ContainerName: backend
+          ContainerPort: 8000
+          TargetGroupArn: !Ref TargetGroup
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+        DeploymentCircuitBreaker: {Enable: true, Rollback: true}
+
+  ScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      ServiceNamespace: ecs
+      ScalableDimension: ecs:service:DesiredCount
+      ResourceId: !Sub service/${Cluster}/${Service.Name}
+      MinCapacity: !Ref DesiredCount
+      MaxCapacity: !Ref MaxCount
+
+  CpuScaling:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: hawa-backend-cpu70
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        ScaleInCooldown: 120
+        ScaleOutCooldown: 60
+
+Outputs:
+  LoadBalancerDns:
+    Description: Point api.<your-domain> here (Route 53 alias record), or use it directly over HTTP
+    Value: !GetAtt LoadBalancer.DNSName
+  LoadBalancerHostedZoneId:
+    Value: !GetAtt LoadBalancer.CanonicalHostedZoneID
+  TaskSecurityGroupId:
+    Description: Use as BackendSecurityGroupId in hawa-redis.yaml
+    Value: !Ref TaskSecurityGroup

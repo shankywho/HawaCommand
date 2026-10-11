@@ -1,0 +1,18 @@
+{
+  "FLAVOR": "staging",
+  "API_BASE_URL": "http://YOUR-EC2-PUBLIC-IP:8000",
+  "WS_URL": "ws://YOUR-EC2-PUBLIC-IP:8000/v1/ws",
+  "USE_FAKE_API": true,
+  "REAL_FEATURES": "air_map,citizen_air,alerts,school_forecast,citizen_reports,citizen_subscription,push",
+  "FAKE_FEATURES": "",
+  "MAP_API_KEY": "",
+  "FIREBASE_API_KEY": "",
+  "FIREBASE_APP_ID": "",
+  "FIREBASE_MESSAGING_SENDER_ID": "",
+  "FIREBASE_PROJECT_ID": "",
+  "FIREBASE_STORAGE_BUCKET": "",
+  "FCM_TOPIC": "hawa-alerts",
+  "CRASH_REPORTING": false,
+  "LOG_LEVEL": "info",
+  "SHOW_DEV_TOOLS": true
+}

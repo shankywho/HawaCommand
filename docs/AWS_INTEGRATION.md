@@ -1,13 +1,14 @@
 # AWS integration: handoff runbook
 
-> **Status (2026-10-10).** The backend's AWS layer (`backend/src/hawa_backend/aws/`: `settings.py`, `clients.py`, `cache.py`, `forecast.py`, `dispatch.py`, `events.py`) is implemented and tested with `moto` (`backend/tests/aws/test_aws_integration.py`). It is off unless `HAWA_AWS_ENABLED=true`. `infrastructure/cloudformation/hawa-integration.yaml` creates:
-> - the DynamoDB cache table (parameter `CacheTableName`)
-> - the SNS alerts topic
-> - the Kinesis sensor stream
-> - a backend IAM managed policy
+> **Status (2026-10-11).** The backend AWS layer covers S3 evidence uploads and read-back, DynamoDB citizen grievances and fleet telemetry, Kinesis (producer and consumer), SNS broadcasts and subscriptions, Secrets Manager (settings and the Firebase key), the forecast cache, and Step Functions/SageMaker forecast and dispatch. Alongside it are Redis/ElastiCache for the live fleet and twin snapshot, and FCM push. Everything is tested with `moto`/`fakeredis` (`backend/tests/aws/`, `backend/tests/services/`) and is off unless `HAWA_AWS_ENABLED=true` and the service's own variable is set.
 >
-> Its outputs are `AlertsTopicArn`, `SensorStreamName` and `BackendPolicyArn`. The Step Functions state machines and the SageMaker endpoint are not in the template and must be created separately. Nothing has been deployed to a real account.
-
+> **For console setup, follow [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md).** This file is the older engineering runbook. Its sections 2, 4 (tasks 5, 7, 9, 10) and 10 are updated; the SageMaker, Step Functions, Bedrock and Amplify tasks are unchanged.
+>
+> Infrastructure as code:
+> - `infrastructure/cloudformation/hawa-integration.yaml`: tables, stream, IoT rule, SNS topic, backend policy
+> - `hawa-redis.yaml`: ElastiCache
+> - `hawa-ecs.yaml`: Fargate, ALB, autoscaling, optional HTTPS
+> - `backend/Dockerfile`, `.github/workflows/backend-image.yml`: image build and push to ECR
 
 **Audience:** the engineer (and their AI coding agent) who is wiring HawaCommand to AWS.
 **Read this first, then work top to bottom.** Everything below is verified against the code in this repo unless marked `UNTESTED` (nothing in this repo has ever run against a real AWS account; tests use `moto` mocks).
@@ -50,7 +51,13 @@ Package `backend/src/hawa_backend/aws/`, all gated by `HAWA_AWS_ENABLED`:
 | `cache.py` | `cache_get`, `cache_set` | DynamoDB | `forecast.py` |
 | `forecast.py` | `get_aws_forecast(cell_id)` | Step Functions Express **or** SageMaker endpoint | route `GET /v1/forecast/{cell_id}` only |
 | `dispatch.py` | `start_dispatch(plan)` | Step Functions (`StartExecution`) | route `POST /v1/plans/{id}/approve` |
-| `events.py` | `publish_alert`, `publish_sensor_reading` | SNS, Kinesis | **no route calls these yet** |
+| `events.py` | `publish_alert`, `subscribe_alerts`, `publish_sensor_reading` | SNS, Kinesis | `POST /v1/alerts/broadcast`, `POST /v1/alerts/subscribers`, plan approval; `POST /v1/telemetry/vehicles` |
+| `uploads.py` | `presign_upload`, `presign_get`, `object_exists` | S3 | `POST /v1/uploads/presign`; report photo URLs and verification |
+| `secrets.py` | `get_secret_json` | Secrets Manager | startup (`HAWA_AWS_SECRETS_ID`), FCM key (`HAWA_AWS_FCM_SECRET_ID`) |
+| `kinesis_consumer.py` | `run` | Kinesis | in the API (`HAWA_AWS_KINESIS_CONSUMER=true`) or `hawa consume-telemetry` |
+| `../services/reports.py` | report store and lifecycle | DynamoDB `hawa-citizen-grievances` | `/v1/reports*` |
+| `../services/fleet.py` | telemetry store, geo, tracks, audit | DynamoDB `hawa-fleet-telemetry`, Redis | `/v1/telemetry/vehicles`, `/v1/fleet/*`, `/v1/ws/fleet`, `/v1/devices`, citizen live-ops and missed-machine |
+| `../services/push.py` | FCM HTTP v1 sender, token registry | Firebase, Redis | broadcasts, report status updates, `PUT /v1/me/push-token` |
 
 Other pieces:
 - `infrastructure/cloudformation/hawa-integration.yaml`: DynamoDB table, SNS topic, Kinesis stream, one IAM managed policy for the backend.
@@ -59,7 +66,7 @@ Other pieces:
 - `frontend/amplify.yml`: Amplify Hosting build spec (`appRoot: frontend`).
 
 ### Known limitation to design around
-Plans are stored **in memory** in the backend (`_ACTIVE_PLANS` in `api/routes/plans.py`). Run the backend as **a single instance** (no autoscaling above 1, no scale-to-zero between demo steps), or plans vanish between requests.
+Without Redis, plans, live positions, push tokens and sent alerts are stored **in memory** in each backend process. Run **a single instance** in that case. With `HAWA_REDIS_URL` set (ElastiCache) and the DynamoDB tables configured, the backend keeps no state of its own, and several processes or ECS tasks can share the load.
 
 ## 3. Configuration reference
 
@@ -155,7 +162,8 @@ Each task: **Goal / Spec / Verify.** Tick them off and update section 11 when do
 - **Verify:** with the env set, `python -c "from hawa_ml.agents.llm_provider import llm_client; print(type(llm_client).__name__, llm_client.generate('Say OK'))"` prints `BedrockLLMClient OK`.
 
 ### Task 5: host the backend
-- **Needs:** a container (there is **no Dockerfile in the repo**). The image must install **both** Python packages:
+- **Done:** `backend/Dockerfile` (build from the repo root: `docker build -f backend/Dockerfile .`), `.github/workflows/backend-image.yml` (build and push without local Docker), `infrastructure/cloudformation/hawa-ecs.yaml` (Fargate + ALB + CPU autoscaling + optional ACM HTTPS). Console steps: [AWS_SETUP_GUIDE.md §10](AWS_SETUP_GUIDE.md#10-optional-container-image-in-ecr-ecs-fargate-and-alb). The notes below are the original requirements.
+- **Needs:** a container. The image must install **both** Python packages:
   `pip install -e backend/contracts -e "backend[aws]" -e AI-ML -r AI-ML/requirements.txt`, and on a slim base add `libgomp1` (LightGBM). Build context = repo root.
 - **Run command:** `uvicorn hawa_backend.api.app:app --host 0.0.0.0 --port 8000` (if the packages are not installed editable, set `PYTHONPATH=backend/src:backend/contracts`). Health check path: `/healthz`.
 - **Data in the image:** `AI-ML/data/processed/` is gitignored; the 500 m grid is regenerated at runtime if missing (`twin/grid.py: load_grid`), so the first hotspot request is slower. Models are in the image because they are tracked.
@@ -167,7 +175,8 @@ Each task: **Goal / Spec / Verify.** Tick them off and update section 11 when do
 - **Spec:** Amplify Hosting, connect the repo, branch `dev`, build spec `frontend/amplify.yml` (already set, `appRoot: frontend`, pnpm). Environment variable `NEXT_PUBLIC_API_URL=https://<backend-url>` (**must be set at build time**; it is inlined into the bundle). Add `NEXT_PUBLIC_COGNITO_*` only if task 8 is done.
 - **Verify:** open the Amplify URL; `/map` shows hotspots and the header chip shows a real PM2.5 value; with the backend stopped the pages show an error, not fake data.
 
-### Task 7: wire SNS alerts into a route (recommended)
+### Task 7: wire SNS alerts into a route (done)
+- **Done:** `POST /v1/alerts/broadcast` (SNS + FCM), `POST /v1/alerts/subscribers`, and one SNS notice per plan approval (`HAWA_AWS_ALERT_ON_PLAN_APPROVAL`). The original notes follow.
 - `publish_alert(message: dict, **attributes)` exists but nothing calls it. The simplest high-value wiring is in `backend/src/hawa_backend/api/routes/plans.py` `approve_plan`, right after `start_dispatch`: publish a short alert (plan id, ward, window, number of tasks) so subscribers get an SMS/email on approval. The dispatch state machine may already publish; pick **one** place so alerts are not sent twice.
 - Subscribe an email or SMS number to the topic to demo it: `aws sns subscribe --topic-arn <arn> --protocol email --notification-endpoint <addr>`, then confirm. SMS in India needs sender registration; email is the safe demo choice.
 - **Verify:** approve a plan; the subscriber receives the message.
@@ -176,11 +185,13 @@ Each task: **Goal / Spec / Verify.** Tick them off and update section 11 when do
 - Create a user pool (admin-created users only) and an app client **without a secret**, SRP auth. Set `NEXT_PUBLIC_COGNITO_USER_POOL_ID` and `NEXT_PUBLIC_COGNITO_CLIENT_ID`. The console then shows a sign-in page.
 - **Important limitation:** the frontend signs in and sends the Cognito ID token as a bearer token, but **the backend does not verify it**: no route has an auth dependency. Say so honestly in the demo. Enforcing it = a JWT dependency on the routers, or an API Gateway authorizer in front of the backend.
 
-### Task 9: IoT Core -> Kinesis ingest (optional)
+### Task 9: IoT Core -> Kinesis ingest (done)
+- **Done:** topic `hawa/vehicles/+/telemetry` (rule in `hawa-integration.yaml` and [AWS_SETUP_GUIDE.md §4](AWS_SETUP_GUIDE.md#4-kinesis-stream-and-iot-core-rule)), consumer `aws/kinesis_consumer.py` into the fleet store, simulator `hawa simulate-fleet --target iot|kinesis|api`. The original notes below describe a different topic and say there is no consumer; both are superseded.
 - IoT Rule `SELECT * FROM 'hawa/telemetry/#'` with a Kinesis action to the sensor stream (partition key `${topic(3)}`), plus an IAM role for IoT to `kinesis:PutRecord`. Test with `aws iot-data publish --topic hawa/telemetry/pod-1 --payload ...`.
 - **Gap:** there is no consumer. Nothing reads the stream into the backend. Either add a small Lambda that forwards records to the backend/AI-ML ingest (`AI-ML` has `POST /ingest/telemetry`), or state that ingest stops at Kinesis.
 
-### Task 10: CloudWatch and secrets (recommended)
+### Task 10: CloudWatch and secrets (secrets done)
+- **Done:** `HAWA_AWS_SECRETS_ID` loads any backend variable from a Secrets Manager JSON secret at startup; `HAWA_AWS_FCM_SECRET_ID` holds the Firebase key. CloudWatch alarms are still to do.
 - App Runner/ECS ship logs to CloudWatch Logs automatically. Add an alarm on the backend 5xx count and on Step Functions `ExecutionsFailed`.
 - Put `HAWA_JWT_SECRET`, `GROQ_API_KEY` (if still used) in Secrets Manager and inject them as service secrets.
 
@@ -252,7 +263,7 @@ The moto tests **stub** SageMaker and Step Functions *sync* execution (moto cann
 
 ## 10. Things that are NOT implemented (do not claim them)
 
-Cognito token verification on the backend; IoT Core and any consumer of the Kinesis stream; Timestream; S3 open-data export; EventBridge schedule; Lambda functions; Dockerfile; SageMaker packaging script; the forecast and dispatch state-machine definitions; any CloudWatch dashboards.
+Cognito token verification on the backend; Timestream; S3 open-data export; EventBridge schedule; Lambda functions; SageMaker packaging script; the forecast and dispatch state-machine definitions; any CloudWatch dashboards.
 
 ## 11. After you deploy: update these honesty statements
 

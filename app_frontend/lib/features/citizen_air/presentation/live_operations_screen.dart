@@ -1,9 +1,22 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hawa_app/app/env.dart';
 import 'package:hawa_app/app/theme.dart';
+import 'package:hawa_app/core/network/command_center_api.dart';
 import 'package:hawa_app/core/widgets/simulated_screen_chip.dart';
+import 'package:logging/logging.dart';
+import 'package:web_socket_channel/io.dart';
 
-/// Govt in Action Radar Screen (`/citizen/live-ops`)
+/// Govt in Action Radar Screen (`/citizen/live-ops`).
+///
+/// Loads `GET /v1/citizen/live-operations` (live HawaTag vehicles first, then the simulated demo
+/// fleet), refreshes it every 15 s, and applies each ping from the `/v1/ws/fleet` WebSocket as it
+/// arrives. Without a reachable backend (or with `citizen_air` on the fake backend) it shows the
+/// built-in demo list below.
 class LiveOperationsScreen extends ConsumerStatefulWidget {
   const LiveOperationsScreen({super.key});
 
@@ -12,9 +25,19 @@ class LiveOperationsScreen extends ConsumerStatefulWidget {
 }
 
 class _LiveOperationsScreenState extends ConsumerState<LiveOperationsScreen> {
+  static final _log = Logger('live-ops');
+
   int _activeTab = 0; // 0 = Active Fleet, 1 = Verified Impact
 
-  final _activeFleet = [
+  List<Map<String, Object>> _activeFleet = List.of(_demoFleet);
+  List<Map<String, Object>> _verifiedImpacts = List.of(_demoImpacts);
+  bool _live = false;
+  Timer? _poll;
+  Timer? _reconnect;
+  IOWebSocketChannel? _socket;
+  StreamSubscription<Object?>? _socketSub;
+
+  static const _demoFleet = <Map<String, Object>>[
     {
       'id': 'SPR-04',
       'name': 'MCD Heavy Sprinkler #04',
@@ -53,7 +76,7 @@ class _LiveOperationsScreenState extends ConsumerState<LiveOperationsScreen> {
     },
   ];
 
-  final _verifiedImpacts = [
+  static const _demoImpacts = <Map<String, Object>>[
     {
       'id': 'INT-202610060601',
       'sector': 'Anand Vihar / Preet Vihar Cluster',
@@ -81,6 +104,184 @@ class _LiveOperationsScreenState extends ConsumerState<LiveOperationsScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (Env.isFake('citizen_air')) return;
+    unawaited(_refresh());
+    _poll = Timer.periodic(const Duration(seconds: 15), (_) => unawaited(_refresh()));
+    unawaited(_connect());
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    _reconnect?.cancel();
+    unawaited(_socketSub?.cancel());
+    unawaited(_socket?.sink.close());
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    try {
+      final data = await ref.read(commandCenterApiProvider).liveOperations();
+      final fleet = [
+        for (final v in (data['active_fleet'] as List<Object?>? ?? const []))
+          if (v is Map<String, Object?>) _fromLiveOps(v),
+      ];
+      final impacts = [
+        for (final v in (data['verified_interventions'] as List<Object?>? ?? const []))
+          if (v is Map<String, Object?>) _fromImpact(v),
+      ];
+      if (!mounted) return;
+      setState(() {
+        if (fleet.isNotEmpty) _activeFleet = fleet;
+        if (impacts.isNotEmpty) _verifiedImpacts = impacts;
+        _live = ((data['live_fleet_count'] as num?) ?? 0) > 0;
+      });
+    } on Object catch (e) {
+      _log.fine('live operations refresh failed', e);
+    }
+  }
+
+  Future<void> _connect() async {
+    try {
+      final socket = await WebSocket.connect(
+        '${Env.wsUrl}/fleet',
+      ).timeout(const Duration(seconds: 10));
+      if (!mounted) {
+        unawaited(socket.close());
+        return;
+      }
+      final channel = IOWebSocketChannel(socket);
+      _socket = channel;
+      _socketSub = channel.stream.listen(
+        _onSocketMessage,
+        onError: (Object e) => _log.fine('fleet socket error', e),
+        onDone: _scheduleReconnect,
+        cancelOnError: true,
+      );
+    } on Object catch (e) {
+      _log.fine('fleet socket connect failed', e);
+      _scheduleReconnect();
+    }
+  }
+
+  void _scheduleReconnect() {
+    if (!mounted) return;
+    _reconnect?.cancel();
+    _reconnect = Timer(const Duration(seconds: 10), () => unawaited(_connect()));
+  }
+
+  void _onSocketMessage(Object? raw) {
+    if (raw is! String || !mounted) return;
+    final Object? msg;
+    try {
+      msg = jsonDecode(raw);
+    } on FormatException {
+      return;
+    }
+    if (msg is! Map<String, Object?> || msg['type'] != 'ping') return;
+    final item = msg['item'];
+    if (item is! Map<String, Object?>) return;
+    final row = _fromPing(item);
+    setState(() {
+      final i = _activeFleet.indexWhere((f) => f['id'] == row['id']);
+      _activeFleet = List.of(_activeFleet);
+      if (i >= 0) {
+        _activeFleet[i] = row;
+      } else {
+        _activeFleet.insert(0, row);
+      }
+      _live = true;
+    });
+  }
+
+  static const _typeLabels = {
+    'water_sprinkler': 'Water Sprinkler',
+    'sprinkler': 'Water Sprinkler',
+    'anti_smog_gun': 'Anti-Smog Gun',
+    'smog_gun': 'Anti-Smog Gun',
+    'mechanical_sweeper': 'Mechanical Sweeper',
+    'sweeper': 'Mechanical Sweeper',
+  };
+
+  static const _pingStatus = {
+    'Spraying': 'ACTIVE_SPRAYING',
+    'En route': 'EN_ROUTE',
+    'Idle': 'IDLE',
+    'Offline': 'OFFLINE',
+  };
+
+  static num _num(Object? v) => v is num ? v : 0;
+
+  static Map<String, Object> _row({
+    required String id,
+    required String typeKey,
+    required String ward,
+    required String status,
+    required num speed,
+    required num flow,
+    required num litres,
+    required bool live,
+    String? contractor,
+  }) {
+    final type = _typeLabels[typeKey] ?? 'Water Sprinkler';
+    return {
+      'id': id,
+      'name': '$type $id',
+      'type': type,
+      'ward': ward,
+      'status': status.replaceAll('_', ' '),
+      'speed': '${speed.toStringAsFixed(1)} km/h',
+      'pump_flow': '${flow.toStringAsFixed(1)} L/min',
+      'water_disbursed': '${litres.round()} L',
+      'contractor': contractor ?? (live ? 'Live HawaTag telemetry' : 'Simulated'),
+      'is_active': status.startsWith('ACTIVE') || status == 'EN_ROUTE',
+    };
+  }
+
+  /// One `active_fleet` entry of `GET /v1/citizen/live-operations`.
+  static Map<String, Object> _fromLiveOps(Map<String, Object?> v) => _row(
+    id: v['asset_id']?.toString() ?? '?',
+    typeKey: v['type']?.toString() ?? '',
+    ward: v['ward']?.toString() ?? 'Delhi',
+    status: v['status']?.toString() ?? 'IDLE',
+    speed: _num(v['speed_kmh']),
+    flow: _num(v['water_pump_flow_lpm']),
+    litres: _num(v['water_disbursed_liters']),
+    live: v['live'] == true,
+    contractor: v['contractor_id']?.toString(),
+  );
+
+  /// One `ping` item from the `/v1/ws/fleet` WebSocket.
+  static Map<String, Object> _fromPing(Map<String, Object?> v) => _row(
+    id: v['asset_id']?.toString() ?? '?',
+    typeKey: v['kind']?.toString() ?? '',
+    ward: v['area']?.toString() ?? 'Delhi',
+    status: _pingStatus[v['status']?.toString()] ?? 'IDLE',
+    speed: _num(v['speed_kmh']),
+    flow: _num(v['pump_flow_lpm']),
+    litres: _num(v['litres_cum']),
+    live: true,
+  );
+
+  static Map<String, Object> _fromImpact(Map<String, Object?> v) {
+    String pct(Object? x) => x is num ? '-${x.abs().toStringAsFixed(1)}%' : '-';
+    return {
+      'id': v['intervention_id']?.toString() ?? '',
+      'sector': v['location_name']?.toString() ?? '',
+      'cell': v['intervention_id']?.toString() ?? '',
+      'action': '${v['action_type'] ?? ''} (${v['asset_id'] ?? ''})',
+      'treated_at': v['treated_time']?.toString() ?? '',
+      'pm10_drop': pct(v['pm10_reduction_pct']),
+      'pm25_drop': pct(v['pm25_reduction_pct']),
+      'duration': '${v['duration_minutes'] ?? '-'} Minutes',
+      'water': '${v['water_disbursed_liters'] ?? '-'} Liters',
+      'verified_by': v['verified_by']?.toString() ?? '',
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: HawaColors.paper,
@@ -89,11 +290,12 @@ class _LiveOperationsScreenState extends ConsumerState<LiveOperationsScreen> {
         backgroundColor: HawaColors.paper,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: SimulatedScreenChip(),
-          ),
+        actions: [
+          if (!_live)
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: SimulatedScreenChip(),
+            ),
         ],
       ),
       body: ListView(

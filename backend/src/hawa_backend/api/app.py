@@ -1,11 +1,20 @@
 """FastAPI application factory, CORS, exception handlers, and routing."""
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from ..core.config import get_settings
-from ..core.context import bind_context
-from ..core.errors import HawaException
-from .routes import (
+from ..core.config import bootstrap_secrets, get_settings
+
+# Pull HAWA_AWS_SECRETS_ID (Secrets Manager) into the environment before any settings or hawa_ml import.
+bootstrap_secrets()
+
+from ..aws.settings import get_aws_settings  # noqa: E402
+from ..core.context import bind_context  # noqa: E402
+from ..core.errors import HawaException  # noqa: E402
+from .routes import (  # noqa: E402
     health,
     hotspots,
     forecast,
@@ -17,7 +26,32 @@ from .routes import (
     open_data,
     citizen,
     uploads,
+    reports,
+    me,
+    fleet,
 )
+
+logger = logging.getLogger("hawa_backend.app")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Starts the Kinesis telemetry consumer in this process when HAWA_AWS_KINESIS_CONSUMER=true."""
+    aws = get_aws_settings()
+    stop = asyncio.Event()
+    task = None
+    if aws.enabled and aws.sensor_stream and aws.kinesis_consumer:
+        from ..aws.kinesis_consumer import run
+
+        task = asyncio.create_task(run(stop))
+        logger.info("Kinesis consumer started for %s", aws.sensor_stream)
+    try:
+        yield
+    finally:
+        stop.set()
+        if task is not None:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
 
 
 def create_app() -> FastAPI:
@@ -31,6 +65,7 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+        lifespan=lifespan,
     )
 
     # Enable CORS for the Next.js web console and Flutter clients
@@ -79,6 +114,9 @@ def create_app() -> FastAPI:
     app.include_router(open_data.router)
     app.include_router(citizen.router)
     app.include_router(uploads.router)
+    app.include_router(reports.router)
+    app.include_router(me.router)
+    app.include_router(fleet.router)
 
     return app
 

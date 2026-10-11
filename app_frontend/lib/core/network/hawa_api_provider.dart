@@ -15,16 +15,14 @@ part 'hawa_api_provider.g.dart';
 @Riverpod(keepAlive: true)
 HawaApi hawaApi(Ref ref) => HawaApi(dio: ref.watch(dioProvider), interceptors: const []);
 
-/// Mutations for the outbox: the fake backend in fake mode, otherwise the generated client.
-/// With `FAKE_FEATURES`, an op uses the fake backend when its feature is listed.
+/// Mutations for the outbox, routed per feature like the reads: an op uses the fake backend when
+/// `Env.isFake(feature)`, so `USE_FAKE_API=true` plus `REAL_FEATURES=citizen_reports` sends reports
+/// to the real backend while sign-in and tasks stay fake.
 @Riverpod(keepAlive: true)
 MutationApi mutationApi(Ref ref) {
-  final http = Env.useFakeApi ? null : HttpMutationApi(ref.watch(hawaApiProvider));
-  final fake = Env.anyFake
-      ? FakeMutationApi(ref.watch(fakeBackendProvider), ref.watch(tokenStoreProvider))
-      : null;
-  if (http == null) return fake!;
-  if (fake == null) return http;
+  final http = HttpMutationApi(ref.watch(hawaApiProvider));
+  if (!Env.anyFake) return http;
+  final fake = FakeMutationApi(ref.watch(fakeBackendProvider), ref.watch(tokenStoreProvider));
   return _RoutingMutationApi(http: http, fake: fake);
 }
 
@@ -95,9 +93,11 @@ class _RoutingMutationApi implements MutationApi {
     required String idempotencyKey,
   }) => _tasks.postLocations(shiftId, body, idempotencyKey: idempotencyKey);
 
+  /// Own feature key: the backend stores push tokens (`PUT /v1/me/push-token`) while sign-in is
+  /// still fake, so list `push` in REAL_FEATURES to send them there.
   @override
   Future<Map<String, Object?>> putPushToken(Map<String, Object?> body) =>
-      _for(const {'auth'}).putPushToken(body);
+      _for(const {'push'}).putPushToken(body);
 
   @override
   Future<Map<String, Object?>> patchMe(
@@ -109,9 +109,13 @@ class _RoutingMutationApi implements MutationApi {
   Future<Map<String, Object?>> putAlertSubscription(
     Map<String, Object?> body, {
     required String idempotencyKey,
-  }) => _for(const {'citizen_air'}).putAlertSubscription(body, idempotencyKey: idempotencyKey);
+  }) => _for(const {'citizen_subscription'}).putAlertSubscription(
+    body,
+    idempotencyKey: idempotencyKey,
+  );
 
+  /// Report photos follow `citizen_reports`, inspection and task photos follow `inspector`.
   @override
   Future<PresignResult> presign(Map<String, Object?> body) =>
-      _for(const {'citizen_reports', 'inspector'}).presign(body);
+      _for({body['purpose'] == 'report_photo' ? 'citizen_reports' : 'inspector'}).presign(body);
 }

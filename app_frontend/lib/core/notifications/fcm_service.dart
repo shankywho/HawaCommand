@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:hawa_app/app/env.dart';
 import 'package:hawa_app/core/notifications/push_payload.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -38,11 +39,21 @@ class FcmService {
         (m) => _opened.add(PushPayload.fromData(_data(m))),
       );
       FirebaseMessaging.instance.onTokenRefresh.listen(_tokens.add);
+      unawaited(_subscribeTopic());
       final initial = await FirebaseMessaging.instance.getInitialMessage();
       return initial == null ? null : PushPayload.fromData(_data(initial));
     } on Object catch (e) {
       _log.warning('fcm start failed', e);
       return null;
+    }
+  }
+
+  /// Broadcast alerts (`POST /v1/alerts/broadcast` on the backend) go to this topic.
+  Future<void> _subscribeTopic() async {
+    try {
+      await FirebaseMessaging.instance.subscribeToTopic(Env.fcmTopic);
+    } on Object catch (e) {
+      _log.warning('fcm topic subscribe failed', e);
     }
   }
 

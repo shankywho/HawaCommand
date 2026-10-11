@@ -278,15 +278,23 @@ class IntelClient:
         return obs
 
     def _get_live_twin_df(self) -> Any:
-        """Run Gaussian Process Kriging on live station measurements with 15-minute caching."""
+        """Run Gaussian Process Kriging on live station measurements with 15-minute caching.
+
+        Order: this process's copy -> the Redis snapshot grid:pm25:500m:<hour> (services/twin_cache.py,
+        when HAWA_REDIS_URL is set) -> a fresh fit, which is then stored in Redis for other processes.
+        """
         now = time.monotonic()
         if self._cached_twin_df is not None and (now - self._cached_twin_time < 900):
             return self._cached_twin_df
 
-        from hawa_ml.api.deps import get_twin_engine
-        twin = get_twin_engine()
-        obs = self._fetch_live_stations()
-        twin_df = twin.fit_and_predict(obs)
+        from ..services.twin_cache import load_snapshot, save_snapshot
+        twin_df = load_snapshot()
+        if twin_df is None:
+            from hawa_ml.api.deps import get_twin_engine
+            twin = get_twin_engine()
+            obs = self._fetch_live_stations()
+            twin_df = twin.fit_and_predict(obs)
+            save_snapshot(twin_df)
         self._cached_twin_df = twin_df
         self._cached_twin_time = now
         return twin_df

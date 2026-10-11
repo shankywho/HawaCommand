@@ -1,0 +1,28 @@
+# Build context for backend/Dockerfile is the repository root; send only what the image needs.
+**/.git
+**/.venv
+**/venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/node_modules
+
+# Secrets never go into the image; pass them at runtime (env, Secrets Manager).
+**/.env
+**/.env.*
+!**/.env.example
+
+# Not used by the backend image
+frontend
+app_frontend
+docs
+infrastructure
+*.pdf
+AI-ML/reports/figures
+AI-ML/data/processed
+AI-ML/data/cache
+AI-ML/tests
+backend/tests
+backend/hawa.db

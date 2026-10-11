@@ -36,6 +36,9 @@ class CommandCenterApi {
 
   Future<Map<String, Object?>> alerts() => _get('/v1/alerts', const {});
 
+  /// Live HawaTag fleet (first) plus the simulated demo fleet, and verified interventions.
+  Future<Map<String, Object?>> liveOperations() => _get('/v1/citizen/live-operations', const {});
+
   Future<Map<String, Object?>> devices() => _get('/v1/devices', const {});
 
   Future<Map<String, Object?>> impact() => _get('/v1/impact', const {});

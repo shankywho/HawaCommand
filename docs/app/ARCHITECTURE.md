@@ -320,7 +320,7 @@ Shapes are defined by `openapi/openapi.json` (contract snapshot) and, for the li
 | `POST /v1/auth/switch-role`, `/logout` | `HttpAuthRemoteSource` | role switch, logout (3 s, best effort) | no | Planned (backend) |
 | `GET /v1/me` | `HttpAuthRemoteSource.me` | after verify, background refresh after restore | no | Planned (backend) |
 | `PATCH /v1/me` `{lang}` | outbox `profile_update` (`field: me`) | language chosen before login or changed in Settings | no | Planned (backend) |
-| `PUT /v1/me/push-token` | outbox `push_token` | after login, on FCM token refresh (only with Firebase) | no | Planned (backend) |
+| `PUT /v1/me/push-token` | outbox `push_token` | after login, on FCM token refresh (only with Firebase) | no | Implemented (backend); routed by the `push` feature key |
 | `GET /v1/me/alert-subscription` | `HttpSubscriptionRemoteSource` | `citizen_subscription` real | no | Planned (backend) |
 | `PUT /v1/me/alert-subscription` | outbox `profile_update` (`field: alert_subscription`) | C2 save | no | Planned (backend) |
 | `GET /v1/tasks/mine?date=`, `GET /v1/tasks/{id}` | `HttpTaskRemoteSource` | `driver_route` real | no (the backend has the older `GET /v1/driver/route`, unused) | Planned (backend) |
@@ -600,9 +600,9 @@ A test that compares `tokens.dart` with a machine-readable token file is **Plann
 
 | Flavor | Android `applicationId` | App name | Network security | Firebase options | Dev tools |
 |---|---|---|---|---|---|
-| `dev` | `in.hawacommand.field.dev` (version suffix `-dev`) | Hawa DEV | `network_security_config.xml`: cleartext to `10.0.2.2`, `localhost`, `127.0.0.1` | `devFirebaseOptions()` → null | on when `FLAVOR != prod` and `SHOW_DEV_TOOLS` |
-| `staging` | `in.hawacommand.field.stg` (`-stg`) | Hawa STG | none (main manifest allows cleartext) | `stagingFirebaseOptions()` → null | same rule |
-| `prod` | `in.hawacommand.field` | HawaCommand | none (main manifest allows cleartext) | `prodFirebaseOptions()` → null | hidden when `FLAVOR=prod` |
+| `dev` | `in.hawacommand.field.dev` (version suffix `-dev`) | Hawa DEV | `network_security_config.xml`: cleartext to `10.0.2.2`, `localhost`, `127.0.0.1` | `devFirebaseOptions()` → `FIREBASE_*` defines or null | on when `FLAVOR != prod` and `SHOW_DEV_TOOLS` |
+| `staging` | `in.hawacommand.field.stg` (`-stg`) | Hawa STG | none (main manifest allows cleartext) | `stagingFirebaseOptions()` → `FIREBASE_*` defines or null | same rule |
+| `prod` | `in.hawacommand.field` | HawaCommand | none (main manifest allows cleartext) | `prodFirebaseOptions()` → `FIREBASE_*` defines or null | hidden when `FLAVOR=prod` |
 
 The application id is a placeholder; confirm the domain before any store upload. One entrypoint, `lib/main.dart` → `bootstrap()`. The Gradle flavor sets the id, name and dev resources; the Dart side reads the `FLAVOR` define, and nothing checks that they match ([README Known issue 12](README.md#9-known-issues)). iOS has no flavors.
 
@@ -652,7 +652,7 @@ No `env/*.json` file is committed ([README Known issue 2](README.md#9-known-issu
 
 ### 16.3 Firebase
 
-`bootstrap()` picks `prod`/`staging`/`dev` options by `Env.flavor`. All three functions return `null` (no Firebase project yet), so Firebase is skipped, `FirebaseMessaging.onBackgroundMessage` is not registered and the crash reporter is disabled. To enable: create the projects, run `flutterfire configure` per flavor, replace the three functions' bodies, and set `CRASH_REPORTING=true` where wanted. `google-services.json` and `GoogleService-Info.plist` are git-ignored. **Planned.**
+`bootstrap()` picks `prod`/`staging`/`dev` options by `Env.flavor`. All three return `firebaseOptionsFromEnv()` (`lib/firebase/firebase_options_env.dart`): a `FirebaseOptions` built from the `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_MESSAGING_SENDER_ID` and `FIREBASE_PROJECT_ID` defines (register one Android app per flavor package in the Firebase project), or `null` when any is empty. With `null`, Firebase is skipped, `FirebaseMessaging.onBackgroundMessage` is not registered and the crash reporter is disabled. To enable: create the projects, run `flutterfire configure` per flavor, replace the three functions' bodies, and set `CRASH_REPORTING=true` where wanted. `google-services.json` and `GoogleService-Info.plist` are git-ignored. **Planned.**
 
 ## 17. Errors, logging and crash reporting
 

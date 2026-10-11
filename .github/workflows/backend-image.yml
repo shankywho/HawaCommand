@@ -1,0 +1,50 @@
+# Build backend/Dockerfile and push it to Amazon ECR, without Docker on your machine.
+# Run it from GitHub: Actions -> backend-image -> Run workflow.
+# Repository secrets needed: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY of an IAM user allowed to push to
+# the ECR repository (managed policy AmazonEC2ContainerRegistryPowerUser is enough).
+name: backend-image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Image tag
+        required: true
+        default: v1.0.0
+      region:
+        description: AWS region
+        required: true
+        default: ap-south-1
+      repository:
+        description: ECR repository name
+        required: true
+        default: hawa-command-backend
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.region }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ inputs.repository }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          docker build -f backend/Dockerfile -t "$REGISTRY/$REPOSITORY:$TAG" -t "$REGISTRY/$REPOSITORY:latest" .
+          docker push "$REGISTRY/$REPOSITORY:$TAG"
+          docker push "$REGISTRY/$REPOSITORY:latest"
+          echo "Pushed $REGISTRY/$REPOSITORY:$TAG" >> "$GITHUB_STEP_SUMMARY"

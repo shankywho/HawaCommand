@@ -1,12 +1,86 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: HawaCommand backend AWS integration (cache table, alerts topic, sensor stream)
+Description: >-
+  HawaCommand backend data plane: citizen grievances and fleet telemetry tables, Kinesis sensor stream,
+  IoT Core rule for HawaTag vehicles, SNS alerts topic, forecast cache table, and the backend IAM policy
+  (optionally attached to an existing role such as the EC2 instance role). The S3 evidence bucket, Secrets
+  Manager secrets and ElastiCache are not created here (see docs/AWS_SETUP_GUIDE.md and hawa-redis.yaml).
 
 Parameters:
+  EvidenceBucketName:
+    Type: String
+    Default: hawa-citizen-evidence-prod
+    Description: Existing S3 bucket for evidence photos (the policy grants PutObject/GetObject on it)
+  GrievancesTableName:
+    Type: String
+    Default: hawa-citizen-grievances
+  FleetTableName:
+    Type: String
+    Default: hawa-fleet-telemetry
   CacheTableName:
     Type: String
     Default: hawa-cache
+  SensorStreamName:
+    Type: String
+    Default: hawa-sensor-data
+  AlertsTopicName:
+    Type: String
+    Default: hawa-citizen-push-alerts
+  SecretsPrefix:
+    Type: String
+    Default: hawa/
+    Description: The backend may read Secrets Manager secrets whose names start with this
+  BackendRoleName:
+    Type: String
+    Default: ''
+    Description: Existing IAM role to attach the backend policy to (e.g. hawa-backend-ec2-role); empty = none
+
+Conditions:
+  AttachToRole: !Not [!Equals [!Ref BackendRoleName, '']]
 
 Resources:
+  GrievancesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref GrievancesTableName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - {AttributeName: report_id, AttributeType: S}
+        - {AttributeName: created_at, AttributeType: S}
+        - {AttributeName: ward_id, AttributeType: S}
+        - {AttributeName: status, AttributeType: S}
+        - {AttributeName: owner_id, AttributeType: S}
+      KeySchema:
+        - {AttributeName: report_id, KeyType: HASH}
+        - {AttributeName: created_at, KeyType: RANGE}
+      GlobalSecondaryIndexes:
+        - IndexName: WardStatusIndex
+          KeySchema:
+            - {AttributeName: ward_id, KeyType: HASH}
+            - {AttributeName: status, KeyType: RANGE}
+          Projection: {ProjectionType: ALL}
+        - IndexName: OwnerIndex
+          KeySchema:
+            - {AttributeName: owner_id, KeyType: HASH}
+            - {AttributeName: created_at, KeyType: RANGE}
+          Projection: {ProjectionType: ALL}
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  FleetTelemetryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref FleetTableName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - {AttributeName: asset_id, AttributeType: S}
+        - {AttributeName: timestamp, AttributeType: S}
+      KeySchema:
+        - {AttributeName: asset_id, KeyType: HASH}
+        - {AttributeName: timestamp, KeyType: RANGE}
+      TimeToLiveSpecification:
+        AttributeName: ttl_epoch
+        Enabled: true
+
   CacheTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -25,39 +99,124 @@ Resources:
   AlertsTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: hawa-alerts
+      TopicName: !Ref AlertsTopicName
 
   SensorStream:
     Type: AWS::Kinesis::Stream
     Properties:
-      Name: hawa-sensor-data
+      Name: !Ref SensorStreamName
+      RetentionPeriodHours: 24
       StreamModeDetails:
         StreamMode: ON_DEMAND
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId: alias/aws/kinesis
+
+  # IoT Core: hawa/vehicles/<asset_id>/telemetry -> Kinesis (partition key = asset id)
+  IotToKinesisRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: iot.amazonaws.com}
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: put-telemetry
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: kinesis:PutRecord
+                Resource: !GetAtt SensorStream.Arn
+
+  VehicleTelemetryRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: hawa_vehicle_telemetry
+      TopicRulePayload:
+        Description: HawaTag vehicle telemetry to the hawa-sensor-data Kinesis stream
+        AwsIotSqlVersion: '2016-03-23'
+        Sql: >-
+          SELECT *, topic(3) AS asset_id, 'iot' AS source FROM 'hawa/vehicles/+/telemetry'
+        RuleDisabled: false
+        Actions:
+          - Kinesis:
+              StreamName: !Ref SensorStream
+              PartitionKey: ${topic(3)}
+              RoleArn: !GetAtt IotToKinesisRole.Arn
 
   BackendPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: Permissions the HawaCommand backend task role needs
+      ManagedPolicyName: hawa-backend-access
+      Description: Everything the HawaCommand backend calls on AWS
+      Roles: !If [AttachToRole, [!Ref BackendRoleName], !Ref AWS::NoValue]
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: Allow
+          - Sid: EvidencePhotos
+            Effect: Allow
+            Action: [s3:PutObject, s3:GetObject]
+            Resource: !Sub arn:${AWS::Partition}:s3:::${EvidenceBucketName}/*
+          - Sid: Grievances
+            Effect: Allow
+            Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:Query, dynamodb:Scan, dynamodb:DescribeTable]
+            Resource:
+              - !GetAtt GrievancesTable.Arn
+              - !Sub '${GrievancesTable.Arn}/index/*'
+          - Sid: FleetTelemetry
+            Effect: Allow
+            Action: [dynamodb:PutItem, dynamodb:Query, dynamodb:DescribeTable]
+            Resource: !GetAtt FleetTelemetryTable.Arn
+          - Sid: ForecastCache
+            Effect: Allow
             Action: [dynamodb:GetItem, dynamodb:PutItem]
             Resource: !GetAtt CacheTable.Arn
-          - Effect: Allow
-            Action: sns:Publish
+          - Sid: Alerts
+            Effect: Allow
+            Action: [sns:Publish, sns:Subscribe, sns:GetTopicAttributes]
             Resource: !Ref AlertsTopic
-          - Effect: Allow
-            Action: kinesis:PutRecord
+          - Sid: Telemetry
+            Effect: Allow
+            Action:
+              - kinesis:PutRecord
+              - kinesis:PutRecords
+              - kinesis:GetRecords
+              - kinesis:GetShardIterator
+              - kinesis:ListShards
+              - kinesis:DescribeStreamSummary
             Resource: !GetAtt SensorStream.Arn
-          - Effect: Allow
-            Action: sagemaker:InvokeEndpoint
+          - Sid: TelemetryKms
+            Effect: Allow
+            Action: [kms:GenerateDataKey, kms:Decrypt]
+            Resource: '*'
+            Condition:
+              StringEquals:
+                kms:ViaService: !Sub kinesis.${AWS::Region}.amazonaws.com
+          - Sid: Secrets
+            Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretsPrefix}*
+          - Sid: FleetSimulatorViaIot
+            Effect: Allow
+            Action: iot:Publish
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/hawa/vehicles/*
+          - Sid: Forecast
+            Effect: Allow
+            Action: [sagemaker:InvokeEndpoint]
             Resource: !Sub arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:endpoint/*
-          - Effect: Allow
-            Action: states:StartSyncExecution
+          - Sid: Workflows
+            Effect: Allow
+            Action: [states:StartSyncExecution, states:StartExecution]
             Resource: !Sub arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*
 
 Outputs:
+  GrievancesTableName:
+    Value: !Ref GrievancesTable
+  FleetTableName:
+    Value: !Ref FleetTelemetryTable
   AlertsTopicArn:
     Value: !Ref AlertsTopic
   SensorStreamName:

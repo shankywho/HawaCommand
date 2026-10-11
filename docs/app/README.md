@@ -42,7 +42,7 @@ The backend that exists today serves the AI-ML read endpoints (`/v1/twin`, `/v1/
 | Offline cache (drift), outbox, drainer, conflict resolver, sync triggers | **Implemented** | Executes against the fake backend in the default build ([OFFLINE_AND_SYNC](OFFLINE_AND_SYNC.md)). Some cleanup jobs are never called |
 | Network stack: three Dio clients, 8 interceptors, typed failures, generated `hawa_api` | **Implemented** | The generated client targets a hand-written contract snapshot, not the backend's real OpenAPI |
 | Realtime | **Partial** | `FakeRealtimeClient` drives the demo. `WsClient` is complete but the backend serves no `/v1/ws` |
-| Push notifications (FCM) and Crashlytics | **Partial** | Code is wired; no Firebase project is configured (`lib/firebase/*.dart` return `null`), so both are disabled. Local notifications and in-app banners work |
+| Push notifications (FCM) and Crashlytics | **Partial** | Code is wired. Firebase options come from the `FIREBASE_*` build defines (`lib/firebase/firebase_options_env.dart`); without them both are disabled. Each install subscribes to the FCM topic `FCM_TOPIC` (backend broadcasts), and report updates are pushed to the token registered with `PUT /v1/me/push-token` ([AWS_SETUP_GUIDE §7–8](../AWS_SETUP_GUIDE.md#7-firebase-cloud-messaging-and-its-secrets-manager-secret)). Local notifications and in-app banners work |
 | Background sync (workmanager) | **Implemented** | Android periodic 15 min task + one-off from the FCM handler |
 | Shift location tracking (foreground service, battery-aware sampling, geofence) | **Implemented** | Driver only |
 | Maps (flutter_map, MapTiler or keyless Esri basemap, file tile cache, markers) | **Partial** | Corridor tile prefetch, cache size cap and polyline simplification exist but are never called |
@@ -107,7 +107,7 @@ A user holding several app roles picks one on `/auth/role` and can switch from *
 | Android SDK + emulator or phone | `compileSdk 37`, `minSdk 24`, `targetSdk` = Flutter default | AGP 9.0.1, Kotlin 2.3.20, Gradle 9.1.0, Java 17 (`android/`) |
 | Docker | `openapitools/openapi-generator-cli:v7.17.0` | Only for `make gen-api` / `make gen-api-local` |
 | `make` | | On Windows run the Makefile commands by hand |
-| Firebase / FlutterFire CLI | not used yet | Needed only when a Firebase project is created ([ARCHITECTURE §16.3](ARCHITECTURE.md#163-firebase)) |
+| Firebase | build defines | `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_PROJECT_ID` from the Android app's `google-services.json`; no FlutterFire CLI or `google-services.json` in the build ([ARCHITECTURE §16.3](ARCHITECTURE.md#163-firebase)) |
 
 ### 6.2 First run
 
@@ -133,8 +133,8 @@ isFake(f) = f not in REAL_FEATURES  and  (USE_FAKE_API or f in FAKE_FEATURES)
 
 | Dart define | Default | Effect |
 |---|---|---|
-| `USE_FAKE_API` | `true` | Every feature not in `REAL_FEATURES` uses the in-app fake backend. Also makes **all** outbox mutations, uploads and (via `driver_route`) realtime fake |
-| `REAL_FEATURES` | `air_map,citizen_air,alerts,school_forecast` | These always call the real backend (`API_BASE_URL`) |
+| `USE_FAKE_API` | `true` | Every feature not in `REAL_FEATURES` uses the in-app fake backend. Outbox mutations and uploads follow the same per-feature rule (`push` for push tokens, `citizen_subscription` for the alert area, `citizen_reports` for report photos and submits, `inspector` for inspection and task photos); realtime follows `driver_route` |
+| `REAL_FEATURES` | `air_map,citizen_air,alerts,school_forecast` | These always call the real backend (`API_BASE_URL`). The backend now also serves `citizen_reports`, `citizen_subscription` and `push` |
 | `FAKE_FEATURES` | empty | With `USE_FAKE_API=false`, the features listed here stay fake |
 | `ALERTS_CONTRACT` | `false` | `alerts` real: `true` uses the contract `GET /v1/alerts` (generated client) instead of the command-center adapter |
 | `OPEN_AIR_CONTRACT` | `false` | `citizen_air` real: `true` uses `GET /open/v1/air?bbox=` instead of the twin adapter |
@@ -251,11 +251,11 @@ Defects found by reading the code. Paths are relative to `app_frontend/` unless 
 | 6 | The "legacy, not imported" prototype theme `lib/app/theme.dart` is imported by four live citizen screens, so deleting the legacy files (as `analysis_options.yaml` and the README suggest) breaks the build. That theme uses Geist, GeistMono and Silkscreen fonts that `pubspec.yaml` does not declare, so those screens render in the fallback font | `lib/features/citizen_air/presentation/safe_route_screen.dart:4`, `live_operations_screen.dart:3`, `ward_scorecard_screen.dart:4`, `lib/features/citizen_reports/presentation/missed_machine_screen.dart:3`, `lib/app/theme.dart:21-26`, `analysis_options.yaml:17-19`, `pubspec.yaml:78-88` |
 | 7 | Cleartext HTTP is allowed in every flavor: the main manifest sets `usesCleartextTraffic="true"`; only the dev flavor has a restrictive network security config | `android/app/src/main/AndroidManifest.xml:26`, `android/app/src/dev/res/xml/network_security_config.xml` |
 | 8 | `hawa://` links from SMS/WhatsApp open the app but are not routed: the manifest declares the scheme and disables Flutter deep linking, and no Dart code reads the incoming intent | `android/app/src/main/AndroidManifest.xml:45-52` |
-| 9 | The FCM background handler returns early when `Firebase.apps` is empty and never calls `Firebase.initializeApp`, so once Firebase is configured with Dart options, background pushes would be dropped (no inbox row, no notification) | `lib/core/notifications/fcm_background_handler.dart:19` |
+| 9 | Fixed: the FCM background handler now initializes Firebase in its isolate from the same build defines, so background pushes are stored and shown | `lib/core/notifications/fcm_background_handler.dart` |
 | 10 | An inspector outcome with several photos can fail permanently: `inspection_close` depends only on the last `photo_upload`; if an earlier photo is still uploading, resolving its key throws `media_not_uploaded`, which the drainer classifies as `failed` | `lib/features/inspector/data/inspector_repository_impl.dart:229`, `lib/core/sync/executors/op_executor.dart:29`, `lib/core/sync/outbox_drainer.dart:299-303` |
 | 11 | After a `413`, the re-compressed photo is presigned with the original file's `sha256` | `lib/core/sync/executors/photo_upload_executor.dart:43` |
 | 12 | `Env.flavor` comes from the `FLAVOR` define (default `dev`), not from the Gradle flavor. `--flavor prod` without `FLAVOR=prod` keeps Dev tools, HTTP logging and the forced-offline interceptor on | `lib/app/env.dart:6`, `lib/core/network/dio_provider.dart:48`, `lib/features/settings/presentation/settings_screen.dart:118` |
-| 13 | `USE_FAKE_API=false` cannot work against today's backend: it serves none of `/v1/auth/*`, `/v1/me*`, `/v1/tasks*`, `/v1/shifts*`, `/v1/inspections*`, `/v1/alerts/{id}`, `/v1/schools*`, `/v1/grap/outlook`, `/v1/reports*`, `/v1/sites/me`, `/v1/ws` | `backend/src/hawa_backend/api/app.py:69-79` |
+| 13 | `USE_FAKE_API=false` cannot work against today's backend: it serves none of `/v1/auth/*`, `GET/PATCH /v1/me`, `/v1/tasks*`, `/v1/shifts*`, `/v1/inspections*`, `/v1/schools*`, `/v1/grap/outlook`, `/v1/sites/me`, `/v1/ws` (it does serve `/v1/reports*`, `/v1/me/push-token`, `/v1/me/alert-subscription`, `/v1/alerts/{id}` and `/v1/ws/fleet`). Use `USE_FAKE_API=true` with `REAL_FEATURES` instead | `backend/src/hawa_backend/api/app.py:69-79` |
 | 14 | `/open/v1/air` exists on the backend with a different contract (`ward`, `limit` → `{asOf, cells[]}`) from the app's (`bbox` → GeoJSON FeatureCollection), so `OPEN_AIR_CONTRACT=true` would fail to parse | `backend/src/hawa_backend/api/routes/open_data.py:11-36`, `lib/features/citizen_air/data/open_air_remote_source.dart:31` |
 | 15 | Switching role during a shift stops the location tracker directly instead of ending the shift: no `shift_end` op is queued and the saved shift stays, so the driver shell later offers "Resume" | `lib/features/shell/presentation/widgets/more_sheet.dart:91-101` |
 | 16 | The pre-commit script expects a repo-root hook manager that does not exist (no Husky or lefthook config) | `tool/hooks/pre_commit.sh:2-3` |

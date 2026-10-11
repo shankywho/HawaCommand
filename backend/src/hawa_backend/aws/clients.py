@@ -38,7 +38,21 @@ def get_cache_table():
     return resource.Table(s.cache_table)
 
 
+@lru_cache(maxsize=None)
+def get_table(name: str):
+    """DynamoDB Table resource by name (grievances, fleet telemetry)."""
+    import boto3
+
+    s = get_aws_settings()
+    resource = boto3.resource("dynamodb", region_name=s.region, endpoint_url=s.endpoint_url, config=_config())
+    return resource.Table(name)
+
+
 def reset_clients() -> None:
     get_client.cache_clear()
     get_s3_client.cache_clear()
     get_cache_table.cache_clear()
+    get_table.cache_clear()
+    from .secrets import get_secret_json
+
+    get_secret_json.cache_clear()

@@ -118,10 +118,33 @@ class UploadService {
   }
 }
 
+/// Mixed mode: the presign answer decides where the bytes go. The real backend returns an
+/// https S3 URL; the fake backend returns `fake-s3://...`.
+class RoutingObjectUploader implements ObjectUploader {
+  RoutingObjectUploader({required this.real, required this.fake});
+
+  final ObjectUploader real;
+  final ObjectUploader fake;
+
+  static bool isHttp(String url) {
+    final uri = Uri.tryParse(url);
+    return uri != null && (uri.isScheme('https') || uri.isScheme('http'));
+  }
+
+  @override
+  Future<void> upload(
+    PresignResult target,
+    File file, {
+    void Function(int sent, int total)? onProgress,
+  }) => (isHttp(target.url) ? real : fake).upload(target, file, onProgress: onProgress);
+}
+
 @Riverpod(keepAlive: true)
-ObjectUploader objectUploader(Ref ref) => Env.isFake('citizen_reports') || Env.isFake('inspector')
-    ? FakeObjectUploader(ref.watch(fakeBackendProvider))
-    : DioObjectUploader(ref.watch(bareDioProvider));
+ObjectUploader objectUploader(Ref ref) {
+  final real = DioObjectUploader(ref.watch(bareDioProvider));
+  if (!Env.isFake('citizen_reports') && !Env.isFake('inspector')) return real;
+  return RoutingObjectUploader(real: real, fake: FakeObjectUploader(ref.watch(fakeBackendProvider)));
+}
 
 @Riverpod(keepAlive: true)
 UploadService uploadService(Ref ref) =>

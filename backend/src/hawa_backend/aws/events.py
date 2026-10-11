@@ -37,6 +37,25 @@ async def publish_alert(message: Dict[str, Any], **attributes: str) -> Optional[
         return None
 
 
+def _subscribe(topic_arn: str, protocol: str, endpoint: str, ward: Optional[str]) -> str:
+    attributes = {}
+    if ward:
+        # Broadcasts carry a `ward` attribute ("all" for city-wide), so a ward subscriber gets both.
+        attributes["FilterPolicy"] = json.dumps({"ward": [ward, "all"]})
+    resp = get_client("sns").subscribe(
+        TopicArn=topic_arn, Protocol=protocol, Endpoint=endpoint, Attributes=attributes, ReturnSubscriptionArn=True,
+    )
+    return resp["SubscriptionArn"]
+
+
+async def subscribe_alerts(protocol: str, endpoint: str, ward: Optional[str] = None) -> Optional[str]:
+    """Subscribe an email address or phone number (E.164) to the alerts topic. Email needs confirming."""
+    s = get_aws_settings()
+    if not (s.enabled and s.alerts_topic_arn):
+        return None
+    return await asyncio.to_thread(_subscribe, s.alerts_topic_arn, protocol, endpoint, ward)
+
+
 async def publish_sensor_reading(device_id: str, payload: Dict[str, Any]) -> Optional[str]:
     s = get_aws_settings()
     if not (s.enabled and s.sensor_stream):

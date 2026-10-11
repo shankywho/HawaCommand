@@ -1,10 +1,25 @@
 # Cloud Engineer System Integration Checklist
 
-> **Status: target checklist (Planned unless marked otherwise).**
-> - **In code today:** the optional backend AWS layer (DynamoDB cache, Step Functions forecast and dispatch, SageMaker forecast, SNS, Kinesis), configured by the `HAWA_AWS_*` variables in `backend/src/hawa_backend/aws/settings.py`.
-> - **In the CloudFormation template:** the DynamoDB table, SNS topic, Kinesis stream and IAM policy in `infrastructure/cloudformation/hawa-integration.yaml`.
-> - **Planned, not in code:** the S3 evidence bucket, the `hawa-citizen-grievances` and `hawa-fleet-telemetry` DynamoDB tables, ElastiCache, ECS Fargate, ALB/ACM, presigned uploads and CI/CD below. No backend route uses them yet. Start with [AWS_INTEGRATION.md](AWS_INTEGRATION.md).
-
+> **Status (2026-10-11): every item below has backend code.** Each one is off until its variable is set, and falls back to process memory. Console steps for each item: [AWS_SETUP_GUIDE.md](AWS_SETUP_GUIDE.md). Check a deployment with `uv run hawa aws-check` (in `backend/`).
+>
+> | § | Item | Code | Setup |
+> |---|---|---|---|
+> | 1 | S3 evidence bucket, pre-signed uploads, photo read-back | `aws/uploads.py`, `POST /v1/uploads/presign`; pre-signed GET URLs and `HeadObject` in `services/reports.py` | done; add `s3:GetObject` (guide step 1) |
+> | 1 | CORS, lifecycle | not needed by any client (the app is not a browser); lifecycle is storage cost only | optional |
+> | 2 | `hawa-citizen-grievances` + `WardStatusIndex` (+ `OwnerIndex`) | `services/reports.py`, `/v1/reports*` | step 2 |
+> | 2 | `hawa-fleet-telemetry` with `ttl_epoch` | `services/fleet.py` | step 3 |
+> | 3 | ElastiCache, `geo:fleet:active`, `grid:pm25:500m:*` (TTL 900 s) | `core/redis_store.py`, `services/fleet.py`, `services/twin_cache.py`; also plans, push tokens, sent alerts | step 5 |
+> | 4 | Kinesis `hawa-sensor-data` | producer `aws/events.py` (called by `POST /v1/telemetry/vehicles`), consumer `aws/kinesis_consumer.py` | step 4a |
+> | 4 | IoT Core rule `hawa/vehicles/+/telemetry` → Kinesis | rule in the guide and `hawa-integration.yaml`; `hawa simulate-fleet --target iot` | step 4b |
+> | 5 | SNS topic, email/SMS, test fan-out | `services/alerts.py`, `POST /v1/alerts/broadcast`, `POST /v1/alerts/subscribers`, plan-approval notice | step 6 |
+> | 5 | FCM credentials in Secrets Manager | `services/push.py` (FCM HTTP v1), `PUT /v1/me/push-token`; app: Firebase options from build defines, topic subscription | steps 7–8 |
+> | 6 | Docker image, ECR, ECS Fargate + ALB + autoscaling | `backend/Dockerfile`, `.github/workflows/backend-image.yml`, `infrastructure/cloudformation/hawa-ecs.yaml` | step 10 |
+> | 6 | Route 53 + HTTPS | `hawa-ecs.yaml` (`CertificateArn`), `infrastructure/ec2/Caddyfile` | step 11 |
+> | 7 | Least-privilege IAM | policy in guide step 1 and `hawa-integration.yaml` | step 1 |
+> | 7 | Secrets Manager for settings | `core/config.py` `bootstrap_secrets` (`HAWA_AWS_SECRETS_ID`) | step 9 |
+> | 8 | Smoke tests 1–4 | live audit in `POST /v1/citizen/reports/missed-machine`; WebSocket `/v1/ws/fleet`; app radar reads live data | step 12 |
+>
+> Differences from the text below: report `status` values are the app's (`submitted`, `verifying`, `verified`, `rejected`, `ticketed`, `closed`; SLA breach is computed), and the SNS topic name is `hawa-citizen-push-alerts`. FCM is called directly by the backend; there is no SNS-to-FCM webhook.
 
 > **Target Environment:** AWS ap-south-1 (Mumbai / Delhi Region)  
 > **Project:** Mission_CleanTheAir — HawaCommand & HawaCitizen Ecosystem  

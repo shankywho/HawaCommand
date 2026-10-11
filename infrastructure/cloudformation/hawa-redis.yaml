@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  HawaCommand Redis: one ElastiCache for Valkey node (cluster mode disabled, Redis 7 compatible: GEO
+  commands, pub/sub) in your VPC, reachable on 6379 only from the backend's security group.
+  Set HAWA_REDIS_URL=redis://<PrimaryEndpoint>:6379/0 in backend/.env (rediss:// if TransitEncryption=true).
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: The VPC of the backend (EC2 instance or ECS tasks)
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Two or more subnets in that VPC (private ones if you have them)
+  BackendSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Security group of the EC2 instance / ECS tasks that will connect
+  NodeType:
+    Type: String
+    Default: cache.t4g.micro
+    AllowedValues: [cache.t4g.micro, cache.t4g.small, cache.t4g.medium]
+  TransitEncryption:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+
+Resources:
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: HawaCommand Redis, 6379 from the backend only
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref BackendSecurityGroupId
+
+  RedisSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: HawaCommand Redis subnets
+      SubnetIds: !Ref SubnetIds
+
+  Redis:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupId: hawa-redis
+      ReplicationGroupDescription: HawaCommand live fleet, twin snapshot, plans, push tokens
+      Engine: valkey
+      CacheNodeType: !Ref NodeType
+      NumCacheClusters: 1
+      AutomaticFailoverEnabled: false
+      Port: 6379
+      CacheSubnetGroupName: !Ref RedisSubnetGroup
+      SecurityGroupIds: [!Ref RedisSecurityGroup]
+      TransitEncryptionEnabled: !Ref TransitEncryption
+      AtRestEncryptionEnabled: true
+
+Outputs:
+  PrimaryEndpoint:
+    Value: !GetAtt Redis.PrimaryEndPoint.Address
+  RedisUrl:
+    Value: !Sub
+      - '${Scheme}://${Host}:6379/0'
+      - Scheme: !If [Tls, rediss, redis]
+        Host: !GetAtt Redis.PrimaryEndPoint.Address
+
+Conditions:
+  Tls: !Equals [!Ref TransitEncryption, 'true']

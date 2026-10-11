@@ -1,0 +1,6 @@
+# LightGBM cannot parse model files with CRLF line endings ("Model format error, expect a tree here"),
+# so keep them LF even on Windows checkouts with core.autocrlf=true.
+AI-ML/models/*.txt text eol=lf
+# Scripts and container files run on Linux.
+*.sh text eol=lf
+Dockerfile text eol=lf

@@ -1,0 +1,16 @@
+# HTTPS for a single EC2 host with Caddy (automatic Let's Encrypt certificates, WebSockets included).
+# 1. Route 53: A records api.<domain> and app.<domain> -> the instance's Elastic IP.
+# 2. Security group: open 80 and 443; close 8000 and 3000 to the internet.
+# 3. sudo cp infrastructure/ec2/Caddyfile /etc/caddy/Caddyfile, replace the two hostnames, sudo systemctl reload caddy
+# 4. Rebuild the web console with API_URL=https://api.<domain> and the APK with API_BASE_URL=https://api.<domain>
+#    and WS_URL=wss://api.<domain>/v1/ws.
+
+api.example.in {
+	encode gzip
+	reverse_proxy 127.0.0.1:8000
+}
+
+app.example.in {
+	encode gzip
+	reverse_proxy 127.0.0.1:3000
+}

@@ -52,6 +52,9 @@ abstract final class Env {
     'MAP_ATTRIBUTION',
     defaultValue: '© MapTiler © OpenStreetMap contributors',
   );
+  /// FCM topic every install subscribes to; the backend sends broadcast alerts to it
+  /// (`HAWA_FCM_TOPIC`, default `hawa-alerts`).
+  static const fcmTopic = String.fromEnvironment('FCM_TOPIC', defaultValue: 'hawa-alerts');
   static const crashReporting = bool.fromEnvironment('CRASH_REPORTING');
   static const logLevel = String.fromEnvironment('LOG_LEVEL', defaultValue: 'info');
   static const showDevTools = bool.fromEnvironment('SHOW_DEV_TOOLS', defaultValue: true);

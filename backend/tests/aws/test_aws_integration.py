@@ -56,6 +56,8 @@ def test_cache_roundtrip_and_expiry(aws):
 
 
 def test_forecast_computed_once_then_cached(aws, monkeypatch):
+    monkeypatch.setenv("HAWA_AWS_FORECAST_ENDPOINT", "hawa-forecast")
+    get_aws_settings.cache_clear()
     calls = []
     monkeypatch.setattr(aws_forecast, "_compute", lambda cell_id: calls.append(cell_id) or FORECAST)
 
@@ -124,6 +126,8 @@ def test_publish_noop_when_unconfigured(aws):
 def test_route_uses_aws_when_enabled_and_falls_back_when_not(aws, monkeypatch):
     from hawa_backend.api.app import app
 
+    monkeypatch.setenv("HAWA_AWS_FORECAST_ENDPOINT", "hawa-forecast")
+    get_aws_settings.cache_clear()
     monkeypatch.setattr(aws_forecast, "_compute", lambda cell_id: FORECAST)
     client = TestClient(app)
     on = client.get("/v1/forecast/C-9")

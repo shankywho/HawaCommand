@@ -4,7 +4,7 @@ Purpose: the exact REST surface served by `hawa_backend.api.app:app` today (ever
 
 Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATA_MODEL](DATA_MODEL.md) · [CACHING](CACHING.md) · [LOGGING_AND_OBSERVABILITY](LOGGING_AND_OBSERVABILITY.md) · [../CONTRACTS.md](../CONTRACTS.md) · [../frontend/README.md](../frontend/README.md) · [../app/README.md](../app/README.md) · [../aiml/ARCHITECTURE.md](../aiml/ARCHITECTURE.md)
 
-> Status: 33 operations on 31 paths are registered (verified against `/openapi.json` on 2026-10-10). No route requires authentication, none reads or writes the database, and there is no WebSocket. Everything in §11 is **Planned**.
+> Status (2026-10-11): 50 operations on 45 paths (verified against `/openapi.json`) plus one WebSocket (`/v1/ws/fleet`). Officer write routes and telemetry ingest take a shared `X-Api-Key` when `HAWA_ADMIN_API_KEY` / `HAWA_INGEST_API_KEY` are set; there is still no user sign-in. No route reads or writes the SQL database. Citizen reports, fleet telemetry, alerts and push are covered in [§9b](#9b-citizen-reports-me-fleet-telemetry-broadcasts); AWS setup is in [../AWS_SETUP_GUIDE.md](../AWS_SETUP_GUIDE.md). Everything in §11 is **Planned**.
 
 ---
 
@@ -19,6 +19,7 @@ Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATA_MODEL](
 7. [Fleet, impact, alerts, driver](#7-fleet-impact-alerts-driver)
 8. [Open data](#8-open-data)
 9. [Citizen experience](#9-citizen-experience)
+9b. [Citizen reports, me, fleet telemetry, broadcasts](#9b-citizen-reports-me-fleet-telemetry-broadcasts)
 10. [Calls the backend makes to AI-ML](#10-calls-the-backend-makes-to-ai-ml)
 11. [Planned API (target design)](#11-planned-api-target-design)
 
@@ -55,7 +56,9 @@ Related: [README](README.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATA_MODEL](
 |---|---|
 | `X-Request-Id` | Read and bound into the request context; echoed in the response **only if the client sent it**. A generated UUIDv7 is used internally otherwise. |
 | `X-Correlation-Id` | Same as `X-Request-Id`. |
-| `Authorization`, `Idempotency-Key`, `If-Match`, `ETag`, `RateLimit-*` | Not read or set by any route. |
+| `Authorization` | `Bearer <JWT>`: its `sub` identifies the caller for `/v1/reports/mine`, `/v1/reports/{id}` and `/v1/me/*` (`core/identity.py`). Tokens signed with `HAWA_JWT_SECRET` are verified; other JWTs (the app's in-app fake sign-in) are trusted for `sub` only while `HAWA_TRUST_CLIENT_TOKENS=true`. No token = `anonymous`. |
+| `X-Api-Key` | `HAWA_ADMIN_API_KEY` for officer writes (alert broadcast and subscribers, report list and status); `HAWA_INGEST_API_KEY` (or the admin key) for `POST /v1/telemetry/vehicles`. Unset key = open route (development only). |
+| `Idempotency-Key`, `If-Match`, `ETag`, `RateLimit-*` | Not read or set by any route. `POST /v1/reports` is idempotent on `client_report_id` instead. |
 
 ### 1.4 CORS
 
@@ -107,6 +110,8 @@ RFC 9457 support exists but is not reached by any route (`core/errors.py`, `api/
 | **AWS** | Optional, only with `HAWA_AWS_ENABLED=true` |
 | **Memory** | Module-level Python dict in the API process |
 | **Fixture** | `src/hawa_backend/api/fixtures.py` or literals in the route module |
+| **DynamoDB** | Optional AWS tables (`HAWA_AWS_GRIEVANCES_TABLE`, `HAWA_AWS_FLEET_TABLE`), else Memory |
+| **Redis** | Optional (`HAWA_REDIS_URL`), shared across processes, else Memory |
 | **DB** | Not used by any route |
 
 ## 2. Endpoint index
@@ -117,38 +122,54 @@ RFC 9457 support exists but is not reached by any route (`core/errors.py`, `api/
 | 2 | GET | `/health` | **Implemented** | static | `test_all_routes_comprehensive` |
 | 3 | GET | `/livez` | **Implemented** | static | same |
 | 4 | GET | `/v1/health` | **Implemented** | static | same |
-| 5 | GET | `/readyz` | **Stub/Mock** | hard-coded | `test_api`, `test_all_routes_comprehensive` |
+| 5 | GET | `/readyz` | **Implemented** | settings + Redis ping (reports which optional backends are on) | `test_api`, `test_all_routes_comprehensive`, `test_aws_wiring` |
 | 6 | GET | `/v1/hotspots` | **Implemented** | AI-ML | `test_api`, `test_all_routes_comprehensive`, `test_end_to_end` (fails), `test_aiml_integration` |
 | 7 | GET | `/v1/hotspots/{cell_id}` | **Implemented** | AI-ML | `test_all_routes_comprehensive` |
 | 8 | GET | `/v1/twin` | **Implemented** | AI-ML | same |
 | 9 | GET | `/v1/forecast` | **Implemented** | AI-ML (aggregated from hotspots) | `test_api`, `test_all_routes_comprehensive`, `test_aiml_integration` |
 | 10 | GET | `/v1/forecast/{cell_id}` | **Implemented** | AWS, else AI-ML | `test_all_routes_comprehensive`, `test_aws_integration` |
-| 11 | GET | `/v1/plans` | **Partial** | Memory + fixture seed plan | `test_api`, `test_all_routes_comprehensive`, `test_end_to_end` |
+| 11 | GET | `/v1/plans` | **Partial** | Redis (when set) or Memory + fixture seed plan | `test_api`, `test_all_routes_comprehensive`, `test_end_to_end` |
 | 12 | GET | `/v1/plans/{plan_id}` | **Partial** | Memory | same, `test_aws_integration` |
 | 13 | POST | `/v1/plans/draft` | **Partial** | AI-ML → Memory | `test_all_routes_comprehensive`, `test_aiml_integration`, `test_aws_integration` |
-| 14 | POST | `/v1/plans/{plan_id}/approve` | **Partial** | Memory, optional AWS Step Functions | `test_api`, `test_all_routes_comprehensive`, `test_aws_integration` |
+| 14 | POST | `/v1/plans/{plan_id}/approve` | **Partial** | Redis/Memory, optional AWS Step Functions and SNS notice | `test_api`, `test_all_routes_comprehensive`, `test_aws_integration` |
 | 15 | POST | `/v1/plans/{plan_id}/request-changes` | **Partial** | Memory | `test_all_routes_comprehensive` |
 | 16 | POST | `/v1/plans/{plan_id}/suggestions/{comment_id}/apply` | **Partial** | Memory | `test_api`, `test_all_routes_comprehensive` |
 | 17 | GET | `/v1/plans/{plan_id}/compare` | **Partial** | AI-ML (rows hard-coded) | same, `test_aiml_integration` |
 | 18 | POST | `/v1/plans/{plan_id}/simulate` | **Partial** | same handler as 17 | `test_all_routes_comprehensive` |
-| 19 | GET | `/v1/devices` | **Stub/Mock** | Fixture | `test_api`, `test_all_routes_comprehensive`, `test_end_to_end` |
+| 19 | GET | `/v1/devices` | **Implemented** | Live telemetry (Redis/Memory), then fixtures | `test_api`, `test_all_routes_comprehensive`, `test_end_to_end` |
 | 20 | GET | `/v1/impact` | **Partial** | Fixture + AI-ML verification | same |
 | 21 | GET | `/v1/impact/library` | **Implemented** | AI-ML | same, `test_aiml_integration` |
 | 22 | GET | `/v1/impact/{intervention_id}/verify` | **Partial** | AI-ML | `test_all_routes_comprehensive` |
 | 23 | POST | `/v1/impact/{intervention_id}/verify` | **Partial** | AI-ML | same |
 | 24 | GET | `/v1/interventions/{intervention_id}/verify` | **Partial** | AI-ML | same |
 | 25 | POST | `/v1/interventions/{intervention_id}/verify` | **Partial** | AI-ML | same |
-| 26 | GET | `/v1/alerts` | **Stub/Mock** | Fixture | `test_api`, `test_all_routes_comprehensive` |
+| 26 | GET | `/v1/alerts` | **Implemented** | Sent broadcasts (Redis/Memory), then fixtures | `test_api`, `test_all_routes_comprehensive` |
 | 27 | GET | `/v1/driver/route` | **Stub/Mock** | Fixture | same |
 | 28 | GET | `/open/v1/air` | **Implemented** | AI-ML (derived from hotspots) | `test_api` |
 | 29 | POST | `/v1/citizen/safe-route` | **Implemented** | AI-ML (in-process) | none |
 | 30 | GET | `/v1/citizen/safe-window` | **Implemented** | AI-ML (in-process) | none |
-| 31 | GET | `/v1/citizen/live-operations` | **Stub/Mock** | `hawa_ml` fleet constant + literals | none |
-| 32 | POST | `/v1/citizen/reports/missed-machine` | **Partial** | AI-ML (in-process) audit against a constant fleet table | none |
+| 31 | GET | `/v1/citizen/live-operations` | **Partial** | Live telemetry first, then the `hawa_ml` demo fleet; interventions are literals | `test_fleet` |
+| 32 | POST | `/v1/citizen/reports/missed-machine` | **Implemented** | Live track (DynamoDB/Memory); simulated auditor when the asset sent no telemetry | `test_fleet` |
 | 33 | GET | `/v1/citizen/wards/leaderboard` | **Stub/Mock** | literals | none |
 | 34 | POST | `/v1/uploads/presign` | **Implemented** | AWS S3 pre-signed POST (`aws/uploads.py`); `503` unless configured | none |
+| 35 | POST | `/v1/reports` | **Implemented** | DynamoDB grievances / Memory; S3 HeadObject; twin + attribution rules | `test_reports` |
+| 36 | GET | `/v1/reports/mine` | **Implemented** | DynamoDB `OwnerIndex` (Scan if absent) / Memory | `test_reports` |
+| 37 | GET | `/v1/reports/{report_id}` | **Implemented** | same; pre-signed S3 GET photo URL | `test_reports` |
+| 38 | GET | `/v1/reports` | **Implemented** | DynamoDB `WardStatusIndex` / Memory; admin key | `test_reports` |
+| 39 | PATCH | `/v1/reports/{report_id}` | **Implemented** | same; FCM push to the reporter | `test_reports` |
+| 40 | POST | `/v1/reports/{report_id}/verify` | **Implemented** | re-runs verification; admin key | none |
+| 41 | PUT | `/v1/me/push-token` | **Implemented** | Redis/Memory | `test_aws_wiring` |
+| 42 | GET, PUT | `/v1/me/alert-subscription` | **Implemented** | Redis/Memory | `test_aws_wiring` |
+| 43 | POST | `/v1/telemetry/vehicles` | **Implemented** | Memory + Redis GEO + DynamoDB fleet + Kinesis; ingest key | `test_fleet`, `test_aws_wiring` |
+| 44 | GET | `/v1/fleet/live` | **Implemented** | Redis `fleet:lastseen` / Memory | `test_fleet` |
+| 45 | GET | `/v1/fleet/nearby` | **Implemented** | Redis `GEOSEARCH geo:fleet:active` / Memory | `test_fleet` |
+| 46 | GET | `/v1/fleet/{asset_id}/track` | **Implemented** | DynamoDB fleet / Memory | `test_fleet` |
+| 47 | WS | `/v1/ws/fleet` | **Implemented** | Redis pub/sub `fleet:pings` / in-process | `test_fleet` |
+| 48 | POST | `/v1/alerts/broadcast` | **Implemented** | SNS + FCM topic; admin key | `test_aws_wiring` |
+| 49 | POST | `/v1/alerts/subscribers` | **Implemented** | SNS Subscribe with a ward filter policy; admin key | `test_aws_wiring` |
+| 50 | GET | `/v1/alerts/{alert_id}` | **Implemented** | sent broadcasts + fixtures | `test_aws_wiring` |
 
-The web console calls 6, 9, 11–17, 19–21 and 26–28 (`frontend/src/lib/api.ts`). The Flutter app calls 6, 8, 9, 10, 19, 20, 26, 27, 30, plus `/v1/auth/*` which does not exist.
+The web console calls 6, 9, 11–17, 19–21 and 26–28 (`frontend/src/lib/api.ts`). The Flutter app calls 6, 8, 9, 10, 19, 20, 26, 27, 30, 31 and 47 (Govt in Action radar), plus 34–37, 41 and 42 when `citizen_reports`, `push` and `citizen_subscription` are in its `REAL_FEATURES`; `/v1/auth/*` does not exist.
 
 ## 3. Health
 
@@ -166,13 +187,17 @@ The web console calls 6, 9, 11–17, 19–21 and 26–28 (`frontend/src/lib/api.
 
 #### `GET /readyz`
 
-> Status: **Stub/Mock**. Nothing is checked; the database and Redis are never contacted.
+> Status: **Implemented**. Always `200` (every optional backend has a fallback); `services` says which ones this process uses. Redis is pinged; AWS services are reported from settings only (run `uv run hawa aws-check` for live checks).
 
 `200`:
 
 ```json
-{"status": "ready", "services": {"api": "ok", "database": "ok", "redis": "ok"}}
+{"status": "ready", "services": {"api": "ok", "redis": "ok", "aws": "enabled", "s3_evidence": "configured",
+  "dynamodb_grievances": "configured", "dynamodb_fleet": "configured", "kinesis": "configured",
+  "kinesis_consumer_in_api": "on", "sns_alerts": "configured", "secrets_manager": "off", "fcm": "configured"}}
 ```
+
+`redis` is `off (process memory)` when `HAWA_REDIS_URL` is empty and `unreachable (process memory)` when the ping fails.
 
 ## 4. Hotspots and twin
 
@@ -459,9 +484,9 @@ One handler on both. Does not check that the plan exists. AI-ML `POST /plans/{id
 
 #### `GET /v1/devices`
 
-> Status: **Stub/Mock**. Data source: Fixture (`get_mock_assets`).
+> Status: **Implemented**. Data source: live HawaTag telemetry (`services/fleet.py`, [§9b](#9b-citizen-reports-me-fleet-telemetry-broadcasts)) first, then the fixtures (`get_mock_assets`) whose ids are not live.
 
-`200`: `{"asOf", "simulated": true, "items": [...]}` with two assets, `T-12` (sprinkler, `Spraying`) and `ASG-07` (smog gun, `En route`):
+`200`: `{"asOf", "simulated", "items": [...]}`; `simulated` is `false` once any vehicle has pinged within `HAWA_FLEET_ACTIVE_MINUTES`. A live item has `status` `Spraying` (pump ≥ 5 L/min), `En route` (≥ 3 km/h), `Idle` or `Offline`, `at` from the last ping, `task: "Live · near <locality>"`, and `simulated: true` only for pings sent by `hawa simulate-fleet`. With no live telemetry the response is the two fixture assets, `T-12` (sprinkler, `Spraying`) and `ASG-07` (smog gun, `En route`):
 
 ```json
 {
@@ -532,9 +557,9 @@ Order: AI-ML `POST /interventions/{id}/verify` → in-process `hawa_ml.causal.pl
 
 #### `GET /v1/alerts`
 
-> Status: **Stub/Mock**. Data source: Fixture (`get_mock_alerts`).
+> Status: **Implemented**. Data source: alerts sent through `POST /v1/alerts/broadcast` and plan approvals (Redis list `alerts:sent` or Memory, newest first, last 200), then the two fixtures (`get_mock_alerts`).
 
-`200`: `{"asOf", "simulated": true, "counts": {"All": 2, "School": 1, "Citizens": 1, "Citizen Eyes": 0}, "items": [...]}`. Items have `id`, `sentAt`, `audience`, `target`, `channel` (`WhatsApp` / `SMS`), `lang`, `message`, `messageHi` (school alert only), `delivered`, `leadTimeH`, `draftedBy`. Nothing is sent to anyone.
+`200`: `{"asOf", "simulated", "counts": {"All", "School", "Citizens", "Citizen Eyes"}, "items": [...]}`; `simulated` is `false` once anything has been broadcast. Items have `id`, `sentAt`, `audience`, `target`, `channel` (`WhatsApp` / `SMS`), `lang`, `message`, `messageHi`, `delivered`, `leadTimeH`, `draftedBy`; broadcast items add `type` and `severity`, and `delivered` reads e.g. `SNS sent · Push sent`. The fixtures are never sent to anyone.
 
 #### `GET /v1/driver/route`
 
@@ -612,21 +637,21 @@ Body `SafeRouteRequest`: `{"origin": {"lat": 28.63, "lon": 77.21}, "destination"
 
 #### `GET /v1/citizen/live-operations`
 
-> Status: **Stub/Mock**. Data source: `hawa_ml.simulation.audit.FLEET_TELEMETRY` (a constant table of 3 vehicles) plus two literal verified interventions.
+> Status: **Partial**. Data source: live HawaTag telemetry first (`live: true`), then the vehicles of `hawa_ml.simulation.audit.FLEET_TELEMETRY` (a constant table of 3) whose ids are not live (`live: false, simulated: true`); two literal verified interventions. The app's Govt in Action radar polls this every 15 s and applies `/v1/ws/fleet` pings in between.
 
 | Query | Rule |
 |---|---|
 | `ward` | optional, case-insensitive substring match on each vehicle's `ward` |
 
-`200`: `{"as_of": "2026-10-08T03:00:00Z", "active_fleet_count": 3, "active_fleet": [...], "verified_interventions": [...]}`. Fleet entries: `asset_id, type, ward, assigned_route, status, last_gps [lat, lon], speed_kmh, water_pump_flow_lpm, water_disbursed_liters, contractor_id, dwell_minutes_on_route, is_compliant`. Interventions: `intervention_id, asset_id, action_type, location_name, lat, lon, treated_time, pm10_reduction_pct, pm25_reduction_pct, confidence_interval_95, duration_minutes, water_disbursed_liters, verified_by, status`. `as_of` never changes.
+`200`: `{"as_of", "live_fleet_count", "active_fleet_count", "active_fleet": [...], "verified_interventions": [...]}`. Fleet entries: `asset_id, type, ward, assigned_route, status, last_gps [lat, lon], speed_kmh, water_pump_flow_lpm, water_disbursed_liters, contractor_id, dwell_minutes_on_route, is_compliant, live, simulated` (live ones add `last_ping_at`; `status` is `ACTIVE_SPRAYING`, `EN_ROUTE`, `IDLE` or `OFFLINE`). Interventions: `intervention_id, asset_id, action_type, location_name, lat, lon, treated_time, pm10_reduction_pct, pm25_reduction_pct, confidence_interval_95, duration_minutes, water_disbursed_liters, verified_by, status`.
 
 #### `POST /v1/citizen/reports/missed-machine`
 
-> Status: **Partial**. Data source: AI-ML (in-process `iot_auditor.audit_missed_intervention`) against the constant fleet table. Nothing is stored.
+> Status: **Implemented**. Data source: the asset's real track over `window_minutes` (`services/fleet.py`: DynamoDB fleet table when configured, else Memory). When the asset sent no telemetry in the window, the simulated `iot_auditor.audit_missed_intervention` answers against the constant fleet table and the response says `evidence_source: "simulated"`. Nothing is stored.
 
-Body `MissedMachineReport`: `{"asset_id": "SPR-04", "cell_id": "G-052-054", "ward": "Preet Vihar", "reported_by": "citizen_mobile_app"}` (`reported_by` optional).
+Body `MissedMachineReport`: `{"asset_id": "SWP-07", "cell_id": "G-052-054", "ward": "Okhla", "reported_by": "citizen_mobile_app", "lat": 28.53, "lon": 77.27, "window_minutes": 180}`. `reported_by`, `lat`, `lon` (default: the centre of `cell_id` in the twin) and `window_minutes` (15–1440, default 180) are optional.
 
-`200` for a known asset: `{report_id, timestamp, asset_id, ward, verdict: "MACHINE_ACTIVE_VERIFIED", sla_breach, message, telemetry: {...}}`; for an unknown asset: `verdict: "UNDER_INVESTIGATION"` and no `telemetry`. `422` when a required field is missing.
+Rule: `MACHINE_ACTIVE_VERIFIED` when the vehicle spent at least 15 minutes within 500 m of the site with the pump at 5 L/min or more; otherwise `SLA_BREACH_CONFIRMED` with `penalty_fine_inr: 25000`. `200` (live): `{report_id, timestamp, asset_id, ward, cell_id, reported_by, evidence_source: "live_telemetry", evidence: {pings, window_minutes, radius_m, dwell_minutes, sprayed, max_pump_flow_lpm, litres_estimated, closest_m, first_ping, last_ping}, telemetry: {...}, verdict, sla_breach, message}`. `422` when a required field is missing.
 
 #### `GET /v1/citizen/wards/leaderboard`
 
@@ -662,6 +687,69 @@ Body `PresignIn`: `{"purpose": "report_photo" | "inspection_photo" | "task_photo
 Upload: `POST` to `url` as `multipart/form-data` with every entry of `fields` first, then the file as `file`. The signed policy pins the key, the content type, the `x-amz-meta-sha256` value and a size of 1 byte to `max_bytes`; it expires after `HAWA_AWS_PRESIGN_TTL_SECONDS`. Keys are `{HAWA_AWS_EVIDENCE_PREFIX}{purpose}/YYYY/MM/DD/{uuid}{ext}`.
 
 Errors: `413` when `content_length` exceeds `HAWA_AWS_UPLOAD_MAX_BYTES`; `415` for content types other than `image/jpeg`, `image/png`, `image/webp`, `image/heic`; `422` for an unknown purpose, a non-positive length or a malformed `sha256`; `503` when `HAWA_AWS_ENABLED` is false or `HAWA_AWS_EVIDENCE_BUCKET` is unset.
+
+## 9b. Citizen reports, me, fleet telemetry, broadcasts
+
+Services in `src/hawa_backend/services/`; each runs in process memory and switches to DynamoDB, Redis, SNS, Kinesis or FCM as soon as that piece is configured ([../AWS_SETUP_GUIDE.md](../AWS_SETUP_GUIDE.md)). Route modules: `api/routes/reports.py`, `me.py`, `fleet.py`, `alerts.py`.
+
+#### `POST /v1/reports`
+
+> Status: **Implemented**. Matches `ReportCreateIn` / `ReportCreateOut` in `app_frontend/openapi/openapi.json`. Storage: DynamoDB `HAWA_AWS_GRIEVANCES_TABLE` (keys `report_id` + `created_at`), else Memory.
+
+Body: `{"client_report_id", "photo_key", "location": {"type": "Point", "coordinates": [lon, lat]}, "captured_at", "accuracy_m"?, "note"?, "lang"?: "en"|"hi", "category"?: "burning"|"dust"|"other"}`. With S3 configured, `photo_key` must be a `report_photo/` key from `POST /v1/uploads/presign`.
+
+`202`: `{"report_id", "status": "submitted", "client_report_id"}`. `report_id` is derived from (caller, `client_report_id`), so a retried submission returns the first report. Right after the response, verification runs: `submitted` → `verifying` → `verified` or `rejected`. Checks: the point is inside Delhi; the photo exists in S3 (`HeadObject`, needs `s3:GetObject`; a permission error does not reject); the nearest 500 m twin cell gives `cell_id`, `ward_id` and PM2.5; the AI-ML fingerprint rules give a cause, compared with the citizen's category for the confidence. The reporter gets an FCM push. Errors: `422` (bad body or photo key), `503` when a configured table fails (the app's outbox retries).
+
+#### `GET /v1/reports/mine`, `GET /v1/reports/{report_id}`
+
+> Status: **Implemented**. `ReportPage` / `ReportDetailOut` of the app contract. The caller is the bearer token's `sub`.
+
+`mine` uses the GSI `OwnerIndex` (`owner_id` + `created_at`), or a Scan when the table has none; `limit` ≤ 100, `next_cursor` is always null. `GET /{id}` returns `404` for another caller's report unless `X-Api-Key` is the admin key, which returns the officer view below. Photo fields (`thumbnail_url`, `photo_url`) are pre-signed S3 GET URLs valid for `HAWA_AWS_EVIDENCE_READ_TTL_SECONDS`.
+
+#### `GET /v1/reports` (officer, admin key)
+
+Query: `ward_id` (uses the GSI `WardStatusIndex`; without it the table is scanned), `status` (`submitted`, `verifying`, `verified`, `rejected`, `ticketed`, `closed`), `limit` ≤ 500. `200`: `{"asOf", "count", "slaBreaches", "items": [...]}`; items are the detail plus `owner_id`, `photo_key`, `pm25`, `sla_due_at`, `sla_breach` (open after `HAWA_REPORT_SLA_HOURS`), `updated_at`.
+
+Checklist status names map to the stored ones: SUBMITTED = `submitted`, AI_VERIFIED = `verified`, DISPATCHED = `ticketed`, RESOLVED = `closed`, SLA_BREACH = `sla_breach: true` on an open report.
+
+#### `PATCH /v1/reports/{report_id}` (officer, admin key)
+
+Body: `{"status": "ticketed" | "closed" | "rejected", "outcome"?: "closed_confirmed" | "closed_not_found" | "closed_unreachable", "outcome_text"?, "outcome_text_hi"?, "rejection_reason"?, "rejection_reason_hi"?, "inspection_id"?}`. `ticketed` creates `inspection: {id, status: "assigned"}`; `closed` sets `outcome` (default `closed_confirmed`), `closed_at` and the inspection status. Allowed moves: to `ticketed` from submitted/verifying/verified; to `closed` from verified/ticketed; to `rejected` from any open status. `409` otherwise, `404` unknown id. Each change pushes to the reporter. `POST /v1/reports/{id}/verify` (admin key) re-runs verification for a report stuck in `submitted`.
+
+#### `PUT /v1/me/push-token`, `GET|PUT /v1/me/alert-subscription`
+
+> Status: **Implemented**. `PushTokenIn` / `PushTokenOut` and `AlertSubscription` of the app contract, stored per caller in Redis (`push:tokens:<sub>`, `alerts:subscription:<sub>`) or Memory.
+
+`PUT /v1/me/push-token` body `{"token", "platform": "android"|"ios"|"web", "app_flavor"?, "app_version"?, "locale"?, "device_label"?}` → `{"id", "platform", "last_seen_at"}`. Tokens FCM reports as unregistered are dropped on the next send. The subscription defaults to `{"radius_m": 1000, "kinds": ["pollutant_warning", "grap_outlook", "safe_window", "report_outcome"]}`; it is stored, not yet used to filter pushes.
+
+#### `POST /v1/telemetry/vehicles` (ingest key)
+
+> Status: **Implemented**. One ping or a list of up to 500, the same payload IoT Core receives on `hawa/vehicles/<asset_id>/telemetry`:
+
+```json
+{"asset_id": "SPR-04", "lat": 28.6476, "lon": 77.3158, "speed_kmh": 14.5, "pump_flow_lpm": 48.2,
+ "timestamp": "2026-10-08T03:00:00Z", "litres_cum": 1420, "pm25": 140, "pm10": 210, "kind": "sprinkler", "seq": 12}
+```
+
+Only `asset_id`, `lat`, `lon` are required; `timestamp` may be ISO-8601 or epoch seconds/ms (default now). Each ping goes to process memory, Redis (`GEOADD geo:fleet:active`, `ZADD fleet:lastseen`, `SET fleet:latest:<id>`, `PUBLISH fleet:pings`), DynamoDB `HAWA_AWS_FLEET_TABLE` (with `ttl_epoch` = now + `HAWA_AWS_FLEET_TTL_DAYS`) and Kinesis `HAWA_AWS_SENSOR_STREAM` (marked `via: "api"`, which the consumer skips). `202`: `{"accepted", "items": [...]}`; `401` without the key when one is set; `413` over 500 pings.
+
+Pings that arrive through IoT Core go IoT rule → Kinesis → consumer (`aws/kinesis_consumer.py`, in the API when `HAWA_AWS_KINESIS_CONSUMER=true`, or `hawa consume-telemetry`) → the same store.
+
+#### `GET /v1/fleet/live`, `GET /v1/fleet/nearby`, `GET /v1/fleet/{asset_id}/track`
+
+`live`: vehicles that pinged within `HAWA_FLEET_ACTIVE_MINUTES` (default 15), newest first, each the last ping plus `status` and `area` (nearest locality). `nearby?lat&lon&radius_km(≤50)&limit`: Redis `GEOSEARCH` (or a distance filter in memory), nearest first with `distance_m`. `track?minutes(≤10080)`: the asset's pings, oldest first, from DynamoDB when configured.
+
+#### `WS /v1/ws/fleet`
+
+Sends `{"type": "snapshot", "asOf", "items": [...]}` on connect, then `{"type": "ping", "item": {...}}` for every ingested ping (Redis pub/sub, so pings ingested by any backend process arrive) and `{"type": "heartbeat"}` every 25 s. Client messages are ignored. Needs the `websockets` package (a backend dependency) for uvicorn to accept the upgrade.
+
+#### `POST /v1/alerts/broadcast` (admin key)
+
+Body: `{"message", "type"?: "INVERSION_WARNING"|"POLLUTANT_WARNING"|"GRAP_STAGE"|"SAFE_WINDOW", "message_hi"?, "title"?, "ward"?, "window"?, "expected_pm25"?, "audience"?: "Citizens"|"School"|"Workers"|"Drivers", "severity"?: "info"|"warning"|"severe", "channels"?: ["sns", "push"]}`. Publishes the JSON to the SNS topic with message attributes `type`, `ward` (`all` when omitted), `severity`, `audience`, and an FCM notification to the topic `HAWA_FCM_TOPIC` (data `type` = the app alert kind, `deep_link` = `hawa://alerts/<id>`). `200`: the stored alert plus `snsMessageId` and `fcmMessageName` (null when that channel is not configured). Approving a plan also publishes one SNS notice (`type: PLAN_APPROVED`, SNS only) unless `HAWA_AWS_ALERT_ON_PLAN_APPROVAL=false`.
+
+#### `POST /v1/alerts/subscribers` (admin key)
+
+Body `{"protocol": "email"|"sms", "endpoint", "ward"?}`. SNS `Subscribe` with the filter policy `{"ward": [<ward>, "all"]}` when `ward` is given. `200`: `{"subscriptionArn", "pendingConfirmation"}` (email subscribers must click the AWS link). `422` for a phone number not in E.164, `503` when no topic is configured, `502` when SNS refuses. `GET /v1/alerts/{alert_id}` returns one sent or fixture alert.
 
 ## 10. Calls the backend makes to AI-ML
 

@@ -37,7 +37,7 @@ Status vocabulary used in every backend document: **Implemented** (works as desc
 | Auth endpoints, RBAC, ward scoping | **Planned** | none | [API.md](API.md) §6 |
 | Scheduler, notifier, feeds-worker, alert-engine, MQTT bridge, other workers | **Planned** | none | [ARCHITECTURE.md](ARCHITECTURE.md) §8 |
 | Metrics, tracing, dashboards | **Planned** | none | [LOGGING_AND_OBSERVABILITY.md](LOGGING_AND_OBSERVABILITY.md) §6 |
-| Dockerfile, CI/CD, CDK | **Planned** | A CloudFormation template exists at the repo root (`infrastructure/cloudformation/hawa-integration.yaml`), owned by the AWS runbook | [DEPLOYMENT.md](DEPLOYMENT.md), [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md) |
+| Dockerfile, image build, IaC | **Implemented** | `backend/Dockerfile` (build from the repo root); `.github/workflows/backend-image.yml` pushes it to ECR (manual trigger); CloudFormation `hawa-integration.yaml`, `hawa-redis.yaml`, `hawa-ecs.yaml` in `infrastructure/cloudformation/`. Test CI and CDK are Planned | [DEPLOYMENT.md](DEPLOYMENT.md), [../AWS_INTEGRATION.md](../AWS_INTEGRATION.md) |
 
 In one sentence: today the backend is a single FastAPI process that serves the web console and the Flutter app by translating AI-ML output (live, in-process or fixture) into the frontend's camelCase contract, keeps plan state in memory, and optionally calls AWS. The event-driven, database-backed design in the rest of these documents is the target, and is labelled **Planned** wherever it appears.
 
@@ -160,7 +160,7 @@ Defects found while reconciling these documents with the code (verified 2026-10-
 ### 7.4 Not wired
 
 22. **Workers are library code only.** `workers/ingest.py`, `simulator.py`, `dispatch.py` are not run by any process or CLI command. The dedupe set grows without bound (`workers/ingest.py:27`), the spike baseline is a caller-supplied default of 80 (`:63`), `confirmed_by_cloud` is always `True` (`:134`), and the saga matches the first open task for an asset with no location or time check (`workers/dispatch.py:46-49`).
-23. **Unused settings and helpers.** `HAWA_REDIS_URL`, `HAWA_KAFKA_*`, `HAWA_HOST`, `HAWA_PORT` are read but nothing connects or binds with them; `db/session.get_db` is never used by a route; `aws.publish_alert` and `aws.publish_sensor_reading` are only called by tests; `core/logging.get_logger` is never called.
+23. **Unused settings and helpers.** `HAWA_KAFKA_*`, `HAWA_HOST`, `HAWA_PORT` are read but nothing connects or binds with them; `db/session.get_db` is never used by a route; `core/logging.get_logger` is never called. (`HAWA_REDIS_URL`, `aws.publish_alert` and `aws.publish_sensor_reading` are used since 2026-10-11.)
 24. **Context default is shared.** `_CURRENT_CONTEXT` defaults to one module-level `RequestContext()` (`core/context.py:19`, ruff B039), so code running outside a request shares one request id.
 
 ### 7.5 Cross-component mismatches

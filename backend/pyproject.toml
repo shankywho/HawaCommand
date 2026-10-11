@@ -11,6 +11,8 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn>=0.30.0",
+    # WebSocket support in uvicorn (GET /v1/ws/fleet); without it uvicorn rejects the upgrade
+    "websockets>=13.0",
     "pydantic>=2.8.0",
     "pydantic-settings>=2.4.0",
     "sqlalchemy>=2.0.30",
@@ -21,11 +23,16 @@ dependencies = [
     "pyjwt>=2.8.0",
     "greenlet>=3.0.0",
     "alembic>=1.13.0",
+    # AWS layer (S3, DynamoDB, SNS, Kinesis, Secrets Manager, Step Functions); imported lazily, off unless HAWA_AWS_ENABLED
+    "boto3>=1.34.0",
+    # RS256 signing of the Firebase service-account assertion (FCM HTTP v1, services/push.py)
+    "cryptography>=42.0.0",
     "hawa-contracts",
     "hawa-ml[llm]",
 ]
 
 [project.optional-dependencies]
+# Kept for older install commands; boto3 is now a core dependency.
 aws = [
     "boto3>=1.34.0",
 ]
@@ -33,7 +40,8 @@ dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "aiosqlite>=0.20.0",
-    "moto[dynamodb,sns,kinesis]>=5.0.0",
+    "moto[dynamodb,sns,kinesis,s3,secretsmanager]>=5.0.0",
+    "fakeredis>=2.23.0",
     "ruff>=0.5.0",
     "mypy>=1.10.0",
 ]
